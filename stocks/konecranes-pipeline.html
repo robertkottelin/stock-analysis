@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konecranes — Research Pipeline (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:800px}
+  .keystat{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .ks{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;min-width:92px}
+  .ks .kl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .ks .kv{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:2px}
+  .ks .kv small{font-size:11px;color:var(--muted);font-weight:400}
+  .legend{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .hero{margin-top:18px;background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--blue);border-radius:var(--radius);padding:clamp(16px,3vw,24px)}
+  .hero .htag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:8px}
+  .hero h3{font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.15}
+  .hero h3 b{color:var(--blue-deep)}
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:680px){.lenses{grid-template-columns:1fr}}
+  .lens{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .lens .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .lens .lh{font-family:var(--disp);font-weight:600;font-size:14px;margin-bottom:5px}
+  .lens.empir .lh{color:var(--coral-deep)} .lens.comp .lh{color:var(--blue-deep)} .lens.owner .lh{color:var(--teal-deep)}
+  .lens .lb{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .synth{margin-top:14px;background:var(--blue-wash);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55}
+  .synth b{color:var(--blue-deep)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .reactab .rr{display:grid;grid-template-columns:118px 1fr 86px;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:560px){.reactab .rr{grid-template-columns:80px 1fr 64px}}
+  .reactab .re{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  .reactab .rd{font-size:12px;color:var(--muted);line-height:1.4}
+  .reactab .rp{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;color:var(--coral-deep)}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:58px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:16px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)} .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:185px 1fr 66px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:120px 1fr 52px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:116px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:86px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Research pipeline · strict-data · Konecranes Plc · HEL: KCR · built 2026-07-09</div>
+  <h1>Konecranes — the analyst's instrument panel
+    <span class="sub">A quality capital-goods compounder, valued through-cycle on EBITA margin × multiple, not a commodity spread. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline question this build answers: <b>which driver most predicts the share price?</b></span>
+  </h1>
+
+  <div class="keystat">
+    <div class="ks"><div class="kl">Price</div><div class="kv">€27.30</div></div>
+    <div class="ks"><div class="kl">Market cap</div><div class="kv">€6.49<small>bn</small></div></div>
+    <div class="ks"><div class="kl">Net cash</div><div class="kv">€185<small>m</small></div></div>
+    <div class="ks"><div class="kl">P/E</div><div class="kv">~16<small>×</small></div></div>
+    <div class="ks"><div class="kl">EV/EBITA</div><div class="kv">~11<small>×</small></div></div>
+    <div class="ks"><div class="kl">Div yield</div><div class="kv">~2.7<small>%</small></div></div>
+    <div class="ks"><div class="kl">Cons. PT</div><div class="kv">€34<small> (+25%)</small></div></div>
+  </div>
+
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-09 16:31</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="hero">
+    <div class="htag">◆ The most predictive driver — three converging lenses</div>
+    <h3>There is no single commodity-style driver. The master variable is the <b>durability of the record ~14% EBITA margin</b> — but the most <i>predictive</i> mover of the share price right now is <b>volume (order → sales conversion)</b>.</h3>
+    <div class="lenses">
+      <div class="lens empir">
+        <div class="lt">Lens 1 — what moves the price (empirical)</div>
+        <div class="lh">Orders, volume &amp; guidance</div>
+        <div class="lb">The stock reacts to the demand cycle, not the margin. Feb 2026: record 14% margin and +12% orders, yet the stock fell ~10–14% on a soft order quarter + cautious guidance. Apr 2026: record Q1 margin, yet −7% on a ~5% sales decline.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">Lens 2 — what moves fair value (computed)</div>
+        <div class="lh">The multiple, then the margin</div>
+        <div class="lb">The tornado (Module B) shows the EV/EBITA multiple is the single biggest lever on intrinsic value, with the EBITA margin close behind — together dwarfing revenue and net cash. The multiple is itself the market's verdict on margin durability.</div>
+      </div>
+      <div class="lens owner">
+        <div class="lt">Lens 3 — what the largest owner says</div>
+        <div class="lh">Service growth + equipment margin</div>
+        <div class="lb">Solidium (11% holder, Finnish State) names Konecranes' value drivers as "continuous growth of the maintenance business" and "permanently raising the profitability of the new-equipment business."</div>
+      </div>
+    </div>
+    <div class="synth"><b>Synthesis.</b> The three reconcile: <b>volume is the leading domino.</b> The ~14% margin is already a self-help record (management says the "low-hanging fruit" is gone), so what decides whether it <i>holds</i> is operating leverage from volume — and whether the market awards a quality <i>multiple</i> depends on the same demand signal. So watch <b>order intake and book-to-bill</b>, not the margin headline. The constructive tell as of Q1'26: the order book is at a 3-year-high €3.2bn and book-to-bill is 1.2 — the leading indicator is green even as reported sales lag.</div>
+  </div>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Driver analysis</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Valuation engine — correlated &amp; fat-tailed</h2><div class="hq">Through-cycle EBITA margin × multiple, plus net cash.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>€27–28</b> vs the €27.30 price — essentially fair (~52% of paths above price), with a wide ±cyclical band. No clear edge at spot; the upside lives in the multiple and margin knobs.</span></div>
+    <p class="body">20,000 paths. Fair value per share = <b>EV/EBITA multiple × (sales × EBITA margin) + net cash</b>, ÷ 237.64m shares. Marginals are anchored to reported history: the margin's record is 14.0% (2024: 13.1%), the multiple's range is bracketed by peers (KION ~7× to Atlas Copco ~17×, machinery median ~11×). The two assumption knobs are the two biggest value levers per the tornado.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The mid-cycle margin (does the record ~14% hold?) and the central multiple (does it earn a quality re-rating?) are <b>your</b> calls. Correlation and tail control how hard the drivers fall together in a downturn.</p>
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs (sourced): net cash ≈ €185m, 237.64m shares, price €27.30, sales ≈ €4.25bn (guided flat-to-up).</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Mid-cycle EBITA margin <span>% · assumption</span></span><span class="cval"><span id="v-mgn">14.0</span>%</span></label>
+          <input type="range" id="i-mgn" min="11.0" max="15.5" step="0.1" value="14.0">
+          <div class="tri">2025 record 14.0% · 2024 13.1% · trough risk ~11%</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Central EV/EBITA multiple <span>× · assumption</span></span><span class="cval"><span id="v-mlt">11.0</span>×</span></label>
+          <input type="range" id="i-mlt" min="8.5" max="13.5" step="0.1" value="11.0">
+          <div class="tri">now ~11× · KION ~7× · Atlas ~17× · re-rate = bull</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">60</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="60">
+          <div class="tri">0% = independent · 100% = full co-movement</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Tail / downturn-shock risk <span>assumption</span></span><span class="cval"><span id="v-tail">6</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="15" step="1" value="6">
+          <div class="tri">chance a path hits a correlated cyclical downturn</div>
+        </div>
+      </div>
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent drivers</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv" id="oi-med">€28</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv" id="oi-p10">€23</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv" id="oi-p90">€34</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; €20)</span><span class="cv" id="oi-tail">4%</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + fat tails</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv warn" id="co-med">€28</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">€21</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">€36</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; €20)</span><span class="cv neg" id="co-tail">8%</span></div>
+        </div>
+      </div>
+      <div class="hist-wrap">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €27.30</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €27.30</span>
+          <span><span class="sw" style="background:var(--ink)"></span>price</span>
+          <span><span class="sw" style="background:var(--amber)"></span>median</span>
+          <span><span class="sw" style="background:var(--faint)"></span>indep P10</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> Correlation barely moves the median but fattens the downside — appropriate for a cyclical whose drivers (margin, volume, multiple) all sag together in a downturn. The independent model understates how bad a real cycle turn would be.</div>
+  </section>
+
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Driver analysis — what moves the stock</h2><div class="hq">The question this dashboard was built around.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The answer hinges on one swing factor — <b>volume conversion</b> of the record backlog, which governs both margin durability and the re-rating. A diagnostic, not a direction: high dependence on a single cyclical variable.</span></div>
+    <p class="body"><b>Lens 1 — fair-value sensitivity (computed tornado).</b> Each bar swings one driver P10→P90, others held at mode. The <b>EV/EBITA multiple</b> dominates, with the <b>EBITA margin</b> close behind; revenue and net cash are second-order.</p>
+    <svg id="tornado" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet"></svg>
+    <p class="body" style="margin-top:18px"><b>Lens 2 — what actually moved the price (sourced).</b> The revealed evidence is unambiguous: record margins did not lift the stock; soft volume and cautious guidance sank it. The market trades the demand cycle.</p>
+    <div class="reactab">
+      <div class="rr"><div class="re">Feb 2026</div><div class="rd">Q4'25: record 14% margin, +12% orders, net cash, &gt;100% cash conversion — but Q4 orders −4.3% vs a strong comp + cautious 2026 guidance.</div><div class="rp">≈ −10 to −14%</div></div>
+      <div class="rr"><div class="re">Apr 2026</div><div class="rd">Q1'26: record Q1 margin 11.6%, order book at a 3-yr high, book-to-bill 1.2 — but net sales −4.8% and a cautious demand tone.</div><div class="rp">≈ −7%</div></div>
+      <div class="rr"><div class="re">YE'25 → now</div><div class="rd">Split-adjusted, the shares drifted from ≈ €31 (Dec) to €27.30 on volume/guidance concern, even as the order book grew.</div><div class="rp">≈ −13%</div></div>
+    </div>
+    <p class="body" style="margin-top:18px"><b>Lens 3 — the owner's stated drivers (sourced).</b> Solidium, the 11% State holder, frames value creation as the continuous growth of the high-margin service business (≈22% margin) plus permanently lifting new-equipment profitability. Both run through volume and mix.</p>
+    <div class="note b"><b>Synthesis — the most predictive driver is volume (order → sales conversion).</b> The multiple is the biggest fair-value lever (Lens 1), the price moves on orders and guidance (Lens 2), and the owner's thesis is margin/mix (Lens 3). They converge because <b>volume is upstream of all three</b>: converting the €3.2bn backlog into sales drives operating leverage (margin durability), which earns the quality multiple (re-rating), which is what the market is really pricing. Unlike Neste's single commodity spread, Konecranes' master gauge is the order-to-sales cycle — currently sending a constructive signal (book-to-bill 1.2) the de-rated stock hasn't yet rewarded.
+      <div class="src">Sources: Konecranes FY2025 &amp; Q1'26 releases and earnings calls; Investing.com reaction coverage; Solidium holdings page. Tornado computed from the engine.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
+      <span class="tagchip a">Computed + your assumptions</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At neutral priors the probability-weighted value sits modestly <b>above</b> the price — a mild positive skew. The bull needs volume to convert into a re-rating; the bear is a cycle roll-over plus de-rate.</span></div>
+    <p class="body">The three fair values are <b>computed</b> — each is the engine's median run at a paired margin/multiple setting. The prior weights and evidence likelihood-ratios are <b>your</b> subjective inputs.</p>
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — cycle rolls over</div><div class="sd">Volume keeps falling, margin reverts toward ~11.5% as leverage unwinds, and the multiple de-rates to ~9× on cyclical fear.</div><div class="sfv" id="sfv-bear">€19</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — record holds</div><div class="sd">Margin sustains ~14% on backlog conversion; the multiple stays ~11×. Roughly the current guidance path.</div><div class="sfv" id="sfv-base">€28</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — quality re-rating</div><div class="sd">Volume leverage lifts margin to ~15% and the market re-rates toward quality peers (~13×). Near the consensus €34 target.</div><div class="sfv" id="sfv-bull">€36</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+    <div class="controls" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ctrl"><label><span class="lab">Prior — Bear <span>assumption</span></span><span class="cval"><span id="v-pb">25</span>%</span></label><input type="range" id="i-pb" min="0" max="100" step="5" value="25"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Base <span>assumption</span></span><span class="cval"><span id="v-pn">50</span>%</span></label><input type="range" id="i-pn" min="0" max="100" step="5" value="50"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Bull <span>assumption</span></span><span class="cval"><span id="v-pu">25</span>%</span></label><input type="range" id="i-pu" min="0" max="100" step="5" value="25"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">Toggle evidence as it arrives → <span class="asm">(likelihood ratios are illustrative assumptions)</span></div>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="0.5,1.1,1.8">Book-to-bill stays &gt; 1 / backlog grows <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.4,1.0,2.0">Sales volume re-accelerates <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.5">Service agreement base keeps compounding <span class="ar">▲bull</span></div>
+      <div class="ev bearish" data-lr="2.2,1.0,0.4">Order intake turns negative <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.9,1.0,0.6">Margin slips below ~12% <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.7,1.0,0.6">Trade / tariff shock hits demand <span class="ar">▼bear</span></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Posterior weights</div>
+      <div class="wbar" id="wbar"><div class="wp bear" id="wp-b"></div><div class="wp base" id="wp-n"></div><div class="wp bull" id="wp-u"></div></div>
+      <div class="wlab"><span id="wl-b">Bear 25%</span><span id="wl-n">Base 50%</span><span id="wl-u">Bull 25%</span></div>
+    </div>
+    <div class="blend">
+      <span class="bn" id="blend-fv">€28</span>
+      <span class="bl">probability-weighted fair value vs <b>€27.30</b> price · <span id="blend-gap">≈ fair</span>. Anchors computed; weighting is your judgment.</span>
+    </div>
+  </section>
+
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">Computed from the actual FY2025 balance sheet.</div></div>
+      <span class="tagchip c">Computed from sourced data</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Pristine. <b>Net cash</b>, interest coverage 18×, ROCE ~21%, cash conversion &gt;100%, high-quality earnings. A financially excellent business — the risk is the cycle, never the books.</span></div>
+    <p class="body">Real reported figures: total assets €4.8bn, equity ≈ €1.97bn, total liabilities €2.9bn, current assets €2.7bn, current liabilities €2.0bn, gross debt €720m but <b>net cash €185m</b>, EBIT €521m, net profit €399.8m (2024: €368.4m), operating cash flow ≈ €0.5bn, net working capital cut to €284m.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Piotroski F</span><span class="tg c">computed</span></div><div class="scv">7<span class="un">/9</span></div><div class="scband good">Strong</div><div class="scd">+NI, +CFO, ΔROA up, CFO&gt;NI, lower leverage (now net cash), no dilution, higher margin. Loses the asset-turnover point (sales dipped ~1%). Current-ratio change unverifiable for 2024, so true score 7–8.</div></div>
+      <div class="sc"><div class="scl"><span>Altman Z</span><span class="tg c">computed</span></div><div class="scv">~3.2</div><div class="scband good">Safe zone</div><div class="scd">&gt;2.99 = safe. EBIT/TA 0.11, market-equity/liabilities 2.2, sales/TA 0.87 (depressed by ~€1bn customer advances on the project book). Retained-earnings term proxied by equity; conclusion robust.</div></div>
+      <div class="sc"><div class="scl"><span>Sloan accruals</span><span class="tg c">computed</span></div><div class="scv">~−3<span class="un">%</span></div><div class="scband good">High quality</div><div class="scd">(NI − CFO) ÷ assets, negative: cash flow exceeds net profit, conversion &gt;100%. Earnings are cash-backed, not accrual-inflated.</div></div>
+      <div class="sc"><div class="scl"><span>Interest coverage</span><span class="tg s">sourced</span></div><div class="scv">18.1<span class="un">×</span></div><div class="scband good">Fortress</div><div class="scd">EBIT €521m covers interest 18×, and the company sits in a net-cash position (gearing −7.8%). Essentially no balance-sheet risk.</div></div>
+      <div class="sc"><div class="scl"><span>ROCE</span><span class="tg s">sourced</span></div><div class="scv">20.7<span class="un">%</span></div><div class="scband good">Excellent</div><div class="scd">Reported 20.7%, comparable 22.1%; ROE 20.3%. High and rising returns on capital — the hallmark of the three-year self-help re-rating.</div></div>
+      <div class="sc"><div class="scl"><span>Net cash / gearing</span><span class="tg s">sourced</span></div><div class="scv">−7.8<span class="un">%</span></div><div class="scband good">Net cash</div><div class="scd">Net cash €185m at Q1'26 (€163m at YE'25). Working capital fell €94m YoY. The balance sheet is, if anything, under-levered.</div></div>
+    </div>
+    <div class="note b"><b>The one approximation, flagged:</b> Altman's retained-earnings term isn't separately disclosed, so it's proxied by total equity (conservative). Beneish M was dropped — it needs eight two-year ratios not fully available, and a half-estimated score is worse than none.
+      <div class="src">Sources: Konecranes FY2025 financial statement release; S&amp;P Global Market Intelligence via Simply Wall St.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">High-return and disciplined (ROCE ~21%, dividend +36%), but holding net cash with no clear deployment since the blocked Cargotec mega-merger — capital return is growing yet conservative relative to cash generation.</span></div>
+    <div class="rec">
+      <div class="ri"><div class="rk">Dividend</div><div class="rd"><b>€0.75/share post-split (€2.25 pre), +36% YoY</b> — payout 45% of earnings, 34% of cash. Well-covered and growing; ~2.7% yield.</div></div>
+      <div class="ri"><div class="rk">Bolt-on M&amp;A</div><div class="rd">A steady stream of small, accretive <b>service acquisitions</b> (Ex-Kcranes, Trimate, MEG, Polipastos) extending the high-margin maintenance footprint — the core of the owner's value thesis.</div></div>
+      <div class="ri"><div class="rk">Big M&amp;A</div><div class="rd">The 2020–22 <b>Cargotec merger was blocked</b> by UK/US regulators on competition grounds. Ambition is real, but large consolidation has proven hard — and the balance sheet has lacked a big use since.</div></div>
+      <div class="ri"><div class="rk">Buybacks</div><div class="rd">An AGM authorization exists; execution has been limited. With <b>net cash building</b> (gearing −7.8%), the balance sheet is arguably under-worked.</div></div>
+      <div class="ri"><div class="rk">Returns on capital</div><div class="rd"><b>ROCE 20.7% (comparable 22.1%)</b>, the product of the multi-year margin program — capital deployed at genuinely high incremental returns.</div></div>
+    </div>
+    <div class="note a"><b>Read (judgment, not data):</b> a high-return, disciplined operator that has compounded margins and grown the dividend, but holds a conservative net-cash balance sheet and lacks a clear large-scale use of capital since Cargotec fell through.
+      <div class="src">Sources: Konecranes FY2025 release &amp; AGM; Solidium; merger-history public record.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">Only what's actually fetchable.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Bullish sell-side (PT €34, +25%) and strong insider alignment vs negative price momentum and a high free float that makes the stock sentiment-driven. The crowd is cautious; analysts are not.</span></div>
+    <table style="margin-bottom:6px">
+      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Anchor shareholder</td><td class="num">11%</td><td><b>Solidium</b> (Finnish State holding co), largest holder and nomination-board chair — a stable, long-term anchor, but well short of control.</td></tr>
+        <tr><td>Free float</td><td class="num">~89%</td><td>Widely held — Oras Invest 3.4%, Vanguard 3.3%, institutions ~45%, public ~35%. Unlike a state-controlled name, this trades on sentiment and flows; liquid and momentum-sensitive.</td></tr>
+        <tr><td>Insider alignment</td><td class="num">~€297m</td><td>Meaningful insider holdings — interests aligned with shareholders.</td></tr>
+        <tr><td>Sell-side view</td><td class="num">€34 PT</td><td>Consensus target ~+25% above price; mostly Buy/Accumulate, ~0 sells. Analysts see the de-rating as overdone.</td></tr>
+        <tr><td>Price momentum</td><td class="num">▼ Weak</td><td>Down ~13% from the year-end high on volume/guidance worry; short-term technicals negative. The market is voting against the sell-side for now.</td></tr>
+        <tr><td>52-week range</td><td class="num">€21–35</td><td>A wide band post-split — a reminder this is a cyclical that swings hard on the demand narrative.</td></tr>
+      </tbody>
+    </table>
+    <div class="note c"><b>Cut, not faked:</b> short interest, insider transaction flow, options skew and borrow cost aren't reliably fetchable for a Nasdaq Helsinki name, so those rows are removed rather than guessed.
+      <div class="src">Sources: Simply Wall St ownership breakdown; Investing.com (consensus target, momentum); Solidium.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer multiples</h2><div class="hq">Konecranes computed; comparables sourced.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Trades at a clear <b>discount to quality peers</b> (P/E ~16× vs Atlas Copco ~33×) — re-rating optionality, and the tornado says the multiple is the #1 value lever. The discount is partly justified by Port Solutions cyclicality.</span></div>
+    <p class="body" style="font-size:13px">Konecranes is <b>computed</b> at EV/EBITA ~10.8× (EV €6.31bn ÷ comparable EBITA €588m) and P/E ~16.3× (€27.30 ÷ €1.68). Peers are <b>sourced</b>. It sits below the quality compounders and near the machinery median — the opposite of an expensive stock.</p>
+    <div class="bars" id="peerbars"></div>
+    <div class="note t"><b>Read:</b> on EV/EBITDA Konecranes (~9–11×) is well below Atlas Copco (~17×), above the cyclical KION (~7×), and roughly at the machinery-industry median (~11×). The bull case (Module C) is precisely closing the gap to the quality end as margin durability proves out; the de-rating risk is slipping toward the cyclical end. Either way, the <i>multiple</i> — the market's quality verdict — is the swing, which is why the demand/volume signal that drives it matters so much.
+      <div class="src">Sources: Atlas Copco, KION multiples via stockanalysis.com / GuruFocus / S&amp;P; machinery-industry median (GuruFocus). Konecranes computed from sourced inputs.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A process overlay, not a direction. The triggers center on the master variable — the order/volume cycle — so the thesis fails fast if the demand signal rolls over.</span></div>
+    <p class="body">Decision <i>rules</i>, not data — thresholds set now, while disinterested. Edit to your own conviction.</p>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>Orders turn down.</b> Book-to-bill prints <span class="kv">&lt; 1.0 for two consecutive quarters</span> and the order book shrinks — the leading domino has fallen.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Margin gives back the gains.</b> Comparable EBITA margin falls <span class="kv">below ~12% for two quarters</span> — self-help unwinding without volume leverage.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Volume never converts.</b> Net sales keep declining for <span class="kv">3+ quarters</span> despite a full backlog — conversion is broken.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>The service engine stalls.</b> The Industrial Service <span class="kv">agreement base stops growing</span> — the recurring, ~22%-margin core is the thesis floor.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Valuation overshoots.</b> Price implies <span class="kv">&gt; ~13–14× EV/EBITA on peak margin</span> — trim into the quality re-rating rather than chase it.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Capital misstep.</b> A large, <span class="kv">value-destructive acquisition</span> deploys the net-cash balance sheet poorly (post-Cargotec ambition).</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today's call — e.g. "margin holds ~14%, backlog converts, fair value ~€28, re-rating optionality to ~€34" — and the specific Q2–Q3 2026 order-intake, book-to-bill and sales prints that would confirm or refute it. If a kill-criterion fires, act without re-litigating.</div>
+  </section>
+
+  
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">The distribution, own-history and reverse-DCF all point to a favourable pay-off — a positive asymmetry the market has not fully priced. Live spot <b>€26.76</b> · MC median <b>€27.54</b> (P10 €21.51, P90 €34.31) · P(FV &gt; price) <b>56%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-09) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (KCR.HE)</div><div class="v">€26.76 <small>as of 2026-07-09</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">€22.03–€34.57</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">90%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+27.1% <small>PT €34.00</small></div></div>
+    </div>
+
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n pos">10.39×</div>
+        <div class="l">is the value of <b>EV/EBITA multiple (at mode margin/sales/net-cash)</b> that reconciles the median MC fair value to today's <b>€26.76</b> price. That is <b>-5.6% below</b> the pipeline's base-case mode of <b>11.0×</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+22.2%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.65×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.28</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+3.7%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-19.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-26.5%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-25.0%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-30.7%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">39.5%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">34.2%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-49.5%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-1.9% / -5.0% / -5.9% / +28.8%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">1.49</td><td>R² = 0.30. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">1.74</td><td>R² = 0.29. 252-day OLS.</td></tr>
+        
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs ATCO-A.ST</div><div class="bb"><div class="bi" style="left:50%;width:0.7%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-0.7%</div></div><div class="barsrow"><div class="bl">vs KGX.DE</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+45.2%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a EV/EBITA multiple (at mode margin/sales/net-cash) of <b>10.39×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (KCR.HE, ^OMXH25, ^STOXX) — fetched 2026-07-09. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>45/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Comparable EBITA margin (%) through the cycle</div>
+    <table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>2022</td><td class="num">10.50%</td><td>trailing self-help start</td></tr><tr><td>2023</td><td class="num">12.00%</td><td>programme mid-point</td></tr><tr><td>2024</td><td class="num">13.10%</td><td>reported (pipeline module A)</td></tr><tr class='cur'><td>2025</td><td class="num now">14.00%</td><td>reported record (pipeline module A)</td></tr><tr><td>trough risk</td><td class="num">11.00%</td><td>pipeline stated downside anchor</td></tr></tbody>
+    </table>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:100.0%"></div>
+      <div class="lb" style="left:100.0%">now · 2025 = 14.0%</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">18%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">16%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">78%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n pos">+549 bp</div>
+        <div class="l"><b>Owner-earnings yield 7.86%</b> (€500m ÷ €6359m market cap) minus <b>real 10y ≈ 2.37%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: operating CF ~€0.5bn (pipeline module D). ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">10</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi hot"><div class="fk">Quality</div><div class="fv">85</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">72</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">12</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">45</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+549 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-09.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the ten reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base case.</div></div>
+    </div>
+    <table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~€28 vs €27.30; roughly fair, wide band</td></tr>
+        <tr><td>B · Driver analysis</td><td><span class="vchip mixed">MIXED</span></td><td>Whole thesis rides one swing factor — volume conversion</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted ~€28, mild positive skew; bull needs re-rating</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Net cash, 18× coverage, ROCE ~21%, high quality</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Disciplined &amp; high-return, but cash sits idle post-Cargotec</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Bullish sell-side &amp; alignment vs weak momentum</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip bull">BULL</span></td><td>Discount to quality peers — re-rating optionality</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; triggers center on the order cycle</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bull">BULL</span></td><td>Kelly f* +22%, asymmetry 1.65×, market implies -5.6% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 45/100 · OE-yield spread +549 bp real</td></tr>
+      </tbody>
+    </table>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:30.0%"></div><div class="tp mixed" style="width:70.0%"></div><div class="tp bear" style="width:0.0%"></div></div>
+      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">7 Mixed</span><span class="tr">0 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED — positive tilt</span>
+      <div class="ov-text"><b>A wonderful business at a fair-to-slightly-cheap price.</b> Two clear <b>bulls</b> — exceptional financial quality (D: net cash, ROCE ~21%, 18× coverage) and a valuation discount to quality peers (G) — with <b>no bears</b>; the rest is mixed because central fair value (~€27–28) sits right around the €27.30 price and everything routes through one variable. The contrast with Neste is sharp: there, a single commodity spread set the whole outcome and the stock looked slightly rich; here the franchise is higher-quality and cheaper relative to peers, but the upside is a <b>re-rating gated on volume</b> — converting the record €3.2bn backlog into the sales growth that sustains the record margin. You can own the quality at a fair price today; just know you're underwriting the order cycle, not the margin headline. Not a screaming buy, not expensive — quality-at-fair-price, with the demand signal currently green (book-to-bill 1.2) and the price not yet reflecting it.</div>
+    </div>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-09 16:31</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-09)</h4>
+      <table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/KCR.HE?range=5y&interval=1d</td><td>Konecranes 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^OMXH25?range=5y&interval=1d</td><td>OMX Helsinki 25 index — benchmark for local beta</td><td class="mods">I: beta vs OMXH25</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^STOXX?range=5y&interval=1d</td><td>STOXX Europe 600 — pan-European benchmark</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ATCO-A.ST?range=2y&interval=1d</td><td>Atlas Copco (quality peer) — 12-month relative performance</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/KGX.DE?range=2y&interval=1d</td><td>KION Group (cyclical peer)</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Konecranes FY2025 financial statement release</td><td>Sales €4.25bn, comparable EBITA €588m (13.8%), net cash €185m, ROCE 20.7% (comparable 22.1%), operating CF ~€0.5bn, net profit €399.8m, dividend €0.75/sh post-split (+36%)</td><td class="mods">A engine, D forensics, E capital record, G peers</td></tr><tr><td>Konecranes Q1 2026 interim report</td><td>Record 11.6% Q1 margin, order book at 3-yr high, book-to-bill 1.2, net sales −4.8%, net cash €185m</td><td class="mods">B driver analysis, H kill-criteria</td></tr><tr><td>Solidium (Finnish State holding co) holdings page</td><td>11.0% stake in Konecranes; largest holder; nomination-board chair</td><td class="mods">F positioning</td></tr><tr><td>Simply Wall St / S&amp;P Global Market Intelligence (Konecranes profile)</td><td>Balance-sheet items (total assets €4.8bn, equity €1.97bn, current assets €2.7bn, current liabilities €2.0bn); interest coverage 18×</td><td class="mods">D forensics</td></tr><tr><td>Investing.com — Konecranes news &amp; consensus</td><td>Consensus PT €34 (~+25% at build); reaction coverage for Feb'26 and Apr'26 releases</td><td class="mods">B driver analysis, F positioning</td></tr><tr><td>GuruFocus — machinery-industry EV/EBITDA median</td><td>Median ~11× used as multiple-band anchor; Atlas Copco ~17×, KION ~7×</td><td class="mods">A engine, G peers</td></tr></tbody>
+      </table>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths. Each driver is drawn from a triangular distribution: EBITA margin (bounds 10.5–16.0%, your mode), EV/EBITA multiple (bounds 7.5–14.5×, your mode), sales Tri(3.95, 4.25, 4.65 bn), net cash Tri(50, 185, 400 m). Fair value = multiple × (sales × margin) + net cash, ÷ 237.64m shares. Dependence: a one-factor copula (loadings — margin 0.75, sales 0.70, multiple 0.65, net cash 0.20, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the downturn probability). Correlation 0 and tail 0 reproduce the independent model. Tornado, scenario anchors and the Bayesian posterior are all computed live.</p>
+      <h4>The three labels, precisely</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: fetched from a citable source (Konecranes releases, S&amp;P/Simply Wall St, Solidium, Investing.com, GuruFocus). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation, forensic scores, Konecranes' own multiples). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set (mid-cycle margin, central multiple, correlation, tail, scenario priors, evidence weights, kill thresholds).</p>
+      <h4>Still excluded — post-Modules-I&amp;J audit</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Beneish M-score</b> — needs eight two-year ratios not fully disclosed; a half-estimated score is worse than none. <b>Options skew, precise borrow cost, and detailed insider transaction flow</b> — not reliably fetchable for a Nasdaq Helsinki name from a public API; would slot in from a Bloomberg terminal. <b>An exact forward multiple</b> — needs a consensus forward-EBITDA figure not asserted as fact. Everything else previously flagged as "cut" (factor betas, positioning realised-vol, own-history percentile, 12-month peer relative return, base-rate frequencies, owner-earnings yield vs real rate) is now <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
+      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures fetched 2026-07-01; balance-sheet figures ≈ FY2025 / Q1'26 releases; verify against primary filings before acting.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const PRICE=27.30, SHARES=237.64, N=20000;
+  const MARG={lo:10.5,hi:16.0}, MULT={lo:7.5,hi:14.5}, SALES={lo:3950,md:4250,hi:4650}, NC={lo:50,md:185,hi:400};
+  const RHO={mgn:0.75,sales:0.70,mlt:0.65,nc:0.20};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+
+  function simulate(midMgn,midMlt,corr,pStress,paths){
+    const n=paths||N;const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const mgn=draw(RHO.mgn,MARG.lo,midMgn,MARG.hi);
+      const sal=draw(RHO.sales,SALES.lo,SALES.md,SALES.hi);
+      const mlt=draw(RHO.mlt,MULT.lo,midMlt,MULT.hi);
+      const nc=draw(RHO.nc,NC.lo,NC.md,NC.hi);
+      fv[i]=(mlt*(sal*mgn/100)+nc)/SHARES;
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=20;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMAX=45,BINS=40;
+  function xOf(v){return HX0+(Math.min(Math.max(v,0),VMAX)/VMAX)*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=VMAX/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor(fv[i]/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=(b+0.5)*bw,x=xOf(b*bw),x2=xOf((b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=0;v<=45;v+=10){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median €'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €27.30</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(o){
+    const midMgn=+document.getElementById('i-mgn').value, midMlt=+document.getElementById('i-mlt').value;
+    const mgn=o.mgn!==undefined?o.mgn:midMgn;
+    const mlt=o.mlt!==undefined?o.mlt:midMlt;
+    const sal=o.sal!==undefined?o.sal:SALES.md;
+    const nc=o.nc!==undefined?o.nc:NC.md;
+    return (mlt*(sal*mgn/100)+nc)/SHARES;
+  }
+  function drawTornado(){
+    const rows=[
+      {n:'EV/EBITA multiple',lo:fvAt({mlt:8.5}),hi:fvAt({mlt:13.5})},
+      {n:'EBITA margin',lo:fvAt({mgn:11.5}),hi:fvAt({mgn:15.5})},
+      {n:'Revenue',lo:fvAt({sal:3950}),hi:fvAt({sal:4650})},
+      {n:'Net cash',lo:fvAt({nc:50}),hi:fvAt({nc:400})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=150,X1=688,W=X1-X0,base=allMin-1,span=(allMax+1)-base;
+    const sx=v=>X0+((v-base)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';});
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €27.30</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const midMgn=+document.getElementById('i-mgn').value, midMlt=+document.getElementById('i-mlt').value;
+    const corr=(+document.getElementById('i-corr').value)/100, tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-mgn').textContent=midMgn.toFixed(1);
+    document.getElementById('v-mlt').textContent=midMlt.toFixed(1);
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+    const ind=simulate(midMgn,midMlt,0,0);
+    const cor=simulate(midMgn,midMlt,corr,tail);
+    document.getElementById('oi-med').textContent='€'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='€'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='€'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='€'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='€'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='€'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+    drawHist(cor.fv,cor.p50,ind.p10);
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> downturn chance, the median holds near <b>€'+cor.p50.toFixed(0)+'</b> (≈ the independent €'+ind.p50.toFixed(0)+'), but the 80% band widens by ~<span class="down">€'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under €20) rises from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at €27.30) is '+Math.round(cor.under*100)+'%.';
+    drawTornado();
+  }
+
+  function simScen(mLo,mMd,mHi,kLo,kMd,kHi,paths){
+    const n=paths||10000;const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn(); if(Math.random()<0.06) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=0.6*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const mgn=draw(RHO.mgn,mLo,mMd,mHi);
+      const sal=draw(RHO.sales,SALES.lo,SALES.md,SALES.hi);
+      const mlt=draw(RHO.mlt,kLo,kMd,kHi);
+      const nc=draw(RHO.nc,NC.lo,NC.md,NC.hi);
+      fv[i]=(mlt*(sal*mgn/100)+nc)/SHARES;
+    }
+    fv.sort();return fv[Math.floor(0.5*n)];
+  }
+  let SFV={bear:20,base:28,bull:36};
+  function computeScenarioAnchors(){
+    SFV.bear=simScen(10.5,11.5,13.0,7.5,9.0,10.5);
+    SFV.base=simScen(12.5,14.0,15.0,9.5,11.0,12.5);
+    SFV.bull=simScen(13.5,15.0,16.0,11.5,13.0,14.5);
+    document.getElementById('sfv-bear').textContent='€'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='€'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='€'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='€'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/18,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:'+color+'"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('Atlas Copco','EV/EBITDA · sourced',17.0,'~17×','var(--teal-deep)'),
+    peerBar('Machinery median','industry · sourced',11.0,'~11×','var(--faint)'),
+    peerBar('Konecranes','EV/EBITA 10.8× · computed',10.0,'~10×','var(--coral)'),
+    peerBar('KION Group','EV/EBITDA · sourced',7.0,'~7×','var(--teal)'),
+  ].join('');
+
+  ['i-mgn','i-mlt','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

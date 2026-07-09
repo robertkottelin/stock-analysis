@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orion — Institutional Analytics Layer (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:780px}
+
+  .legend{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .strictbar{margin-top:12px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;line-height:1.5}
+  .strictbar b{color:var(--ink)}
+
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .hl{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--teal-deep);white-space:nowrap}
+  .hl.neg{color:var(--coral-deep)} .hl.warn{color:var(--amber-deep)} .hl.blue{color:var(--blue-deep)}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:15px 22px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:52px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:10px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)}
+  .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:190px 1fr 70px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:130px 1fr 56px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .tg-inline{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:5px;vertical-align:1px}
+
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:118px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:88px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Institutional analytics layer · strict-data build · Orion Corporation · HEL: ORNBV · built 2026-07-09</div>
+  <h1>Orion — the analyst's instrument panel
+    <span class="sub">Same hard rule as the rest of this series: every number here is either <b>sourced</b> (fetched from a citable source), <b>computed</b> (calculated by this tool from sourced inputs), or an explicit <b>assumption</b> you set yourself. Nothing is asserted from memory, and nothing that could only be filled with a guess is included.</span>
+  </h1>
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-09 16:31</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Tornado</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <!-- A — ENGINE -->
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Sum-of-the-parts engine — the royalty stream priced apart from the base</h2><div class="hq">Two multiples, not one: Nubeqa® doesn't trade like the generics book, so it isn't valued like it either.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>€66</b> vs the €70.00 price (28 Jun 2026 close) — about 70% of paths land below price, and Module I's reverse-DCF finds the market pricing in more Nubeqa® growth than the mode assumes. Modestly rich, not stretched.</span></div>
+    <p class="body">20,000 paths. Orion reports a <b>single IFRS 8 segment</b> — the financial statements give net sales by business division but not divisional EBIT — so this engine can't do a normal EV/EBIT sum-of-the-parts. Instead it splits Orion into two euro-denominated sales streams, each carrying its <b>own</b> multiple: the Nubeqa®/Innovative Medicines royalty-and-product-sales stream (<code>nub</code> × <code>nmlt</code>) — high growth, high incremental margin, patent-protected into the late 2030s — and the rest of the group, Branded Products + Generics &amp; Consumer Health + Animal Health + Fermion combined (<code>base</code> × <code>bmlt</code>), which is mature, diversified and priced far closer to a plain generics/specialty multiple. A small pipeline-optionality term (<code>pipe</code>) sits on top for ODM-212, opevesostat and levosimendan; net debt (€144.4m, FY2025) comes off before dividing by 140.69m shares.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The Nubeqa® run-rate mid-point, the correlation between drivers, and the tail/regime-shock probability are <b>your</b> calls, not data. The other two ranges (rest-of-Orion sales, both multiples, pipeline value) stay fixed at the ranges below unless you edit the source; the output is computed from whatever you set.</p>
+
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs (sourced): net debt €144.4m, 140.69m shares, price €70.00. Marginal ranges calibrated to the FY2025 financial statement release, the Q1'26 interim report, and sell-side Nubeqa® consensus.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Nubeqa® run-rate €m/yr <span>assumption</span></span><span class="cval">€<span id="v-mid">900</span>m</span></label>
+          <input type="range" id="i-mid" min="700" max="1050" step="10" value="900">
+          <div class="tri">FY2025 actual €610m · sell-side consensus ≈+50% YoY ≈ €915m</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">55</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="55">
+          <div class="tri">0% = independent · 100% = full common-factor loading</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Tail / binary-readout risk <span>assumption</span></span><span class="cval"><span id="v-tail">7</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="15" step="1" value="7">
+          <div class="tri">chance a path hits a correlated stress state (tariff shock, FX, trial miss)</div>
+        </div>
+      </div>
+
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv" id="oi-med">€66</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv" id="oi-p10">€58</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv" id="oi-p90">€75</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; €54)</span><span class="cv" id="oi-tail">2%</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + tail risk</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv warn" id="co-med">€66</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">€57</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">€76</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; €54)</span><span class="cv neg" id="co-tail">4%</span></div>
+        </div>
+      </div>
+
+      <div class="hist-wrap">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €70</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €70</span>
+          <span><span class="sw" style="background:var(--ink)"></span>price €70</span>
+          <span><span class="sw" style="background:var(--amber)"></span>median</span>
+          <span><span class="sw" style="background:var(--faint)"></span>independent P10</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> Orion's distribution is far tighter than a cyclical refiner's — the diversified base (generics, consumer health, animal health, Fermion) puts a floor under fair value that a single-commodity business doesn't have. The tail risk here is a <b>re-rating</b> risk, not an operating-collapse risk: correlation barely moves the median but roughly doubles the chance of a deep-loss outcome (below €54, ≈a 23% drawdown from price) at the default settings. Because the Nubeqa®-run-rate driver and its multiple share a high loading on the common factor (see Module B), they don't just add in the tails — they compound.</div>
+  </section>
+
+  <!-- B — TORNADO -->
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Sensitivity — the tornado</h2><div class="hq">Which input actually moves the answer — and is it net sales, or the multiple the market pays for them?</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The two Nubeqa®-complex drivers (its multiple, then its own run-rate) dominate the answer; the "rest of Orion" — generics, consumer health, animal health, Fermion — barely moves fair value at all, on either its sales or its multiple. That is the computed answer to "which drivers actually predict this stock": proprietary/patented, by a wide margin.</span></div>
+    <p class="body">Each bar swings one driver from its low to its high (others held at mode) and shows the fair-value range. Computed from the same marginals as the engine — this is the direct, quantitative answer to the question this build set out to research.</p>
+    <svg id="tornado" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="note t"><b>Read:</b> ranked by swing, it's the <b>Nubeqa® multiple</b> (€22 swing) fractionally ahead of the <b>Nubeqa® run-rate itself</b> (€17), then the <b>rest-of-Orion multiple</b> (€13), with the <b>pipeline optionality</b> (€4) and the <b>rest-of-Orion sales figure</b> (€3) barely moving the needle. Two things follow. First, re-rating risk is as large as fundamental risk here — what multiple the market keeps paying for the royalty stream matters as much as how fast the royalty stream itself grows. Second, the generics/consumer-health/animal-health base is low-swing on <i>both</i> its sales <i>and</i> its multiple — it is the floor under the valuation, not the story, precisely because it is the least uncertain part of the business. Net sales of proprietary, patent-protected products (Nubeqa®) are the dominant predictor; net sales of generics are close to irrelevant at the margin; R&amp;D pipeline optionality is real but, in today's euros, still small.</div>
+  </section>
+
+  <!-- C — SCENARIOS + BAYES -->
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
+      <span class="tagchip a">Computed + your assumptions</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At neutral priors the probability-weighted value ≈ <b>€66</b>, ~6% below price. Even the bull case — a further Bayer/sell-side peak-sales upgrade flowing through — only gets to ≈€69, still under €70.</span></div>
+    <p class="body">The three fair values below are <b>computed</b> — each is the engine's median run at a different Nubeqa® run-rate (the dominant driver, per Module B). The prior weights and the evidence likelihood-ratios are <b>your</b> subjective inputs; the panel just does the Bayesian arithmetic and the probability-weighted blend.</p>
+
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — growth normalises hard</div><div class="sd">Run-rate drifts to ~€750m/yr — tariff/FX drag plus a sharp deceleration off the 2025 blow-out pace.</div><div class="sfv" id="sfv-bear">€63</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — consensus holds</div><div class="sd">≈€900m/yr, roughly the sell-side's ~+50% YoY consensus cited on the Q1'26 call.</div><div class="sfv" id="sfv-base">€66</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — Jefferies-style upgrade</div><div class="sd">≈€1,050m/yr — further label expansion (ARASTEP/DASL-HiCaP) and peak-sales upgrades keep flowing through, as they did Jan'22→Jan'26.</div><div class="sfv" id="sfv-bull">€69</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ctrl"><label><span class="lab">Prior — Bear <span>assumption</span></span><span class="cval"><span id="v-pb">25</span>%</span></label><input type="range" id="i-pb" min="0" max="100" step="5" value="25"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Base <span>assumption</span></span><span class="cval"><span id="v-pn">50</span>%</span></label><input type="range" id="i-pn" min="0" max="100" step="5" value="50"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Bull <span>assumption</span></span><span class="cval"><span id="v-pu">25</span>%</span></label><input type="range" id="i-pu" min="0" max="100" step="5" value="25"></div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">Toggle evidence as it arrives → <span class="asm">(likelihood ratios are illustrative assumptions)</span></div>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="0.4,1.1,1.9">Bayer/sell-side raises Nubeqa® peak-sales again <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.5,1.1,1.7">Q2/Q3'26 print beats the ~50% consensus <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.5">ARASTEP / DASL-HiCaP read-outs de-risk earlier-line use <span class="ar">▲bull</span></div>
+      <div class="ev bearish" data-lr="1.9,1.0,0.5">US pharma tariffs bite harder than guided <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.6,1.0,0.6">Opevesostat (MSD) Phase 2 data disappoints <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.5,1.05,0.7">Nordic generics pricing pressure intensifies <span class="ar">▼bear</span></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Posterior weights</div>
+      <div class="wbar" id="wbar"><div class="wp bear" id="wp-b"></div><div class="wp base" id="wp-n"></div><div class="wp bull" id="wp-u"></div></div>
+      <div class="wlab"><span id="wl-b">Bear 25%</span><span id="wl-n">Base 50%</span><span id="wl-u">Bull 25%</span></div>
+    </div>
+
+    <div class="blend">
+      <span class="bn" id="blend-fv">€66</span>
+      <span class="bl">probability-weighted fair value vs <b>€70.00</b> price · <span id="blend-gap">≈ 6% below</span>. The anchors are computed; the weighting is your judgment.</span>
+    </div>
+  </section>
+
+  <!-- D — FORENSICS -->
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">Computed from Orion's actual FY2025 balance sheet.</div></div>
+      <span class="tagchip c">Computed from sourced data</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Piotroski 6/9, Altman ~10.7 (extreme safe zone), interest coverage ~162×, gearing 11.2%, equity ratio 64.1%. Two flags worth tracking — accruals and the current ratio — but neither is a red flag on its own, and the balance sheet is genuinely under-levered.</span></div>
+    <p class="body">Run on real reported figures: total assets €2,009.8m, equity €1,284.5m, total liabilities €725.3m, interest-bearing net liabilities €144.4m, operating profit €631.6m, net profit €500.3m (2024 comparable growth +51.6% op. profit / +22.5% net sales), operating cash flow €316.8m, capex €112.9m. The verdict: <b>clean and under-levered</b> — the two flags below are about earnings <i>timing</i>, not accounting integrity.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Piotroski F-score</span><span class="tg c">computed</span></div><div class="scv">6<span class="un">/9</span></div><div class="scband good">Strong</div><div class="scd">Passes +NI, +CFO, ΔROA up (profit grew far faster than assets), lower long-term-debt ratio (LT interest-bearing debt/assets fell hard, ~18% → ~6%, with no new borrowing against €150m raised the year before), no dilution, higher gross margin (64.2% vs 61.4%). The asset-turnover test wasn't confidently assessable from disclosed 2024 comparatives, so it's left uncounted rather than guessed — hence 6/9, not a guessed 7 or 8.</div></div>
+      <div class="sc"><div class="scl"><span>Altman Z-score</span><span class="tg c">computed</span></div><div class="scv">~10.7</div><div class="scband good">Extreme safe zone</div><div class="scd">&gt;2.99 = safe, and this is far past it. But <b>0.6×(market equity ÷ liabilities) alone contributes ~7.4</b> of the ~10.7 — a €8.9bn market cap against €725m of liabilities. That term reflects the market's confidence, not balance-sheet distress-remoteness by itself; the other four terms (EBIT/TA, sales/TA, equity/TA, working-capital/TA) are solid but unremarkable on their own.</div></div>
+      <div class="sc"><div class="scl"><span>Sloan accruals</span><span class="tg c">computed</span></div><div class="scv">+9.1<span class="un">%</span></div><div class="scband mid">Flagged</div><div class="scd">(NI − CFO) ÷ assets, positive: net profit €500.3m ran ahead of operating cash flow €316.8m. The disclosed driver is a Nubeqa® receivables build as the royalty scales — a normal mechanical lag, not disguised revenue — but it's the opposite sign from a "conservative" earnings print and worth watching if it widens.</div></div>
+      <div class="sc"><div class="scl"><span>Interest coverage</span><span class="tg c">computed</span></div><div class="scv">~162<span class="un">×</span></div><div class="scband good">Negligible burden</div><div class="scd">Operating profit of €631.6m against a near-zero net interest bill on just €144.4m of net debt. Debt service is not a risk factor at this balance sheet, at any plausible rate.</div></div>
+      <div class="sc"><div class="scl"><span>Leverage &amp; equity ratio</span><span class="tg s">sourced</span></div><div class="scv">11.2<span class="un">% gearing</span></div><div class="scband good">Low</div><div class="scd">Equity ratio 64.1% (2024: 61.9%), gearing 11.2% (2024: 12.1%) — both improved and both conservative. Long-term interest-bearing debt fell hard, €297.2m → €115.3m, with no new borrowing against the €150m raised the year before. Net debt (after cash) actually ticked up slightly to €144.4m (2024: €121.7m) since cash fell faster than gross debt did — worth knowing, but leverage ratios improved regardless because equity grew faster than either.</div></div>
+      <div class="sc"><div class="scl"><span>ROE / ROCE</span><span class="tg s">sourced</span></div><div class="scv">43.7<span class="un">% / 43.8%</span></div><div class="scband mid">Flattered</div><div class="scd">Both company-reported and both exceptional — but structurally so: a royalty stream needs almost no incremental capital, so ROE/ROCE run high by the business model itself, and 2025 additionally carried €183.4m of one-off milestone true-ups through net sales. Treat the level, not the trend, as the number to sanity-check against 2026's guided range.</div></div>
+    </div>
+    <div class="note b"><b>The two approximations, flagged:</b> Altman's retained-earnings term is proxied by total equity (standard, conservative substitution — Orion doesn't break RE out separately). The Piotroski asset-turnover test is left uncounted rather than estimated, since the 2024 comparative asset base needed for a clean revenue/assets calc isn't fully disclosed in the sources used. Beneish M was dropped entirely — it needs eight ratios across two years that aren't fully disclosed, and a half-estimated score would be worse than none.
+      <div class="src">Sources: Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026) — balance sheet, operating profit, net profit, cash flow, ROE/ROCE, gearing, equity ratio, interest-bearing liabilities all company-reported; Piotroski/Altman/Sloan/coverage computed here from those figures.</div>
+    </div>
+  </section>
+
+  <!-- E — CAPITAL RECORD -->
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Dividend raised while its payout ratio <i>fell</i> (69.8% → 50.6%) — earnings grew faster than the payout. No dilution, no buybacks, capex funding real capacity growth, and long-term debt cut hard with no new borrowing.</span></div>
+    <p class="body" style="font-size:13px">The sourced record, no letter grades attached — the read is yours to form.</p>
+    <div class="rec">
+      <div class="ri"><div class="rk">Dividend</div><div class="rd">Raised to <b>€1.80</b> per share (2024: €1.64) — but the payout ratio actually <b>fell</b>, from 69.8% of 2024's €2.35 EPS to 50.6% of 2025's €3.56 EPS. Earnings grew faster than the distribution did.</div></div>
+      <div class="ri"><div class="rk">Capex</div><div class="rd">Cash-out investments <b>€112.9m</b> (2024: €86.1m), +31.1%. Company-disclosed drivers: expanding darolutamide (Nubeqa®) API production capacity, growing the Easyhaler® respiratory line, and opening a new R&amp;D centre — growth capex tied to actual demand, not speculative expansion.</div></div>
+      <div class="ri"><div class="rk">Share count &amp; buybacks</div><div class="rd">Shares outstanding unchanged at 141,134,278 across both year-ends — <b>no dilution</b>. Treasury shares fell from 632,855 to 440,944, but that's the LTIP compensation plan handing out existing treasury stock, not an open-market buyback program; there is no active repurchase authorization in evidence.</div></div>
+      <div class="ri"><div class="rk">Debt</div><div class="rd">Long-term interest-bearing debt cut hard, <b>€297.2m → €115.3m</b>, with no new borrowing against the €150m raised in 2024. Net debt (after cash) ticked up slightly to €144.4m (2024: €121.7m) since cash fell faster than gross debt — a byproduct of the bigger dividend and capex, not releveraging.</div></div>
+      <div class="ri"><div class="rk">Returns on the build</div><div class="rd">The capacity investments (darolutamide, Easyhaler) are running directly against demand that's already showing up in reported sales growth — unlike a speculative build, the payback mechanism here is largely observable within a year or two of spend, not a multi-year bet on an unproven ramp.</div></div>
+    </div>
+    <div class="note a"><b>Read (judgment, not data):</b> the sourced facts describe a business funding its own growth from its own cash flow, raising cash returns to shareholders at a slower rate than earnings grew, and doing all of it without issuing shares or taking on net new leverage. That combination — rising distributions, falling payout ratio, disciplined growth capex, no dilution — is the kind of capital-allocation record that's hard to fault on the facts alone.
+      <div class="src">Sources: Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026) and Financial Statement Release 1–12/2024 (25 Feb 2025) — dividend, EPS, capex, share count, treasury shares and debt figures all company-reported; payout ratios computed here.</div>
+    </div>
+  </section>
+
+  <!-- F — POSITIONING -->
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">No anchor holder, a hard vote-concentration cap, and a stock already up sharply.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">No single strategic anchor (unlike Neste's 44.2% state stake) and a structural cap that stops any one holder dominating votes — a genuinely dispersed register. But consensus PT (€74.33) sits only modestly above spot, Jefferies just downgraded to Hold on valuation, and the stock has already run hard.</span></div>
+    <table style="margin-bottom:6px">
+      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Largest holder class</td><td class="num">Nominee ≈38%</td><td>Nominee-registered (mostly foreign institutional) holdings own roughly 38% of shares but only ≈10% of votes — B-shares carry one vote each and nominee holdings skew heavily B-share.</td></tr>
+        <tr><td>Domestic retail</td><td class="num">≈37% shares / ≈60% votes</td><td>Finnish retail holders own a smaller share of the <i>capital</i> but a majority of the <i>votes</i> — the classic A/B dual-class effect (A-shares carry 20 votes each and are disproportionately Finnish-held).</td></tr>
+        <tr><td>Vote-concentration cap</td><td class="num">Max 5%</td><td>Company-stated rule: no single shareholder can cast more than 1/20 (5%) of the aggregate votes represented at a General Meeting, regardless of A-share holdings. This structurally rules out any one holder — foreign or domestic — controlling the vote.</td></tr>
+        <tr><td>Management ownership</td><td class="num">0.63% shares / 1.72% votes</td><td>Company-reported, 31 Dec 2025. Modest but not trivial alignment; nowhere near founder-control levels.</td></tr>
+        <tr><td>BlackRock flagging activity</td><td class="num">31 filings, 2025</td><td>A high count of threshold-crossing notifications in a single year reads as passive-style index rebalancing around a fast-rising share price, not an activist building a stake.</td></tr>
+        <tr><td>Consensus PT vs spot</td><td class="num">+6.2%</td><td>€74.33 consensus vs €70.00 spot (28 Jun 2026); rating Buy (4 buy / 1 sell, 6 analysts) — modestly positive, not a wide gap.</td></tr>
+        <tr><td>Sell-side direction</td><td class="num">▼ Jefferies cut</td><td>Jefferies moved to Hold from Buy (30 Jan 2026) explicitly because Nubeqa® upside looked priced in — even while raising its own Nubeqa peak-sales estimate to €4.6bn. A valuation call, not a fundamentals call.</td></tr>
+        <tr><td>1-year price move</td><td class="num">≈+50%</td><td>Off the 52-week low of €56.50 toward the high of €75.30; Simply Wall St separately shows ORNBV beat the Finnish market's own strong +30.5% and the Finnish pharma industry's +6.7% over the trailing year. The structural risk is a re-rating give-back on any Nubeqa disappointment, not a liquidity squeeze.</td></tr>
+      </tbody>
+    </table>
+    <div class="note c"><b>Cut, not faked:</b> short interest, options positioning and precise borrow cost are the standard crowdedness reads — but none is reliably fetchable for a dual-class Nasdaq Helsinki name from a public API. Rather than print placeholders, those rows are removed.
+      <div class="src">Sources: Orion Corporation investor-relations pages (share capital &amp; voting rights, management ownership, major-shareholder flagging list) via orion.fi; Investing.com consensus &amp; rating (28 Jun 2026); Jefferies note via Investing.com (30 Jan 2026); Simply Wall St (trailing-year relative return).</div>
+    </div>
+  </section>
+
+  <!-- G — PEERS -->
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer multiples</h2><div class="hq">Orion computed; one comparable usable, one excluded on data-quality grounds.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At ~14.5× trailing EV/EBITDA, Orion trades at a modest premium to Recordati (~13.3–13.7×) — not extreme, but not cheap either. Genmab is excluded from the numeric comparison: public data providers disagree with each other by up to 40% on its current multiple, and asserting one as fact would be worse than not asserting it at all.</span></div>
+    <p class="body" style="font-size:13px">Orion's multiple is <b>computed</b>: EV ≈ €9,992.7m (spot €70.00 × 140.69m shares + €144.4m net debt) ÷ FY2025 EBITDA €688.3m ≈ <b>14.5×</b>. That's already up from ~13.2× at the 31-Dec-2025 close on the same EBITDA base — the multiple itself has re-rated further in H1 2026, on top of the earnings growth. Recordati's figure is <b>sourced</b> from two independent aggregators that converge; Genmab's is deliberately omitted.</p>
+    <div class="bars" id="peerbars"></div>
+    <div class="note t"><b>Read:</b> a ~14.5× multiple on a business growing operating profit at +51.6% is not obviously expensive in growth-adjusted terms, but it does mean the market has already re-rated the stock beyond where it sat even three months ago — consistent with Jefferies' "priced in" call in Module F. Recordati, a diversified specialty-pharma peer without a single royalty-concentration story, trading only modestly below Orion (~13.3–13.7× vs ~14.5×) suggests the sector broadly isn't cheap right now, not that Orion specifically is an outlier. Genmab would be the more direct structural comparable (royalty-heavy oncology economics) but its multiple isn't reliably knowable from public trackers at time of write.
+      <div class="src">Sources: Orion multiple computed from Orion's own FY2025 release (EBITDA, net debt) and live spot; Recordati — Fiscal.ai (13.27× FY2025) and Investing.com Pro (EV €11.94bn ÷ EBITDA €871.7m = 13.7×); Genmab excluded — Fiscal.ai / StockAnalysis.com / Yahoo Finance disagreed materially (≈11×–16×) at time of write.</div>
+    </div>
+  </section>
+
+  <!-- H — KILL CRITERIA -->
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A discipline overlay, not a direction. The nearest-term risks (tariffs, quarterly royalty-timing noise) are real but recurring and already partly priced; the more structural risk (patent cliff) is genuinely distant.</span></div>
+    <p class="body">These are decision <i>rules</i>, not data — thresholds you set now, while disinterested, so a future narrative can't rationalise holding through thesis failure. The numbers below are starting suggestions; edit them to your own conviction.</p>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>US tariffs land.</b> Orion has flagged, in its own words, that US import tariffs are <span class="kv">"a hot topic"</span> with genuine uncertainty attached; the US is an important Nubeqa®/Endo-royalty market. A material, sustained tariff on pharma imports/royalty structures would cut directly into the dominant driver (Module B).</div></div>
+      <div class="kci"><div class="kx"></div><div><b>A quarter's royalty "miss" is actually just timing.</b> Orion has disclosed that royalty recognition mechanically <span class="kv">deducts the prior quarter's already-strong product sales</span> — a real, structural source of quarter-to-quarter noise. A single soft print, on its own, isn't disqualifying; two consecutive quarters missing the ~50% consensus growth rate (Module C) would be.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Pipeline optionality keeps failing.</b> ODM-105 (insomnia) already failed Phase 2 in Sept 2025 — a real, disclosed precedent, not a hypothetical. A second wholly-owned or partnered asset (ODM-212, opevesostat, Tenax) failing would confirm the pipeline is <span class="kv">optionality only, not a growth leg</span>, and Module A's "pipe" driver should be marked toward zero.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Generics/base erodes faster than modelled.</b> Base-of-Orion net sales growth <span class="kv">turns negative</span> for two consecutive quarters — the floor under the valuation (Module B) would be cracking, even though it's currently the least uncertain part of the business.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>The multiple re-rates further without a fundamental trigger.</b> EV/EBITDA (Module G) climbs <span class="kv">materially above ~16×</span> on unchanged FY2026 guidance — the Jefferies "priced in" thesis would be playing out in real time; trim into strength regardless of narrative.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Patent cliff moves up.</b> Currently a 2027–2030 EU / 2038–2042 US question (Module H sources) — not urgent today, but any adverse patent-litigation ruling that pulls the US date meaningfully closer would change the whole thesis horizon.</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today's prediction — e.g. "Nubeqa®-booked run-rate settles ~€900m in 2026, fair value ~€66" — and the specific Q2–Q4 2026 prints and any tariff/patent news that would confirm or refute it. Revisit on each print; if a kill-criterion fires, act without re-litigating. The process is the edge.</div>
+  </section>
+
+  
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">The composite metrics flag a negative pay-off asymmetry — expected loss dominates expected gain, and the market is already pricing above-base assumptions. Live spot <b>€71.00</b> · MC median <b>€66.14</b> (P10 €57.09, P90 €75.84) · P(FV &gt; price) <b>26%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-09) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (ORNBV.HE)</div><div class="v">€71.00 <small>as of 2026-07-09</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">€56.50–€75.30</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">98%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+4.7% <small>PT €74.33</small></div></div>
+    </div>
+
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">1015.00€m</div>
+        <div class="l">is the value of <b>Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline)</b> that reconciles the median MC fair value to today's <b>€71.00</b> price. That is <b>+12.8% above</b> the pipeline's base-case mode of <b>900€m</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-100.5%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.21×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.58</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-6.5%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-19.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-23.6%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-22.8%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-26.1%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">31.2%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">27.9%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-36.9%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">+4.3% / +5.5% / +14.1% / +15.0%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">0.48</td><td>R² = 0.05. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">0.68</td><td>R² = 0.07. 252-day OLS.</td></tr>
+        <tr><td>Beta vs EUR/USD (EURUSD=X)</td><td class="num">-0.17</td><td>R² = 0.00. 252-day OLS on daily log-returns.</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs GMAB.CO</div><div class="bb"><div class="bi" style="left:50%;width:23.2%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-23.2%</div></div><div class="barsrow"><div class="bl">vs REC.MI</div><div class="bb"><div class="bi" style="left:50%;width:17.4%;background:var(--teal)"></div></div><div class="bv">+17.4%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline) of <b>1015.00€m</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (ORNBV.HE, ^OMXH25, ^STOXX, EURUSD=X) — fetched 2026-07-09. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>43/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 38<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Orion-booked Nubeqa® net sales (€m, royalties + product sales) through the cycle</div>
+    <table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>2024</td><td class="num">368.30€m</td><td>FY2024 reported — royalties + product sales to Bayer</td></tr><tr class='cur'><td>2025</td><td class="num now">609.80€m</td><td>FY2025 reported — royalties €432.5m + product sales €177.3m</td></tr><tr><td>Q4'25 run-rate ×4</td><td class="num">850.40€m</td><td>Q4'25 print (€212.6m) annualised — computed, not a forecast</td></tr><tr><td>2026 sell-side consensus</td><td class="num">915.00€m</td><td>≈+50% YoY per analyst consensus cited on the Q1'26 call — estimate, not company guidance</td></tr><tr><td>2030 company ambition</td><td class="num">1000.00€m</td><td>Orion's stated "potential to exceed €1bn by the end of the decade" (14 Jan 2026)</td></tr></tbody>
+    </table>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:38.2%"></div>
+      <div class="lb" style="left:38.2%">now · 2025 = €609.8m (Q4'25 annualised ≈ €850m)</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">11%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">24%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">65%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n neg">-19 bp</div>
+        <div class="l"><b>Owner-earnings yield 2.18%</b> (€218m ÷ €9989m market cap) minus <b>real 10y ≈ 2.37%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: cash flow from operating + investing activities +€218.2m FY2025 (pipeline module — sourced). ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">2</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi hot"><div class="fk">Quality</div><div class="fv">80</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi"><div class="fk">Momentum</div><div class="fv">58</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">31</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">43</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-19 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-09.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the ten reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base-case calibration (Nubeqa® run-rate €900m, neutral priors).</div></div>
+    </div>
+    <table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~€66 vs €70 price; correlation nearly doubles deep-loss odds</td></tr>
+        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>Nubeqa® multiple + run-rate dominate; generics barely move the answer</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted value ~€66; even the bull case stays under €70</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Piotroski 6/9, Altman ~10.7, negligible debt burden, low leverage</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip bull">BULL</span></td><td>Dividend up, payout ratio down, no dilution, no releveraging</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>No anchor holder &amp; hard vote-cap, but thin PT gap &amp; a fresh downgrade</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip mixed">MIXED</span></td><td>~14.5× vs Recordati's ~13.3–13.7× — a modest premium, not extreme</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Recurring near-term risks; the structural risk (patent cliff) is distant</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bear">BEAR</span></td><td>Kelly f* -100%, asymmetry 0.21×, market implies +12.8% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 43/100 · OE-yield spread -19 bp real</td></tr>
+      </tbody>
+    </table>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:20.0%"></div><div class="tp mixed" style="width:70.0%"></div><div class="tp bear" style="width:10.0%"></div></div>
+      <div class="tlab"><span class="tb">2 Bull</span><span class="tm">7 Mixed</span><span class="tr">1 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED</span>
+      <div class="ov-text"><b>A high-quality compounder priced for the outperformance to continue.</b> The two clear <b>bulls</b> are the balance sheet (D) and the capital-allocation record (E) — genuinely clean, genuinely disciplined, and both you can underwrite today without much debate. But central fair value (A, C) sits modestly <i>below</i> the €70.00 price, the peer read (G) shows a real if modest premium to the one usable comparable, and positioning (F) pairs a structurally dispersed shareholder base against a stock that's already re-rated and just took a sell-side downgrade on valuation grounds. The tornado (B) answers the question this build set out to research without ambiguity: net sales of the patent-protected Nubeqa® royalty stream — and, just as much, the <i>multiple</i> the market pays for it — are what actually move this stock; generics net sales are close to irrelevant at the margin, and the R&amp;D pipeline is real optionality but still small in euro terms. Quality is underwritable now; the re-rating has, for the moment, run ahead of it.</div>
+    </div>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-09 16:31</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-09)</h4>
+      <table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ORNBV.HE?range=5y&interval=1d</td><td>Orion (B share) 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^OMXH25?range=5y&interval=1d</td><td>OMX Helsinki 25 index</td><td class="mods">I: beta vs OMXH25</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^STOXX?range=5y&interval=1d</td><td>STOXX Europe 600</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/EURUSD=X?range=5y&interval=1d</td><td>EUR/USD spot — Orion discloses that USD moves on Nubeqa® income drive real P&L swings</td><td class="mods">I: beta vs EUR/USD (macro read for a USD-royalty payer)</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/GMAB.CO?range=2y&interval=1d</td><td>Genmab (Nasdaq Copenhagen) — Nordic royalty-economics oncology peer</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/REC.MI?range=2y&interval=1d</td><td>Recordati (Borsa Italiana) — diversified specialty-pharma peer</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026)</td><td>Net sales €1,889.5m (+22.5%), operating profit €631.6m (+51.6%), EPS €3.56, dividend €1.80 proposed; balance sheet (assets €2,009.8m, equity €1,284.5m, interest-bearing net liabilities €144.4m, equity ratio 64.1%, gearing 11.2%, ROE 43.7%, ROCE 43.8%); net-sales split by business division (Innovative Medicines €812.7m, Branded Products €314.6m, Generics &amp; Consumer Health €552.8m, Animal Health €140.9m, Fermion €68.7m); Nubeqa® split (royalties €432.5m / product sales €177.3m); Bayer/MSD/Tenax licensing terms; shares 141,134,278; market cap €8,944.0m</td><td class="mods">A engine, D forensics, E capital record, F positioning</td></tr><tr><td>Orion Group Interim Report 1–3/2026 (23 Apr 2026)</td><td>Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Innovative Medicines division +~54%; FY2026 outlook raised to €1.95–2.10bn net sales / €600–750m operating profit; DASL-HiCaP darolutamide read-out expected 2028</td><td class="mods">B driver analysis, C scenarios</td></tr><tr><td>Bayer media release, Feb 2022 (ASCO GU / ARASENS data) &amp; FDA approval releases 2024–2025</td><td>Nubeqa® global peak-sales estimate raised to &gt;€3bn (from &gt;€1bn); average total royalty rate to Orion ~20–25% of in-market sales including product sales to Bayer, tiered upward as sales grow; mHSPC label expansion (ADT+docetaxel 2022, ADT-only EU 2025/US 2025, China NMPA 2026)</td><td class="mods">A engine, C scenarios</td></tr><tr><td>Jefferies research note via Investing.com (30 Jan 2026)</td><td>Downgrade to Hold from Buy — "Nubeqa upside is priced in"; worldwide Nubeqa peak-sales estimate raised to €4.6bn (from €4.2bn); risk-reward called neutral over 12 months despite the estimate upgrade</td><td class="mods">F positioning, G peers</td></tr><tr><td>Investing.com — Orion Oyj B (ORNBV) quote &amp; consensus (28 Jun 2026)</td><td>Spot €70.00 (prev. close €70.25), 52-week range €56.50–75.30; 6-analyst consensus PT €74.33 (high €81 / low €55); consensus rating Buy (4 buy / 1 sell)</td><td class="mods">F positioning</td></tr><tr><td>DrugPatentWatch / Grokipedia darolutamide patent trackers</td><td>US patent estate (9 filings, none expired) points to generic entry ≈2038–2042; EU core compound patents ~2027–2030 with per-country SPC extensions pushing effective exclusivity into the mid-2030s in most member states</td><td class="mods">H kill-criteria</td></tr><tr><td>Fiscal.ai &amp; Investing.com Pro — Recordati (BIT:REC) EV/EBITDA (28 Jun 2026)</td><td>Fiscal.ai: trailing EV/EBITDA 13.27&times; for FY2025; Investing.com Pro's own build (EV €11.94bn ÷ EBITDA €871.7m) computes to 13.7&times; — two independent aggregators converge on ≈13–14&times;. Genmab's multiple was checked against the same two providers plus Yahoo Finance and StockAnalysis.com and excluded: the four disagreed materially (≈11&times;–16&times;) with inconsistent per-share bases, likely reflecting Genmab's April 2026 share-capital reduction working through TTM figures at different speeds across providers</td><td class="mods">G peers</td></tr></tbody>
+      </table>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths. Fair value = (Nubeqa®-complex run-rate × its multiple + rest-of-Orion net sales × its multiple + pipeline optionality − net debt €144.4m) ÷ 140.69m shares. Five triangular marginals: Nubeqa®-booked run-rate €700–1,050m around your mid (default €900m); its EV/sales multiple 5.5–9.0×; rest-of-Orion (generics, consumer health, animal health, Fermion) net sales €1,030–1,200m; its multiple 1.8–3.5×; pipeline optionality €0–500m. Dependence: a one-factor copula (each driver loads on a common factor — Nubeqa® run-rate 0.75, its multiple 0.55, rest-of-Orion sales 0.25, its multiple 0.20, pipeline 0.15, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the stress probability). Correlation = 0 and tail = 0 reproduce the independent model exactly. Both halves are valued on EV/sales rather than EV/EBIT because Orion discloses only one IFRS 8 segment — divisional EBIT isn't available, so this is a modelling simplification, not a hidden number. Tornado, scenario anchors and the Bayesian posterior are all computed live. The loadings reflect relative cyclicality — a modelling choice, not estimated coefficients.</p>
+      <h4>The three labels, precisely</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: a figure fetched from a citable source (Orion's own releases, Investing.com, MarketScreener, Fiscal.ai, patent trackers, Orion's investor-relations pages). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation outputs, the forensic scores, Orion's own EV/EBITDA, the payout ratios). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set that is judgment, not data (Nubeqa® run-rate mid, correlation, tail probability, scenario priors, evidence likelihood-ratios, kill thresholds).</p>
+      <h4>Still excluded — post-Modules-I&amp;J audit</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Genmab EV/EBITDA</b> — public trackers disagree materially on the current multiple (roughly 11&times; to 16&times; across Fiscal.ai / StockAnalysis.com / Yahoo Finance snapshots, with Yahoo's own GMAB vs GMAB.CO listings showing inconsistent trailing EPS bases at time of write — likely muddied by Genmab's April 2026 share-capital reduction). Rather than pick one, Genmab is left out of the numeric peer chart in Module G; the read leans on the live 12-month relative <i>return</i> in Module I instead, which has no such ambiguity. <b>Segment-level EBIT</b> — Orion reports one IFRS 8 segment; only segment <i>net sales</i> are disclosed, which is why the engine values both halves on EV/Sales rather than EV/EBIT — a modelling simplification, not a hidden number. <b>Beneish M-score</b> — needs eight two-year ratios not fully disclosed; a half-estimated score is worse than none. <b>Options skew, insider transaction flow, and precise borrow cost</b> — not reliably fetchable for a dual-class Nasdaq Helsinki name from a public API. Everything else previously flagged as "cut" (factor &amp; FX betas, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
+      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures fetched 2026-07-01; balance-sheet figures ≈ FY2025 / Q1'26 releases; verify against primary filings before acting.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const PRICE=70.00, SHARES=140.69, NETDEBT=144.4, N=20000;
+  const NUB={lo:700,hi:1050}, NMLT={lo:5.5,md:7.0,hi:9.0}, BASE={lo:1030,md:1110,hi:1200}, BMLT={lo:1.8,md:2.6,hi:3.5}, PIPE={lo:0,md:150,hi:500};
+  const RHO={nub:0.75,nmlt:0.55,base:0.25,bmlt:0.20,pipe:0.15};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+
+  function simulate(mid, corr, pStress, paths){
+    const n = paths||N;
+    const fv=new Float64Array(n);
+    const n_lo=NUB.lo, n_md=mid, n_hi=Math.max(mid+30,NUB.hi);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const nub=draw(RHO.nub,n_lo,n_md,n_hi);
+      const nmlt=draw(RHO.nmlt,NMLT.lo,NMLT.md,NMLT.hi);
+      const base=draw(RHO.base,BASE.lo,BASE.md,BASE.hi);
+      const bmlt=draw(RHO.bmlt,BMLT.lo,BMLT.md,BMLT.hi);
+      const pipe=draw(RHO.pipe,PIPE.lo,PIPE.md,PIPE.hi);
+      fv[i]=(nub*nmlt+base*bmlt+pipe-NETDEBT)/SHARES;
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=54;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMIN=40,VMAX=100,BINS=40;
+  function xOf(v){return HX0+((Math.min(Math.max(v,VMIN),VMAX)-VMIN)/(VMAX-VMIN))*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=(VMAX-VMIN)/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor((fv[i]-VMIN)/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=VMIN+(b+0.5)*bw,x=xOf(VMIN+b*bw),x2=xOf(VMIN+(b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=VMIN;v<=VMAX;v+=10){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median €'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €70</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(over){
+    const mid=+document.getElementById('i-mid').value;
+    const nub=over.nub!==undefined?over.nub:mid;
+    const nmlt=over.nmlt!==undefined?over.nmlt:NMLT.md;
+    const base=over.base!==undefined?over.base:BASE.md;
+    const bmlt=over.bmlt!==undefined?over.bmlt:BMLT.md;
+    const pipe=over.pipe!==undefined?over.pipe:PIPE.md;
+    return (nub*nmlt+base*bmlt+pipe-NETDEBT)/SHARES;
+  }
+  function drawTornado(){
+    const mid=+document.getElementById('i-mid').value;
+    const rows=[
+      {n:'Nubeqa® multiple',lo:fvAt({nmlt:NMLT.lo}),hi:fvAt({nmlt:NMLT.hi})},
+      {n:'Nubeqa® run-rate',lo:fvAt({nub:NUB.lo}),hi:fvAt({nub:Math.max(mid+30,NUB.hi)})},
+      {n:'Rest-of-Orion multiple',lo:fvAt({bmlt:BMLT.lo}),hi:fvAt({bmlt:BMLT.hi})},
+      {n:'Pipeline optionality',lo:fvAt({pipe:PIPE.lo}),hi:fvAt({pipe:PIPE.hi})},
+      {n:'Rest-of-Orion sales',lo:fvAt({base:BASE.lo}),hi:fvAt({base:BASE.hi})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=170,X1=688,W=X1-X0,base0=allMin-1,span=(allMax+1)-base0;
+    const sx=v=>X0+((v-base0)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';
+    });
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €70</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const mid=+document.getElementById('i-mid').value;
+    const corr=(+document.getElementById('i-corr').value)/100;
+    const tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-mid').textContent=mid;
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+
+    const ind=simulate(mid,0,0);
+    const cor=simulate(mid,corr,tail);
+
+    document.getElementById('oi-med').textContent='€'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='€'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='€'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='€'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='€'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='€'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+
+    drawHist(cor.fv,cor.p50,ind.p10);
+
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> stress chance, the median holds near <b>€'+cor.p50.toFixed(0)+'</b> (≈ the independent €'+ind.p50.toFixed(0)+') — but the 80% band widens by about <span class="down">€'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under €54) rises from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at €70) is '+Math.round(cor.under*100)+'%.';
+
+    drawTornado();
+  }
+
+  // scenarios (computed anchors)
+  let SFV={bear:63,base:66,bull:69};
+  function computeScenarioAnchors(){
+    SFV.bear=simulate(750,0.55,0.07,8000).p50;
+    SFV.base=simulate(900,0.55,0.07,8000).p50;
+    SFV.bull=simulate(1050,0.55,0.07,8000).p50;
+    document.getElementById('sfv-bear').textContent='€'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='€'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='€'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='€'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  // peer multiples (Orion computed, Recordati sourced, Genmab excluded — see Module G)
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/16,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+')"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('Orion — trailing','EV ÷ FY2025 EBITDA · computed',14.5,'14.5×','var(--coral)'),
+    peerBar('Recordati','Fiscal.ai / Investing.com Pro · sourced',13.7,'13.7×','var(--teal-deep)'),
+  ].join('');
+
+  ['i-mid','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>

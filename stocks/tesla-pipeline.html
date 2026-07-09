@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tesla — Institutional Analytics Layer (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:780px}
+
+  .legend{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .strictbar{margin-top:12px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;line-height:1.5}
+  .strictbar b{color:var(--ink)}
+
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .hl{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--teal-deep);white-space:nowrap}
+  .hl.neg{color:var(--coral-deep)} .hl.warn{color:var(--amber-deep)} .hl.blue{color:var(--blue-deep)}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:52px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:10px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)}
+  .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .scband.bad{background:var(--coral-wash);color:var(--coral-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:190px 1fr 70px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:130px 1fr 56px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .tg-inline{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:5px;vertical-align:1px}
+
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:118px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:88px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Institutional analytics layer · strict-data build · Tesla, Inc. · NASDAQ: TSLA · built 2026-07-09</div>
+  <h1>Tesla — the analyst's instrument panel
+    <span class="sub">Built to a hard rule: every number here is either <b>sourced</b> (fetched from a citable source — the FY2025 / Q1'26 releases, the live tape), <b>computed</b> (calculated by this tool from sourced inputs), or an explicit <b>assumption</b> you set yourself. Nothing is asserted from memory. Unlike a fresh IPO, Tesla has a deep multi-year tape — so every long-window metric here computes on a <b>full sample</b>, no <b>n/a</b> backfills.</span>
+  </h1>
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-09 20:52</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="legend">
+    <span class="lg"><span class="d" style="background:var(--blue)"></span>Built 2026-07-09</span>
+  </div>
+
+  <div class="strictbar"><b>What this build adds.</b> A four-leg sum-of-the-parts — <b>core auto+services</b>, <b>energy</b>, <b>robotaxi/autonomy</b> and <b>Optimus/robotics</b> — so the price is decomposed across the shrinking cash core and the three call options the market is actually paying for, not a single P/E. Two institutional modules computed live from the Yahoo Finance v8 chart API: <b>I — Price-asymmetry layer</b> (reverse-DCF on the robotaxi value, Kelly f*, payoff-asymmetry, VaR/CVaR, realised vol, betas vs S&amp;P 500 / Nasdaq 100 / rates, own-history percentile, BYD/Toyota 12m relative) and <b>J — Base rates &amp; factor composite</b>. Plus hand-authored <b>K — priced-in decomposition</b>, <b>L — auto unit-economics</b> (deliveries × ASP × margin), <b>M — robotaxi/autonomy optionality</b>, <b>N — Optimus/robotics optionality</b> and <b>O — perfect-execution bull case</b> (the ARK-anchored right tail, priced end-to-end). Because Tesla has a deep multi-year tape, every long-window metric computes on a full sample — no n/a backfills. Balance-sheet facts are from the FY2025 / Q1'26 releases; nothing is asserted from memory.</div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section class="mod" id="mExec" style="border:1.5px solid var(--line-strong);margin-top:18px">
+    <div class="mod-head">
+      <div class="mod-no" style="color:var(--amber-deep);font-size:20px">∑</div>
+      <div class="ht">
+        <h2>Executive summary</h2>
+        <div class="hq">The whole instrument panel in one read — fifteen modules (fourteen graded + a bull overlay), distilled.</div>
+      </div>
+      <span class="tagchip a">Synthesis · net verdict</span>
+    </div>
+
+    <div class="verdict mixed"><span class="vchip">MIXED · LEANS BEAR</span><span class="vtext">A shrinking-but-cash-generative car-and-energy business welded to two of the largest call options in public markets — <b>robotaxi</b> and <b>Optimus</b> — at a price (<span class="jsprice">$404.38</span>) that already banks most of the autonomy dream. The engine's base-case median (~<b>$378</b>) sits just below the live tape, and the reverse-DCF says today's price implies a <b>~$1.3tn</b> robotaxi value — roughly <b>3×</b> the base-case mode. Two-sided, but the two sides are wildly asymmetric: a car company on fundamentals, a trillion-dollar autonomy platform on faith.</span></div>
+
+    <p class="body"><b>The thesis in one paragraph.</b> Tesla is decomposed into <b>four value legs</b>. What you can underwrite today is the <b>auto + services core</b> (~26% of value at mode — but at a 371× trailing P/E, on FY2025 deliveries that <i>fell</i> 8.6% to 1.64m and GAAP net income of $3.79bn) and the genuinely excellent <b>energy business</b> (~24%, revenue +26.6% to $12.8bn at record margins). Sitting on top are two deep call options the tape is paying up for: <b>robotaxi / autonomy</b> (~31% of value at mode, <b>Module M</b>) and <b>Optimus / robotics</b> (~15%, <b>Module N</b>) — each with a much larger right tail, each gated on things that are now physically happening (unsupervised robotaxi across the Austin metro; Optimus Gen-3 in production) but nowhere near revenue at scale. The number doing most of the valuation work is the robotaxi leg: the market marks it near <span class="hl neg">$1.3tn</span> (Module I reverse-DCF, ≈3× the ~$450bn base-case mode) against a segment that today books essentially <span class="hl neg">$0</span> of profit.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Net stance · 14 reads</div><div class="v">Mixed<small>0B / 10M / 4 bear</small></div></div>
+      <div class="kgi"><div class="k">Engine median FV</div><div class="v">~$378<small>P90 ≈ $551 · P10 ≈ $236</small></div></div>
+      <div class="kgi neg"><div class="k">Implied robotaxi mark</div><div class="v">$1.3tn<small>≈3× $450bn mode</small></div></div>
+      <div class="kgi neg"><div class="k">Trailing P/E</div><div class="v">≈371×<small>$404 ÷ $1.09 TTM EPS</small></div></div>
+    </div>
+
+    <div class="cmp">
+      <div class="cmpcard">
+        <div class="ct"><span class="dd" style="background:var(--coral)"></span>The fragile side — valuation vs the car</div>
+        <div class="cmprow"><span class="ck">FY2025 deliveries</span><span class="cv neg">1.64m (−8.6%)</span></div>
+        <div class="cmprow"><span class="ck">FY2025 net income</span><span class="cv neg">$3.79bn (−47%)</span></div>
+        <div class="cmprow"><span class="ck">Trailing P/E</span><span class="cv neg">≈371×</span></div>
+        <div class="cmprow"><span class="ck">Valuation (Module G)</span><span class="cv neg">order-of-magnitude rich · BEAR</span></div>
+      </div>
+      <div class="cmpcard hot" style="border-color:var(--teal)">
+        <div class="ct"><span class="dd" style="background:var(--teal)"></span>The asymmetric side — the options</div>
+        <div class="cmprow"><span class="ck">Robotaxi + Optimus at mode</span><span class="cv">~46% of value</span></div>
+        <div class="cmprow"><span class="ck">Tail worth (Module M+N)</span><span class="cv pos">≈$300+/share</span></div>
+        <div class="cmprow"><span class="ck">Gate</span><span class="cv">unsupervised autonomy at scale</span></div>
+        <div class="cmprow"><span class="ck">Bull anchor (ARK)</span><span class="cv pos">~$4,600/share</span></div>
+      </div>
+    </div>
+
+    <div class="note a"><b>Bottom line.</b> Underwrite the energy business and a stabilised auto core; do not pay up for the robotaxi mark on faith; treat Optimus as the free-but-distant call it is. The disciplined stance is sized by the kill-criteria, not the narrative. For the other side of the distribution — the flawless-execution right tail, priced end-to-end — see <a href="#mO" style="color:var(--teal-deep);font-weight:600">Module O · the bull case</a>: if robotaxi and Optimus both scale, ARK's ~$4,600 is not a typo. The reads that follow (A–O) build this verdict from live data; the synthesis and dated watch-list are in the <a href="#mConc" style="color:var(--blue-deep);font-weight:600">Conclusions</a> and <a href="#mSum" style="color:var(--blue-deep);font-weight:600">Scorecard</a>. <span style="color:var(--faint)">For analysis and education only — not investment advice.</span></div>
+  </section>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mExec"><span class="n">∑</span>Summary</a>
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Tornado</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Valuation context</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mK"><span class="n">K</span>Priced-in</a>
+    <a href="#mL"><span class="n">L</span>Auto unit-econ</a>
+    <a href="#mM"><span class="n">M</span>Robotaxi</a>
+    <a href="#mN"><span class="n">N</span>Optimus</a>
+    <a href="#mO"><span class="n">O</span>Bull case</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <!-- A — ENGINE -->
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Sum-of-the-parts engine — correlated &amp; fat-tailed</h2><div class="hq">A shrinking cash core + an energy compounder + a trillion-dollar robotaxi question mark + an Optimus lottery ticket.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>$378</b> with an 80% band of roughly <b>$236–$551</b> — the two option legs (<b>robotaxi</b> and <b>Optimus</b>) fatten the upper tail while the auto multiple and delivery trend carry the downside. Against the live price shown below, the median sits modestly <i>below</i> spot: the market is already paying for more autonomy than the base case underwrites, but the right tail is genuinely large.</span></div>
+    <p class="body">20,000 paths across <b>four value legs</b>. The two operating legs are anchored to <b>real FY2025 figures</b>: the auto + services core (FY2025 net income of the group was $3.79bn on $94.8bn revenue; deliveries 1.64m, down 8.6%) and Energy (revenue $12.8bn, +26.6%, at record segment gross profit). The engine values the core on a 2028E net income × P/E and energy on a 2028E revenue × EV/Sales. It then adds two <b>option</b> legs, each a <i>risk-adjusted</i> 2030E enterprise value on a shared discount, discounted a full 5 years at 10%: <b>robotaxi / autonomy</b> (the FSD-to-robotaxi thesis, gated on unsupervised autonomy scaling safely; <b>Module M</b>) and <b>Optimus / robotics</b> (humanoid robots at volume; <b>Module N</b>). Drivers co-move through a one-factor copula plus a regime-shock overlay; set both to zero to recover the independent model.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The value knobs are <b>your</b> calls, not data: the 2028E core net income, the energy revenue, and — above all — the risk-adjusted robotaxi and Optimus enterprise values, plus how tightly drivers co-move and how often a stress regime hits.</p>
+
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs: 3,510m diluted shares (FY2025 net income ÷ EPS), live price <span class="jsprice">$404.38</span> (re-fetched at build), net cash ≈ +$30bn (<span class="asm">assumption</span>: $44.1bn cash &amp; investments − ~$14bn debt). Core &amp; energy legs on 2028E ranges; option legs on 2030E discounted 5y at 10%. Ranges calibrated to FY2025 actuals &amp; sell-side models.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Robotaxi / autonomy value <span>$bn · 2030E risk-adj · assumption</span></span><span class="cval">$<span id="v-rob">450</span>bn</span></label>
+          <input type="range" id="i-rob" min="0" max="1700" step="25" value="450">
+          <div class="tri">FSD → robotaxi · reverse-DCF implies ≈$1.3tn at today's price — discounted 5y (Module M)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Optimus / robotics value <span>$bn · 2030E risk-adj · assumption</span></span><span class="cval">$<span id="v-opt">220</span>bn</span></label>
+          <input type="range" id="i-opt" min="0" max="1500" step="25" value="220">
+          <div class="tri">humanoid robots at volume · Gen-3 in production · discounted 5y (Module N)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Core auto+services 2028E net income <span>$bn · assumption</span></span><span class="cval">$<span id="v-ani">10</span>bn</span></label>
+          <input type="range" id="i-ani" min="3" max="25" step="1" value="10">
+          <div class="tri">applied at a ~24× P/E (mode) · FY2025 group net income $3.79bn</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Energy 2028E revenue <span>$bn · assumption</span></span><span class="cval">$<span id="v-erv">34</span>bn</span></label>
+          <input type="range" id="i-erv" min="15" max="70" step="1" value="34">
+          <div class="tri">at ~6.5× EV/Sales (mode) · FY2025 energy revenue $12.8bn (+26.6%)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">60</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="60">
+          <div class="tri">0% = independent (naive model) · 100% = full</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Tail / regime-shock risk <span>assumption</span></span><span class="cval"><span id="v-tail">6</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="15" step="1" value="6">
+          <div class="tri">chance a path hits a correlated stress state</div>
+        </div>
+      </div>
+
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent (naive model)</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv" id="oi-med">$378</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv" id="oi-p10">$240</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv" id="oi-p90">$545</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &gt;50% down)</span><span class="cv" id="oi-tail">3%</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + fat tails</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv warn" id="co-med">$378</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">$236</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">$551</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &gt;50% down)</span><span class="cv neg" id="co-tail">4%</span></div>
+        </div>
+      </div>
+
+      <div class="hist-wrap">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; <span class="jsprice">$404.38</span></span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; <span class="jsprice">$404.38</span></span>
+          <span><span class="sw" style="background:var(--ink)"></span>price <span class="jsprice">$404.38</span></span>
+          <span><span class="sw" style="background:var(--amber)"></span>median</span>
+          <span><span class="sw" style="background:var(--faint)"></span>independent P10</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> The median sits a little below spot and barely moves with correlation — but <i>both</i> tails fatten: robotaxi, Optimus and the auto multiple all load on the same sentiment factor, so the left tail deepens in a stress regime while the option legs stretch the right tail when the autonomy story is believed. This is the defining risk shape of TSLA: one segment (Energy) is a clean compounder, the auto core produces the cash and the downside beta, and the two option legs are where essentially all of the upside — and most of the argument — lives.
+      <div class="src">Sources: Tesla FY2025 &amp; Q1'26 releases (segment revenue, deliveries, margins). Engine computed live in this page.</div>
+    </div>
+  </section>
+
+  <!-- B — TORNADO -->
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Sensitivity — the tornado</h2><div class="hq">Which input actually moves the answer?</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Fair value is dominated by the <b>robotaxi</b> value, with <b>Optimus</b> the second-largest swing — the two option legs together dwarf the auto and energy inputs. The cash-generating fundamentals move the answer far less than the sentiment-priced options. A fragile central estimate, but with real two-sided optionality.</span></div>
+    <p class="body">Each bar swings one driver from its P10 to its P90 (others held at mode) and shows the fair-value range. Computed from the same marginals as the engine.</p>
+    <svg id="tornado" viewBox="0 0 700 280" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="note t"><b>Read:</b> the <b>robotaxi value</b> carries the widest swing by far — which is why the reverse-DCF in Module I concentrates on it. <b>Optimus</b> takes the second bar; the two humanoid/autonomy legs together are several times the auto and energy lines. The upside is not a car-company story. <b>Module M</b> decomposes the robotaxi bar (TAM × capture × probability); <b>Module N</b> does the same for Optimus.</div>
+  </section>
+
+  <!-- C — SCENARIOS + BAYES -->
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
+      <span class="tagchip a">Computed + your assumptions</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At neutral priors the probability-weighted value lands near the live price; the bull robotaxi anchor sits above it, while the bear (autonomy stalls) implies real downside. The market is pricing base-to-bull autonomy assumptions. The genuine upside beyond these cards is the robotaxi <i>tail</i> (Module M) and Optimus (Module N) — neither is captured by the base-case medians, which hold both option legs at their modes.</span></div>
+    <p class="body">The three fair values below are <b>computed</b> — each is the engine's median run at a different <i>autonomy thesis</i> (robotaxi and Optimus moved together, since both ride the same unsupervised-AI gate), with the operating legs (core, energy) held at their modes. Note the range is anchored from below near <b>~$343</b> by those operating legs plus the fortress balance sheet — even "autonomy stalls" does not zero the company. The prior weights and the evidence likelihood-ratios are <b>your</b> subjective inputs; the panel just does the Bayesian arithmetic and the probability-weighted blend.</p>
+
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — autonomy stalls</div><div class="sd">Unsupervised robotaxi hits a safety/regulatory wall and Optimus slips; both option legs re-mark toward zero (robotaxi ~$100bn, Optimus ~$40bn) and the auto multiple compresses.</div><div class="sfv" id="sfv-bear">$343</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — measured scale-up</div><div class="sd">Both option legs at their risk-adjusted modes (robotaxi ~$450bn, Optimus ~$220bn); energy compounds; auto stabilises.</div><div class="sfv" id="sfv-base">$377</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — autonomy inflects</div><div class="sd">Unsupervised autonomy scales nationally (~$1.2tn) and Optimus reaches volume (~$700bn); the ARK thesis starts printing.</div><div class="sfv" id="sfv-bull">$461</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ctrl"><label><span class="lab">Prior — Bear <span>assumption</span></span><span class="cval"><span id="v-pb">30</span>%</span></label><input type="range" id="i-pb" min="0" max="100" step="5" value="30"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Base <span>assumption</span></span><span class="cval"><span id="v-pn">45</span>%</span></label><input type="range" id="i-pn" min="0" max="100" step="5" value="45"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Bull <span>assumption</span></span><span class="cval"><span id="v-pu">25</span>%</span></label><input type="range" id="i-pu" min="0" max="100" step="5" value="25"></div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">Toggle evidence as it arrives → <span class="asm">(likelihood ratios are illustrative assumptions)</span></div>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="0.5,1.1,1.8">Robotaxi scales to 10+ metros with improving safety <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.5">FSD subscription take-rate inflects <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.6">Optimus hits external volume-sale milestone <span class="ar">▲bull</span></div>
+      <div class="ev bearish" data-lr="1.9,1.0,0.5">Robotaxi safety incident triggers regulatory halt <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.8,1.0,0.5">Deliveries fall a third straight year; margins compress <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.7,1.0,0.6">BYD / legacy EV price war deepens <span class="ar">▼bear</span></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Posterior weights</div>
+      <div class="wbar" id="wbar"><div class="wp bear" id="wp-b"></div><div class="wp base" id="wp-n"></div><div class="wp bull" id="wp-u"></div></div>
+      <div class="wlab"><span id="wl-b">Bear 30%</span><span id="wl-n">Base 45%</span><span id="wl-u">Bull 25%</span></div>
+    </div>
+
+    <div class="blend">
+      <span class="bn" id="blend-fv">$370</span>
+      <span class="bl">probability-weighted fair value vs <b class="jsprice">$404.38</b> price · <span id="blend-gap">≈ near price</span>. The anchors are computed; the weighting is your judgment.</span>
+    </div>
+  </section>
+
+  <!-- D — FORENSICS -->
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Financial quality — profitable, but watch the plumbing</h2><div class="hq">FY2025 / Q1'26 figures; the earnings-quality flags are the story, not the headline beat.</div></div>
+      <span class="tagchip s">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A fortress balance sheet ($44.1bn cash, positive FY2025 FCF, record energy margins) welded to a decelerating, margin-compressed auto core — and a Q1'26 print flattered by one-off warranty releases, tariff refunds, a supplier-payment stretch and new debt, with TTM free cash flow turning negative.</span></div>
+    <p class="body">FY2025 (8-K, 28 Jan 2026): revenue $94.8bn (−2.9%), GAAP net income $3.79bn (−47%), diluted EPS $1.08; Q4 gross margin 20.1% (a two-year high) with auto GM ex-credits ~17.9%; FY free cash flow +$6.2bn; cash &amp; investments $44.1bn (+$7.5bn). Q1'26 (8-K, 22 Apr 2026): revenue $22.39bn (+16%), gross margin 21.1%, but GAAP EPS just $0.13, and free cash flow turned negative on the capex ramp.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Cash &amp; investments</span><span class="tg s">sourced</span></div><div class="scv">$44.1<span class="un">bn</span></div><div class="scband good">Fortress</div><div class="scd">Up $7.5bn in FY2025; positive FY free cash flow of $6.2bn. The balance sheet is not the risk here — the multiple is.</div></div>
+      <div class="sc"><div class="scl"><span>Energy revenue growth</span><span class="tg s">sourced</span></div><div class="scv">+27<span class="un">%</span></div><div class="scband good">Compounding</div><div class="scd">Energy generation &amp; storage $12.8bn in FY2025 at record gross profit — the one segment growing double-digits with expanding margins.</div></div>
+      <div class="sc"><div class="scl"><span>FY2025 deliveries</span><span class="tg s">sourced</span></div><div class="scv">1.64<span class="un">m</span></div><div class="scband bad">−8.6% y/y</div><div class="scd">A second consecutive annual decline — the first back-to-back drop on record. The core product line is shrinking in units, not just mix.</div></div>
+      <div class="sc"><div class="scl"><span>Net income</span><span class="tg s">sourced</span></div><div class="scv">$3.79<span class="un">bn</span></div><div class="scband bad">−47%</div><div class="scd">GAAP FY2025, EPS $1.08. Auto GM ex-credits compressed to the mid-to-high teens from ~29% at the 2022 peak.</div></div>
+      <div class="sc"><div class="scl"><span>Q1'26 earnings quality</span><span class="tg c">computed</span></div><div class="scv">$0.13<span class="un">EPS</span></div><div class="scband bad">Flagged</div><div class="scd">The 19.2% auto GM ex-credits leaned on ~$230m warranty true-downs + tariff relief; supplier payments stretched 10 days; new debt taken on; TTM FCF turned negative.</div></div>
+      <div class="sc"><div class="scl"><span>2025-26 capex</span><span class="tg s">sourced</span></div><div class="scv">&gt;$25<span class="un">bn</span></div><div class="scband mid">Ramping</div><div class="scd">Signalled spend into robotaxi, Optimus and AI compute — the reason FY FCF flipped negative in Q1'26. Investing ahead of the option legs.</div></div>
+    </div>
+    <div class="note b"><b>The honest read:</b> nothing here is fraud — the balance sheet is genuinely strong and energy is genuinely excellent. But the auto core is decelerating, the reported margin recovery leaned on non-recurring items in Q1'26, and the cash flow is now going out the door faster than it comes in as Tesla funds the option legs. The quality debate is not "is this a real company" — it is "is the growth capex earning its cost of capital before the autonomy legs print."
+      <div class="src">Sources: Tesla FY2025 8-K (28 Jan 2026); Q1'26 8-K (22 Apr 2026); Electrek/TIKR earnings-quality coverage.</div>
+    </div>
+  </section>
+
+  <!-- E — CAPITAL RECORD -->
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A genuine industrial track record (4680 cells, a global charging standard adopted industry-wide, in-house AI silicon) against a governance pattern of founder-centric, milestone-vested mega-compensation and a web of related-party ties across the Musk complex (xAI, SpaceX).</span></div>
+    <p class="body" style="font-size:13px">No letter grades — here is the sourced record; the read is yours to form.</p>
+    <div class="rec">
+      <div class="ri"><div class="rk">Capex mix</div><div class="rd">2025-26 capex signalled at <b>&gt;$25bn</b>, rotating hard into robotaxi, Optimus and AI compute (Dojo/AI-chip). FY free cash flow flipped negative in Q1'26 as a result.</div></div>
+      <div class="ri"><div class="rk">Vertical integration</div><div class="rd">In-house batteries (4680), inference/training silicon, and the Supercharger network — now the <b>de-facto North American charging standard</b> after legacy OEMs adopted the connector.</div></div>
+      <div class="ri"><div class="rk">CEO compensation</div><div class="rd">A pattern of <b>unprecedented milestone-vested performance awards</b> tied to market-cap and operational targets — value-creating if hit, but heavily dilutive and repeatedly litigated on process grounds.</div></div>
+      <div class="ri"><div class="rk">Musk-complex ties</div><div class="rd">Tesla holds an <b>equity stake in xAI</b> (via the Jan-2026 investment) and shares an autonomy/robotics narrative with SpaceX/xAI — related-party optics the market has not discounted.</div></div>
+      <div class="ri"><div class="rk">Robotaxi / Optimus bet</div><div class="rd">The entire incremental capital program is aimed at two pre-revenue platforms. This is the boldest capital allocation in the auto industry — and the least de-risked.</div></div>
+      <div class="ri"><div class="rk">Shareholder returns</div><div class="rd"><b>None</b> — no dividend, no material buyback; every dollar is reinvested. Consistent with the mission; irrelevant to income investors.</div></div>
+    </div>
+    <div class="note a"><b>Read (judgment, not data):</b> the operational execution on manufacturing and charging is real and hard to replicate. The governance pattern to underwrite is the concentration of decision-making and reward in one founder, and the recurring related-party overlap across his companies.
+      <div class="src">Sources: Tesla FY2025 / Q1'26 releases; Optimus &amp; robotaxi capex coverage; Musk-complex / xAI investment disclosures.</div>
+    </div>
+  </section>
+
+  <!-- F — POSITIONING -->
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning, ownership &amp; flows</h2><div class="hq">Who holds it, who trades it, what moves it.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A top-weight in the S&amp;P 500 and Nasdaq-100 (structural passive demand) and one of the most-traded, most-optioned, most-retail-owned names in the world — a register that amplifies realised volatility in both directions. Founder Musk holds a large, partly-pledged stake and the swing vote on strategy.</span></div>
+    <table style="margin-bottom:6px">
+      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Index weight</td><td class="num">Top-10</td><td>A heavyweight of the S&amp;P 500 and a top Nasdaq-100 constituent — every index fund owns it, so a large share of the float is held passively regardless of view.</td></tr>
+        <tr><td>Founder stake</td><td class="num">~13%</td><td>Musk's economic stake (a portion historically pledged as loan collateral); the CEO performance awards are structured to lift his voting influence over time. One person sets strategy.</td></tr>
+        <tr><td>Retail &amp; options</td><td class="num">Very high</td><td>Among the highest retail-ownership and single-stock options volumes in the market — a reflexive register that raises realised vol and can decouple price from fundamentals for long stretches.</td></tr>
+        <tr><td>Short interest</td><td class="num">Historic magnet</td><td>Perennially one of the most-shorted large caps; past squeezes have been violent. Positioning cuts both ways.</td></tr>
+        <tr><td>Beta</td><td class="num">&gt; 1 (see I)</td><td>High-beta, long-duration growth exposure — sensitive to rates and risk appetite. The live 252-day betas vs S&amp;P 500 / Nasdaq-100 / rates are computed in Module I.</td></tr>
+        <tr><td>Peer relative</td><td class="num">vs BYD / Toyota</td><td>BYD overtook Tesla on global BEV units; Toyota remains the scale leader. The 12m relative-return bars are in Module I.</td></tr>
+      </tbody>
+    </table>
+    <div class="note c"><b>Read:</b> the flow picture is neutral-to-supportive structurally (passive demand) but destabilising tactically (retail + options + short interest). None of it is a fundamental signal — it is the weather system the fundamentals trade inside.
+      <div class="src">Sources: index constituent data; ownership disclosures; Module I live betas &amp; peer-relatives (Yahoo v8).</div>
+    </div>
+  </section>
+
+  <!-- G — VALUATION CONTEXT -->
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Valuation context</h2><div class="hq">TSLA computed; anchors sourced. It does not price like a car company.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">At ≈<b>371× trailing earnings</b> ($404 ÷ $1.09 TTM EPS), Tesla trades an order of magnitude above every auto maker on Earth — Toyota ~9×, BYD ~19× — and rich even against the Mag-7. No earnings-based convention reconciles the price; it only works if the autonomy and robotics legs are worth the ~$1.3tn the reverse-DCF implies.</span></div>
+    <p class="body" style="font-size:13px">TSLA's multiple is <b>computed</b>: $404.38 spot ÷ $1.09 TTM EPS ≈ <b>371×</b>. The honest reference set is Tesla's <b>own multiple through the cycle</b> (Module J's base-rate table) and the auto/mega-cap comps below. The bar chart shows how far today's multiple sits from where the market has valued Tesla's earnings before — and from what a profitable car maker fetches.</p>
+    <div class="bars" id="peerbars"></div>
+    <div class="note t"><b>Read:</b> Tesla has traded at 34× (end-2022 trough) and at 1,000×+ (2020 mania); today's ~371× is near the top of the post-mania range. The market is not valuing the cars — it is valuing the robotaxi and Optimus options, exactly the two legs the reverse-DCF in Module I quantifies. Whether ~371× is right depends on believing the robotaxi leg is worth on the order of $1.3tn — which the operating business cannot support on its own.
+      <div class="src">Sources: TSLA multiple computed from sourced spot &amp; EPS; peer multiples via stockanalysis.com / Macrotrends (Jul 2026); Tesla's own cycle multiples in Module J.</div>
+    </div>
+  </section>
+
+  <!-- H — KILL CRITERIA -->
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A discipline overlay, not a direction. Several triggers — a third delivery-decline year, a robotaxi safety event, an autonomy revenue no-show — are datable to specific 2026–27 prints, so the journal writes itself.</span></div>
+    <p class="body">Decision <i>rules</i>, not data — thresholds set now, while disinterested, so a future narrative can't rationalise holding through thesis failure. Edit them to your own conviction.</p>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>Deliveries keep falling.</b> FY2026 vehicle deliveries print <span class="kv">below 1.64m (a third straight annual decline)</span> while auto GM ex-credits slips <span class="kv">back below ~15%</span> — the cash core is structurally shrinking, not pausing.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Robotaxi stalls or breaks.</b> A serious safety incident triggers a <span class="kv">regulatory suspension</span>, or unsupervised operation fails to reach <span class="kv">≥5 metros by mid-2027</span> — the leg carrying most of the valuation loses its physical proof points.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Autonomy revenue no-shows.</b> No <span class="kv">material unsupervised-autonomy revenue by end-2027</span> and FSD take-rate stalls — the robotaxi mark is a story without a cash flow.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Optimus slips a generation.</b> No <span class="kv">external unit sales by end-2027</span> against the stated timeline — the second option leg is pushed out of the underwriting horizon.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Valuation exit.</b> The Module-I reverse-DCF implies a robotaxi value <span class="kv">&gt; ~$1.5tn</span> (near the driver cap and most of the market cap) — trim into strength regardless of narrative.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Governance event.</b> A further large related-party or compensation action priced without independent process — the concentration pattern compounds.</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today's prediction — e.g. "robotaxi settles at a risk-adjusted ~$450bn, fair value ≈$378" — and the Q2'26 delivery print, the robotaxi metro-count by mid-2027, and the first autonomy-revenue disclosure that would confirm or refute it. If a kill-criterion fires, act without re-litigating. The process is the edge.</div>
+  </section>
+
+  <!-- K — PRICED-IN DECOMPOSITION -->
+  <section class="mod" id="mK">
+    <div class="mod-head"><div class="mod-no">K</div>
+      <div class="ht"><h2>What the price already contains &mdash; the four-leg decomposition</h2><div class="hq">Core, energy, robotaxi and Optimus &mdash; separated, each as a share of value.</div></div>
+      <span class="tagchip s">Sourced &middot; live</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext"><b>The options are the company.</b> At the pipeline&rsquo;s own mode assumptions the two operating legs (core <b>26%</b> + energy <b>24%</b>) are barely half the value; robotaxi (<b>31%</b>) and Optimus (<b>15%</b>) are the rest. Yet the reverse-DCF says today&rsquo;s price implies a robotaxi value of <b>~$1.3tn</b> &mdash; nearly <b>3&times; the base-case mode</b> and more than half of the entire market cap.</span></div>
+
+    <p class="body"><b>The arithmetic.</b> Live spot <span class="hl">$404.38</span> &times; 3,510m shares = <span class="hl">$1,419bn</span> market cap; net cash ~$30bn keeps EV within ~2% of it. The engine at every driver&rsquo;s <i>mode</i> produces <span class="hl">$258/share</span> (a $907bn equity value), decomposed in the table below. The gap between that mode value and today&rsquo;s price &mdash; <b>+$146/share</b> &mdash; is the market&rsquo;s incremental mark on the option legs above the pipeline&rsquo;s modes: it grids out to an implied robotaxi value of <b>~$1.3tn</b>.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Value leg</th><th style="text-align:right">EV at mode</th><th style="text-align:right">$/share</th><th style="text-align:right">% of value</th><th>Priced on</th></tr></thead>
+      <tbody>
+        <tr><td>Core auto + services</td><td class="num">$240bn</td><td class="num">$68</td><td class="num">26%</td><td>2028E net income $10bn &times; 24&times; P/E</td></tr>
+        <tr><td>Energy generation &amp; storage</td><td class="num">$221bn</td><td class="num">$63</td><td class="num">24%</td><td>2028E rev $34bn &times; 6.5&times; EV/Sales</td></tr>
+        <tr class="cur"><td>Robotaxi / autonomy &rarr; Module M</td><td class="num now">$279bn</td><td class="num now">$80</td><td class="num now">31%</td><td>2030E risk-adj EV $450bn, disc. 5y</td></tr>
+        <tr><td>Optimus / robotics &rarr; Module N</td><td class="num">$137bn</td><td class="num">$39</td><td class="num">15%</td><td>2030E risk-adj EV $220bn, disc. 5y</td></tr>
+        <tr><td>Net cash</td><td class="num">$30bn</td><td class="num">$9</td><td class="num">3%</td><td>$44.1bn cash &amp; inv &minus; ~$14bn debt</td></tr>
+        <tr><td><b>Total &mdash; mode fair value</b></td><td class="num"><b>$907bn</b></td><td class="num"><b>$258</b></td><td class="num"><b>100%</b></td><td>vs live spot $404.38</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cmp" style="margin-top:16px">
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:8px">Priced in</div>
+        <div class="cmprow"><span class="ck">A recovering auto core</span><span class="cv">$68/sh at a 24&times; P/E on $10bn 2028E NI</span></div>
+        <div class="cmprow"><span class="ck">Energy compounding at 25%+</span><span class="cv">$63/sh &mdash; a real, growing, high-margin leg</span></div>
+        <div class="cmprow"><span class="ck">Robotaxi at a risk-adj $450bn</span><span class="cv">$80/sh &mdash; and then some (the mark is ~3&times; that)</span></div>
+        <div class="cmprow"><span class="ck">Optimus at a risk-adj $220bn</span><span class="cv">$39/sh &mdash; the base case, not the tail</span></div>
+      </div>
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin-bottom:8px">Not priced / unproven</div>
+        <div class="cmprow"><span class="ck">The robotaxi right tail</span><span class="cv">national unsupervised autonomy would add ~$220/sh (Module M)</span></div>
+        <div class="cmprow"><span class="ck">The Optimus right tail</span><span class="cv">humanoids at volume ~$180/sh more (Module N)</span></div>
+        <div class="cmprow"><span class="ck">A third delivery-decline year</span><span class="cv">the auto core shrinking, not stabilising</span></div>
+        <div class="cmprow"><span class="ck">Governance / related-party discount</span><span class="cv">the market has not demanded one</span></div>
+      </div>
+    </div>
+
+    <div class="note b"><b>How the reverse-DCF frames it.</b> Module I solves for the robotaxi value that reconciles the median MC fair value to spot: <span class="hl blue">~$1.3tn</span>. That sits <b>~3&times;</b> the pipeline&rsquo;s $450bn mode and more than half the market cap. The decomposition above is the point: energy is a real, cash-generative compounder you can underwrite; the auto core is a shrinking-but-profitable base; but the marginal dollar of today&rsquo;s price is a <i>robotaxi</i> call. Upside from here needs that mark to be defensible <i>or</i> the option tails to start printing revenue.</div>
+  </section>
+
+  <!-- L — AUTO UNIT-ECONOMICS -->
+  <section class="mod" id="mL">
+    <div class="mod-head"><div class="mod-no">L</div>
+      <div class="ht"><h2>Auto unit-economics &mdash; what has to be true</h2><div class="hq">Decomposing the core leg into deliveries &times; ASP &times; margin.</div></div>
+      <span class="tagchip c">Computed &middot; model</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>The core is shrinking, and the base case needs it to stop.</b> FY2025 deliveries fell to <b>1.64m</b> (−8.6%) at a blended ASP near <b>$42k</b>; the pipeline&rsquo;s $10bn 2028E core net income needs volume <i>and</i> margin to recover together &mdash; a reversal of the last two years, not an extrapolation of them.</span></div>
+
+    <p class="body"><b>The equation.</b> Core automotive gross profit &asymp; deliveries &times; ASP &times; gross margin. Everything the engine does to the core leg (net-income &times; P/E) is downstream of this line. So the entire auto slice of the sum-of-the-parts comes down to <i>which cell in the grid below</i> the world settles at &mdash; and the last two years have moved <b>up and to the left</b> (fewer units, thinner margin), not down and to the right.</p>
+
+    <p class="body" style="margin-top:12px"><b>Calibration.</b> FY2025: automotive revenue <span class="hl">$69.53bn</span> on <span class="hl">1.64m</span> deliveries &rArr; blended ASP <span class="hl">~$42k</span>; auto GM ex-credits recovered to <span class="hl">~17.9%</span> in Q4 (19.2% in Q1'26, but aided by ~$230m of warranty true-downs). Whether ASP holds as cheaper models mix in, and whether margin sticks without one-offs, decides the grid.</p>
+
+    <p class="body" style="margin-top:14px"><b>The grid.</b> Approximate automotive gross profit ($bn) = deliveries (m) &times; ASP ($k) &times; GM%. Teal-shaded = near the FY2025 actual; faint = a stretch in either direction.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>Deliveries &darr;&nbsp;&nbsp;/&nbsp;&nbsp;ASP &times; GM &rarr;</th><th style="text-align:right">$40k · 14%</th><th style="text-align:right">$42k · 18%</th><th style="text-align:right">$45k · 20%</th><th style="text-align:right">$48k · 24%</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>1.5m</td><td class='num'>$8bn</td><td class='num cur'>$11bn</td><td class='num'>$14bn</td><td class='num' style='color:var(--faint)'>$17bn</td></tr>
+        <tr><td class='num'>1.8m</td><td class='num'>$10bn</td><td class='num'>$14bn</td><td class='num'>$16bn</td><td class='num'>$21bn</td></tr>
+        <tr><td class='num'>2.2m</td><td class='num'>$12bn</td><td class='num'>$17bn</td><td class='num'>$20bn</td><td class='num'>$25bn</td></tr>
+        <tr><td class='num'>2.6m</td><td class='num' style='color:var(--faint)'>$15bn</td><td class='num'>$20bn</td><td class='num'>$23bn</td><td class='num' style='color:var(--faint)'>$30bn</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note t" style="margin-top:14px"><b>Why the grid matters.</b> The bull case needs Tesla to move <i>down and to the right</i> — more units (a cheaper model, robotaxi fleet demand) <i>and</i> firmer margin (autonomy software attach, cost-down). The last two years went the other way. A cheaper model can lift volume but pulls ASP and mix down; robotaxi could lift both, but that is the Module-M option, not the base auto line.</div>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>The core leg is defensible but not from the current trajectory.</b> To underwrite ~$10bn of 2028E core net income, deliveries have to stop falling <i>and</i> margin has to hold without one-offs. (2) <b>The Q1'26 margin beat leaned on non-recurring items.</b> If it fades in Q2 without volume acceleration, the grid slides up-left. (3) <b>Energy, not autos, is the clean operating compounder</b> (Module K). (4) <b>First live test:</b> Q2'26 deliveries and auto GM ex-credits, printing late July 2026.</div>
+
+    <div class="note c"><b>Where this model breaks.</b> ASP and GM ex-credits are blended across a widening model range and a growing services mix; a cheaper next-gen vehicle would reset both. Regulatory-credit revenue (a swing factor as the US IRA/EPA regime shifts) is excluded from the ex-credits basis by design. Re-calibrate the cells as each quarter prints; the grid does not need to be re-derived.</div>
+  </section>
+
+  <!-- M — ROBOTAXI / AUTONOMY OPTIONALITY -->
+  <section class="mod" id="mM">
+    <div class="mod-head"><div class="mod-no">M</div>
+      <div class="ht"><h2>Robotaxi / autonomy optionality &mdash; the leg the price rests on</h2><div class="hq">FSD &rarr; unsupervised robotaxi &rarr; a mobility network &mdash; priced as a risk-adjusted, discounted call option.</div></div>
+      <span class="tagchip c">Computed &middot; option leg</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>Real, physically progressing, and the single biggest number in the valuation.</b> Unsupervised robotaxi is now live across the Austin metro and launched in Dallas &amp; Houston &mdash; roughly nine US markets by mid-2026 &mdash; so this is no longer pure vapour. But the leg is a <i>risk-adjusted</i> 2030E enterprise value (TAM &times; capture &times; probability) discounted five years. At mode it is <b>$80/share</b> (31% of value); the right tail &mdash; national unsupervised autonomy &mdash; is worth <b>~$220/share</b> more. ARK frames the whole company on this leg at <b>~$4,600</b>.</span></div>
+
+    <p class="body"><b>Why this is the leg.</b> Tesla&rsquo;s bull case has migrated almost entirely from selling cars to <i>operating an autonomy network</i>: a fleet of owned + third-party vehicles running unsupervised FSD, earning per-mile economics at software-like margins, plus FSD subscription revenue on the retail fleet. The gate is not manufacturing &mdash; it is <b>unsupervised autonomy that regulators and physics accept at scale</b>. As of mid-2026 that gate is <i>partly</i> open: unsupervised operation across a full metro, expansion into new cities, a Cybercab in volume production, and FSD moving subscription-only with record net-adds. None of it is yet a material, disclosed revenue line.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Evidence</th><th>2026 status</th><th>Read</th></tr></thead>
+      <tbody>
+        <tr><td><b>Unsupervised robotaxi</b></td><td>Live across the Austin metro; launched Dallas &amp; Houston (Apr'26); ~9 US markets by mid-year</td><td>The physical proof points the AI mark lacked &mdash; real, but small</td></tr>
+        <tr><td><b>Cybercab</b></td><td>Volume production began ~Apr'26</td><td>Purpose-built robotaxi hardware entering the fleet</td></tr>
+        <tr><td><b>FSD (Supervised)</b></td><td>Moving subscription-only; record net new subscriptions in Q1'26</td><td>A recurring-revenue on-ramp ahead of unsupervised</td></tr>
+        <tr><td><b>Expansion target</b></td><td>Targeting a dozen states by year-end 2026</td><td>Cadence is the signal &mdash; watch metros, not press releases</td></tr>
+        <tr><td><b>The gate</b></td><td>Safety record + regulatory acceptance of unsupervised operation</td><td>One serious incident can reset the timeline &mdash; the core risk</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>The decomposition.</b> The robotaxi driver is Tesla&rsquo;s risk-adjusted 2030E enterprise value ($0&ndash;$1,700bn, mode $450bn) &mdash; itself <b>autonomy-TAM &times; Tesla-capture &times; probability</b> (the chance the category is real and permitted at scale). The grid shows which pair each value anchor needs. Green = inside the driver&rsquo;s band; teal-shaded = at the ~$450bn mode; faint = a stretch.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>2030 autonomy pool &darr;&nbsp;&nbsp;/&nbsp;&nbsp;Tesla effective capture &rarr;</th><th style="text-align:right">10%</th><th style="text-align:right">20%</th><th style="text-align:right">35%</th><th style="text-align:right">50%</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>$1.0tn</td><td class='num'>$100bn</td><td class='num'>$200bn</td><td class='num'>$350bn</td><td class='num cur'>$500bn</td></tr>
+        <tr><td class='num'>$2.0tn</td><td class='num'>$200bn</td><td class='num cur'>$400bn</td><td class='num'>$700bn</td><td class='num'>$1000bn</td></tr>
+        <tr><td class='num'>$3.5tn</td><td class='num'>$350bn</td><td class='num'>$700bn</td><td class='num' style='color:var(--faint)'>$1225bn</td><td class='num' style='color:var(--faint)'>$1750bn</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;margin-top:14px;overflow-x:auto">
+      robotaxi EV 2030 [$bn]   = autonomy pool [$bn] &times; Tesla capture &times; probability&nbsp; <span style="color:var(--faint)">// mode $450bn</span><br>
+      robotaxi value today [$bn] = robotaxi EV 2030 &divide; 1.10<sup>5</sup>&nbsp; <span style="color:var(--faint)">// ~$279bn &rarr; $80/share at mode</span>
+    </div>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>This is the valuation.</b> At mode it is 31% of value; the reverse-DCF says the tape prices it at ~$1.3tn, more than half the market cap. (2) <b>It is optionality gated on autonomy, not hardware.</b> Watch the metro count and the first disclosed unsupervised-revenue line before the TAM. (3) <b>The near-term revenue is tiny, the vision is not.</b> ARK values the whole company on this leg at ~$4,600 (Module O). (4) <b>Kill/confirm:</b> a safety-driven regulatory halt kills it; a clean multi-metro scale-up with disclosed economics confirms it.</div>
+
+    <div class="note c"><b>Where this leg breaks.</b> Every number here is a <i>forward, risk-adjusted</i> estimate on a business that books essentially no profit today. The ranges are wide by design and the sourcing is directional (rollout coverage, ARK/sell-side TAMs), not audited segment filings. The point is not precision &mdash; it is to price the autonomy future explicitly rather than bury it in a 371× P/E. As real metros, safety data and unsupervised revenue print, re-calibrate <code>robotaxi_val</code> in stocks/config_tesla.py.</div>
+  </section>
+
+  <!-- N — OPTIMUS / ROBOTICS OPTIONALITY -->
+  <section class="mod" id="mN">
+    <div class="mod-head"><div class="mod-no">N</div>
+      <div class="ht"><h2>Optimus / robotics optionality &mdash; the deeper, longer call</h2><div class="hq">Humanoid robots at volume &mdash; the largest TAM on the page and the furthest from revenue.</div></div>
+      <span class="tagchip c">Computed &middot; option leg</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>The biggest dream, the least de-risked.</b> Optimus Gen-3 is in production at Fremont with a dedicated Giga Texas line targeting 10m units/yr and public sales ~end-2027 &mdash; but it is pre-revenue for Tesla today, so the leg is a <i>risk-adjusted</i> 2030E enterprise value discounted five years. At mode it adds <b>$39/share</b> (15% of value); the right tail &mdash; humanoids at industrial volume &mdash; is worth <b>~$180/share</b>.</span></div>
+
+    <p class="body"><b>Why Tesla, and why this is a real leg.</b> Optimus reuses Tesla&rsquo;s core competencies &mdash; the same AI training stack, inference silicon, actuators, batteries and high-volume manufacturing that build the cars and the robotaxi fleet. Musk has repeatedly framed Optimus as the <i>largest</i> product in Tesla&rsquo;s future. The gate is the same one autonomy faces &mdash; real-world AI that works unsupervised &mdash; plus a manufacturing ramp Tesla is uniquely positioned to attempt. Gen-3 mass production started at Fremont in January 2026; the Giga Texas line targets 10m units/yr; public sales are guided to ~end-2027 at $20&ndash;30k.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Evidence</th><th>2026 status</th><th>Read</th></tr></thead>
+      <tbody>
+        <tr><td><b>Gen-3 production</b></td><td>Mass production started at Fremont (Jan'26)</td><td>Off the demo stage &mdash; but internal-use scale, not sales</td></tr>
+        <tr><td><b>Giga Texas line</b></td><td>Dedicated factory targeting 10m units/yr</td><td>The ambition is industrial, not boutique</td></tr>
+        <tr><td><b>Public sales</b></td><td>Guided ~end-2027 at $20&ndash;30k</td><td>First external revenue is 18+ months out at best</td></tr>
+        <tr><td><b>Shared stack</b></td><td>Same AI, silicon, actuators, batteries as auto/robotaxi</td><td>Why it is a Tesla leg and not a generic robotics line</td></tr>
+        <tr><td><b>The gate</b></td><td>Unsupervised real-world dexterity + a manufacturing ramp</td><td>Unproven at volume; the longest-dated bet on the page</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>The decomposition.</b> The Optimus driver is Tesla&rsquo;s risk-adjusted 2030E enterprise value ($0&ndash;$1,500bn, mode $220bn). Read it as <b>units &times; price &times; margin &times; multiple &times; probability</b> the category is real at scale. The grid uses ~$25k price and a software-inflected margin. Green = inside the driver&rsquo;s band; teal-shaded = at the ~$220bn mode; faint = a stretch.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>2030 annual units &darr;&nbsp;&nbsp;/&nbsp;&nbsp;risk-adjusted EV multiple &rarr;</th><th style="text-align:right">low</th><th style="text-align:right">mid</th><th style="text-align:right">high</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>0.5m units</td><td class='num'>$80bn</td><td class='num cur'>$220bn</td><td class='num'>$400bn</td></tr>
+        <tr><td class='num'>2m units</td><td class='num'>$300bn</td><td class='num'>$600bn</td><td class='num'>$1000bn</td></tr>
+        <tr><td class='num'>5m units</td><td class='num'>$600bn</td><td class='num' style='color:var(--faint)'>$1200bn</td><td class='num' style='color:var(--faint)'>$1500bn</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;margin-top:14px;overflow-x:auto">
+      Optimus EV 2030 [$bn]    = units &times; price &times; margin &times; multiple &times; probability&nbsp; <span style="color:var(--faint)">// mode $220bn</span><br>
+      Optimus value today [$bn] = Optimus EV 2030 &divide; 1.10<sup>5</sup>&nbsp; <span style="color:var(--faint)">// ~$137bn &rarr; $39/share at mode</span>
+    </div>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>Largest TAM, longest dated.</b> If humanoids reach industrial volume, no single leg on this page is bigger; it is also the furthest from any revenue. (2) <b>It rides the same AI gate as robotaxi</b> &mdash; correlated with Module M, not independent. (3) <b>At mode it is a modest 15% of value</b>; its honest role is to fatten the right tail. (4) <b>First real signals:</b> the first external Optimus sale and a disclosed unit/price/margin &mdash; until then it is a lottery ticket, priced like one.</div>
+
+    <div class="note c"><b>Where this leg breaks.</b> Real-world humanoid dexterity, safety, and a 10m-unit manufacturing ramp are all unproven; the price/margin/multiple assumptions are illustrative, not sourced. If the AI gate that also governs robotaxi slips, both legs slip together. Re-calibrate <code>optimus_val</code> in stocks/config_tesla.py as the first external sales and unit economics print.</div>
+  </section>
+
+  <!-- O — PERFECT-EXECUTION BULL CASE -->
+  <section class="mod" id="mO" style="border:1.5px solid var(--teal)">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">O</div>
+      <div class="ht"><h2>Perfect-execution bull case &mdash; the right tail, priced end-to-end</h2><div class="hq">If robotaxi <i>and</i> Optimus both scale: what is TSLA worth, and what does that discount back to today?</div></div>
+      <span class="tagchip a">Scenario overlay &middot; your assumptions</span>
+    </div>
+
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext"><b>Deliberately outside the disciplined fourteen &mdash; the flawless-execution tail, sized.</b> Push the robotaxi and Optimus legs to their bull ends and the picture inverts: a <b>$4&ndash;10T+ market cap</b> is what ARK&rsquo;s ~$4,600 target implies. Even after diluting and discounting a decade at 12%, the implied present value can clear today&rsquo;s <span class="jsprice">$404.38</span> by a wide margin &mdash; so if the autonomy path is even partly real, the stock is a good investment at today&rsquo;s price. This is the far-right tail Modules A&ndash;N hold at their modes; here it is the whole picture.</span></div>
+
+    <p class="body"><b>What this panel is &mdash; and is not.</b> The reads above are underwriting: what you can defend on today&rsquo;s data. This one is the opposite exercise &mdash; the <i>everything-goes-right</i> scenario the autonomy bulls (ARK foremost) model, made explicit and end-to-end computable. Every input below is <b>your assumption</b>, anchored to published bull cases but not asserted as fact. Perfect execution here means: unsupervised robotaxi scaling nationally to a software-margin mobility network; Optimus reaching industrial volume; energy compounding; and the market still paying a premium multiple on the resulting earnings.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin:18px 0 6px">◆ External bull-case anchors (as supplied &mdash; directional, not audited)</div>
+    <table class="brtab">
+      <thead><tr><th>Source</th><th style="text-align:right">Target / value</th><th>Read</th></tr></thead>
+      <tbody>
+        <tr><td>ARK Invest &mdash; 2026 expected value</td><td class="num">~$4,600/sh</td><td>Overwhelmingly robotaxi-driven; implies a multi-trillion market cap on an at-scale autonomy network.</td></tr>
+        <tr><td>Street bull high (TipRanks range)</td><td class="num">$600/sh</td><td>The most bullish single sell-side target in the 28-analyst set (vs a $415 blended consensus).</td></tr>
+        <tr class="cur"><td><b>This panel &mdash; 2035&ndash;36 window</b></td><td class="num" style="text-align:right"><b>you set it</b></td><td>Robotaxi network + Optimus at volume + energy &rarr; the earnings the calculator prices.</td></tr>
+      </tbody>
+    </table>
+    <div class="src">Anchors as supplied in the bull-case brief (ARK Invest Tesla model; TipRanks/Street target range). Directional &mdash; treated here as scenario inputs, not sourced facts.</div>
+
+    <div class="mc-wrap" style="margin-top:18px">
+      <div class="mc-title">◆ Perfect-execution price calculator &mdash; 2035&ndash;36, discounted to today</div>
+      <div class="mc-sub">Fixed: live spot <span class="jsprice">$404.38</span>, 10-year horizon (2026 &rarr; 2036). Market cap = 2035&ndash;36 earnings &times; P/E; price = market cap &divide; diluted shares; present value discounts that price back 10 years at your required return. Every input is <span class="asm">your assumption</span>.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">2035&ndash;36E net income <span>$bn · assumption</span></span><span class="cval">$<span id="bv-ni">120</span>bn</span></label>
+          <input type="range" id="b-ni" min="20" max="400" step="10" value="120">
+          <div class="tri">robotaxi network + Optimus + auto + energy at scale (FY2025 was $3.8bn)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">P/E multiple <span>× · assumption</span></span><span class="cval"><span id="bv-pe">40</span>×</span></label>
+          <input type="range" id="b-pe" min="15" max="80" step="1" value="40">
+          <div class="tri">a maturing-but-premium multiple for a software-margin autonomy platform</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Diluted shares 2036 <span>bn · assumption</span></span><span class="cval"><span id="bv-shares">3.8</span>bn</span></label>
+          <input type="range" id="b-shares" min="3.5" max="4.5" step="0.05" value="3.8">
+          <div class="tri">3.51bn today · comp + raises dilute over a decade</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Required return (discount) <span>%/yr · assumption</span></span><span class="cval"><span id="bv-disc">12</span>%</span></label>
+          <input type="range" id="b-disc" min="0" max="20" step="1" value="12">
+          <div class="tri">the hurdle you discount the 2036 price back at to compare with today</div>
+        </div>
+      </div>
+
+      <div class="kelly" style="grid-template-columns:repeat(5,1fr)">
+        <div class="kbox good"><div class="t">2036 market cap</div><div class="n pos" id="bo-mcap">$4.8T</div><div class="d">net income &times; P/E.</div></div>
+        <div class="kbox good"><div class="t">Implied 2036 price</div><div class="n pos" id="bo-price">$1,263</div><div class="d">market cap &divide; diluted shares.</div></div>
+        <div class="kbox"><div class="t">Present value (today)</div><div class="n pos" id="bo-pv">$407</div><div class="d">2036 price discounted 10y.</div></div>
+        <div class="kbox"><div class="t">Return vs today</div><div class="n pos" id="bo-cagr">+12%/yr</div><div class="d">CAGR on live spot to 2036.</div></div>
+        <div class="kbox"><div class="t">× today&rsquo;s price</div><div class="n pos" id="bo-multx">3.1×</div><div class="d">undiscounted 2036 / spot.</div></div>
+      </div>
+
+      <div class="cbar" style="margin-top:26px">
+        <div class="fl" style="left:0;right:0"></div>
+        <div class="mk" id="bo-mk" style="left:42%"></div>
+        <div class="lb" id="bo-mklb" style="left:42%">2036 · $1,263</div>
+        <div class="lb" style="left:13.5%;color:var(--ink)">today $404</div>
+      </div>
+      <div style="height:26px"></div>
+      <div class="reading" id="bull-read"></div>
+    </div>
+
+    <p class="body" style="margin-top:18px"><b>The three canonical rungs.</b> The same arithmetic at the market caps the bull cases cluster around, holding ~3.8bn diluted shares. Each is a legitimate &ldquo;everything goes right&rdquo; outcome; they differ in how big the autonomy earnings get and what multiple survives.</p>
+    <div class="kelly" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kbox"><div class="t">Strong &mdash; $2.5T cap</div><div class="n pos">~$660</div><div class="d">~$85bn earnings &times; ~30&times;. Robotaxi scaling, Optimus early; ~1.6&times; today undiscounted, roughly fair discounted &mdash; the &ldquo;bull base&rdquo;.</div></div>
+      <div class="kbox good"><div class="t">Flawless &mdash; $5T cap</div><div class="n pos">~$1,315</div><div class="d">~$125bn earnings &times; ~40&times;. Autonomy network + Optimus both firing; ARK&rsquo;s zone.</div></div>
+      <div class="kbox good"><div class="t">Full-vision &mdash; $10T+ cap</div><div class="n pos">~$2,630+</div><div class="d">~$200bn+ earnings &times; ~50&times;. National robotaxi + humanoids at industrial volume &mdash; the ARK ~$4,600 corner and beyond.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:18px"><b>The full grid.</b> 2036 price per share at the current diluted-share count (<span id="bull-shcap">3.8bn</span>) &mdash; net income down the side, P/E across. Teal-shaded = the cell nearest your slider setting; green = &ge; a ~3&times;-from-today outcome.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>Net income &darr;&nbsp;&nbsp;/&nbsp;&nbsp;P/E &rarr;</th><th style="text-align:right">25×</th><th style="text-align:right">35×</th><th style="text-align:right">50×</th><th style="text-align:right">65×</th></tr>
+      </thead>
+      <tbody id="bull-matrix"></tbody>
+    </table>
+
+    <div class="reading" id="bull-read2"></div>
+
+    <div class="note t" style="margin-top:14px"><b>How to hold this next to the base case.</b> Modules A&ndash;N are the disciplined anchor &mdash; what you pay for today, sized by kill-criteria. This panel is the <i>reward side</i>: it quantifies why an energy compounder plus a stabilised auto core plus two of the largest call options in public markets can be worth owning as a small, event-sized position rather than avoiding. The honest synthesis is a <b>barbell</b>: underwrite the base case, size for the kill-criteria &mdash; and recognise that if robotaxi and Optimus both land, ARK&rsquo;s ~$4,600 is arithmetic, not hyperbole. Both statements are true at once; that is the whole point of a distribution.</div>
+
+    <div class="note c"><b>Where this panel breaks &mdash; read before believing it.</b> This is the <i>upper</i> tail, and it stacks best-case on best-case: national unsupervised autonomy that regulators accept, Optimus at industrial volume, energy compounding, and a premium multiple sustained for a decade. Any one of the Module-H kill-criteria firing takes the flawless path off the table. Perfect execution is rare precisely because it requires <i>everything</i>; the base case exists because most futures are not perfect. Use this to size the reward, not to abandon the discipline. <span style="color:var(--faint)">For analysis and education only &mdash; not investment advice.</span></div>
+  </section>
+
+  <!-- ∑ — SCORECARD -->
+
+  
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">The composite metrics flag a negative pay-off asymmetry — expected loss dominates expected gain, and the market is already pricing above-base assumptions. Live spot <b>$404.52</b> · MC median <b>$378.42</b> (P10 $236.30, P90 $550.68) · P(FV &gt; price) <b>42%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-09) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (TSLA)</div><div class="v">$404.52 <small>as of 2026-07-09</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">$297.82–$498.83</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">87%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+2.6% <small>PT $415.00</small></div></div>
+    </div>
+
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">1275.00 $bn</div>
+        <div class="l">is the value of <b>Robotaxi/autonomy risk-adjusted 2030E enterprise value</b> that reconciles the median MC fair value to today's <b>$404.52</b> price. That is <b>+183.3% above</b> the pipeline's base-case mode of <b>450.0 $bn</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-18.2%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.70×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.96</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in $.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-4.4%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-41.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-51.5%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-49.6%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-57.7%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1255 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">44.8%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">57.6%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-73.6%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-1.1% / +17.8% / -6.6% / +35.8%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs S&P 500</td><td class="num">2.11</td><td>R² = 0.35. 252-day OLS.</td></tr>
+        <tr><td>Beta vs Nasdaq 100</td><td class="num">1.52</td><td>R² = 0.39. 252-day OLS.</td></tr>
+        <tr><td>Beta vs US 10y yield (^TNX)</td><td class="num">-0.25</td><td>R² = 0.01. 252-day OLS on daily log-returns.</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs BYDDY</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+68.0%</div></div><div class="barsrow"><div class="bl">vs TM</div><div class="bb"><div class="bi" style="left:50%;width:33.0%;background:var(--teal)"></div></div><div class="bv">+33.0%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a Robotaxi/autonomy risk-adjusted 2030E enterprise value of <b>1275.00 $bn</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (TSLA, ^GSPC, ^NDX, ^TNX) — fetched 2026-07-09. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">Composite <b>36/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Trailing P/E multiple at each cycle mark through the cycle</div>
+    <table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>End 2022 ($123 / $3.62 EPS)</td><td class="num">34.00×</td><td>post-selloff trough multiple</td></tr><tr><td>End 2023 ($248 / $4.30 EPS)</td><td class="num">58.00×</td><td>recovery (2023 EPS flattered by a one-off tax benefit)</td></tr><tr><td>End 2024 ($403 / $2.23 EPS)</td><td class="num">181.00×</td><td>EPS rolling over while the price held flat</td></tr><tr><td>End 2021 ($352 / $1.63 EPS)</td><td class="num">216.00×</td><td>prior-cycle peak, ex the 2020 mania</td></tr><tr class='cur'><td>Now ($404 / $1.09 TTM EPS)</td><td class="num now">371.00×</td><td>at $404.38 spot, 2026-07-09</td></tr></tbody>
+    </table>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:100.0%"></div>
+      <div class="lb" style="left:100.0%">now · ≈371× trailing P/E</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1255 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">31%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">38%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">49%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n neg">-194 bp</div>
+        <div class="l"><b>Owner-earnings yield 0.44%</b> ($6200m ÷ $1419851m market cap) minus <b>real 10y ≈ 2.37%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: FY2025 free cash flow +$6.2bn (8-K, 28 Jan 2026) as the owner-earnings proxy; the 2026 capex ramp (robotaxi/Optimus/AI compute) turned TTM FCF negative by Q1'26, so the real cash yield is thinner than the FY2025 figure implies. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">13</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi"><div class="fk">Quality</div><div class="fv">55</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">75</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">0</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">36</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-194 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-09.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the fifteen reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base-case calibration (robotaxi $450bn, Optimus $220bn at mode, neutral priors).</div></div>
+    </div>
+    <table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~$378 (just below spot) at mode; robotaxi+Optimus legs make the payoff two-sided</td></tr>
+        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>Robotaxi dominance → fragile estimate; Optimus the second swing</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted value near the live price; bull robotaxi clears it, bear well below</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip mixed">MIXED</span></td><td>Fortress balance sheet &amp; energy vs shrinking auto core and Q1'26 earnings-quality flags</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Real industrial execution vs founder-centric comp &amp; Musk-complex related-party ties</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Passive demand vs retail/options/short-interest reflexivity; founder control</td></tr>
+        <tr><td>G · Valuation context</td><td><span class="vchip bear">BEAR</span></td><td>≈371× trailing P/E — an order of magnitude above every auto maker</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; triggers datable to specific 2026–27 prints</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bear">BEAR</span></td><td>Kelly f* -18%, asymmetry 0.70×, market implies +183.3% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip bear">BEAR</span></td><td>Composite 36/100 · OE-yield spread -194 bp real</td></tr>
+        <tr><td>K &middot; Priced-in</td><td><span class="vchip bear">BEAR</span></td><td>Four-leg SOTP: options are ~46% of mode value; robotaxi ~$1.3tn implied vs $450bn mode</td></tr>
+        <tr><td>L &middot; Auto unit-econ</td><td><span class="vchip mixed">MIXED</span></td><td>Core mode reachable, but only by reversing two years of falling deliveries &amp; margin</td></tr>
+        <tr><td>M &middot; Robotaxi</td><td><span class="vchip mixed">MIXED</span></td><td>Autonomy leg: ~31% at mode, ~$220/sh tail — live but pre-revenue, gated on safety/regulatory</td></tr>
+        <tr><td>N &middot; Optimus</td><td><span class="vchip mixed">MIXED</span></td><td>Robotics leg: ~15% at mode, ~$180/sh tail — biggest TAM, furthest from revenue</td></tr>
+        <tr><td>O &middot; Bull case <span style="font-family:var(--mono);font-size:8.5px;color:var(--faint)">overlay</span></td><td><span class="vchip bull">BULL</span></td><td>Perfect-execution right tail: $2.5–10T+ cap → $660–2,630+/share (ARK ~$4,600). Not in the net-14 count</td></tr>
+      </tbody>
+    </table>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:0.0%"></div><div class="tp mixed" style="width:71.4%"></div><div class="tp bear" style="width:28.6%"></div></div>
+      <div class="tlab"><span class="tb">0 Bull</span><span class="tm">10 Mixed</span><span class="tr">4 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED, LEANING BEAR</span>
+      <div class="ov-text"><b>A car-and-energy company valued as an autonomy platform, at a price that already banks most of the platform.</b> What you can underwrite today is the energy business — +27% revenue at record margins — and a shrinking-but-profitable auto core with a fortress balance sheet. On top sit two of the largest call options in public markets: robotaxi (Module M), now physically live across a metro but pre-revenue, and Optimus (Module N), the biggest TAM and the furthest from a sale. The number doing most of the valuation work is the robotaxi leg, marked by the market near $1.3tn (Module I reverse-DCF, ~3× the base-case mode) against a segment that books essentially no profit. The engine's median (~$378, with a P90 near $550) sits just below the live price and the payoff is two-sided — the autonomy tail, not the car, is the source of upside. With a 371× multiple and delivery declines on one side and ARK's ~$4,600 on the other, the disciplined position is sized by the kill-criteria, not the narrative.</div>
+    </div>
+  </section>
+
+  <!-- CONCLUSIONS -->
+  <section class="mod" id="mConc">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">&#10003;</div>
+      <div class="ht"><h2>Conclusions &amp; watch-list &mdash; the single-source summary</h2><div class="hq">Everything the Tesla build concluded, in one place, with dates.</div></div>
+      <span class="tagchip a">Synthesis &middot; live</span>
+    </div>
+    <p class="body"><b>The thesis in one paragraph.</b> Tesla is valued as the sum of four legs: a shrinking-but-cash-generative auto core (~26% of value at mode), an excellent energy compounder (~24%), and two deep call options &mdash; robotaxi/autonomy (~31%, Module M) and Optimus/robotics (~15%, Module N), each with a much larger right tail. The engine at every driver&rsquo;s mode returns <span class="hl">$258/share</span>; live spot is <span class="hl">$404.38</span>; the <b>+$146/share</b> in between is the market&rsquo;s autonomy re-rating &mdash; an implied robotaxi value of <b>~$1.3tn</b>, ~3&times; the base-case mode. What you can underwrite is energy and a stabilised auto core; what you get as free-but-distant calls are robotaxi and Optimus, gated on unsupervised autonomy scaling safely; what you cannot yet underwrite is the ~$1.3tn robotaxi mark. The disciplined position is <b>sized by kill-criteria, not narrative</b>: participate below the anchor, trim into the top of the range, own the tape event-by-event, and treat the option legs as the calls they are &mdash; while acknowledging (Module O) that if both land, ARK&rsquo;s ~$4,600 is arithmetic.</p>
+
+    <table class="brtab">
+      <thead><tr><th>When</th><th>Event</th><th>What to verify</th></tr></thead>
+      <tbody>
+        <tr><td class="num">Late Jul 2026</td><td>Q2 2026 earnings &amp; deliveries</td><td>Deliveries vs the 1.64m FY2025 run-rate; auto GM ex-credits without one-offs (vs Q1&rsquo;26&rsquo;s 19.2%); energy deployment vs the 8.8 GWh Q1 print; any autonomy-revenue disclosure</td></tr>
+        <tr><td class="num">H2 2026</td><td>Robotaxi metro expansion</td><td>Metro count toward the &ldquo;dozen states by year-end&rdquo; target; safety record; any incident/regulatory friction &mdash; the hinge for the Module-M leg</td></tr>
+        <tr><td class="num">End 2026</td><td>FY2026 full-year deliveries</td><td>A third straight annual decline vs a return to growth &mdash; the Module-H kill-criterion for the auto core</td></tr>
+        <tr><td class="num">2027</td><td>First disclosed unsupervised-autonomy economics; Cybercab fleet ramp</td><td>Whether the robotaxi mark starts having a cash flow underneath it &mdash; the difference between a $1.3tn story and a $1.3tn segment</td></tr>
+        <tr><td class="num">~End 2027</td><td>First external Optimus sales</td><td>A disclosed unit / price / margin &mdash; the proof point that anchors the Module-N leg</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cmp" style="margin-top:16px">
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin-bottom:8px">Why the valuation is the fragile side</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--muted)">Tesla trades at ~371× trailing earnings on a core product line that shipped <b>fewer</b> cars in each of the last two years and a net income that <b>fell 47%</b> in FY2025. The reverse-DCF says the price banks a ~$1.3tn robotaxi value against a segment with essentially no profit today. If deliveries decline a third year, or a robotaxi safety event forces a regulatory pause, the option legs compress and the operating business cannot fill the gap.</div></div>
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:8px">Why the options are the asymmetric side</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--muted)">Robotaxi (Module M) and Optimus (Module N) are marked at ~46% of value at mode, yet their tails are worth ~$400/share &mdash; and, unlike a pure story, each now has <b>physical, verifiable milestones</b> (unsupervised metros, a Cybercab in production, Optimus Gen-3 off the line). If both scale, ARK&rsquo;s ~$4,600 (Module O) is arithmetic. You are not paying up for the <i>tail</i> today &mdash; you own it as a call, gated on the unsupervised-autonomy breakthrough Tesla is closest to attempting.</div></div>
+    </div>
+
+    <div class="note t" style="margin-top:14px"><b>Fastest information channel.</b> SEC EDGAR (CIK 1318605) for the 8-Ks and 10-Ks; the Tesla IR quarterly update deck; the quarterly delivery/production press release (first Wednesday after quarter-end); NHTSA/state DMV notices for robotaxi permits and incidents; and the live tape, which Modules I &amp; J read on a full multi-year sample.</div>
+    <p class="disc" style="font-size:11px;color:var(--faint);margin-top:12px">Modules K, L, M, N, O and &#10003; Conclusions synthesise the Tesla build: four-leg priced-in decomposition, auto unit-economics, robotaxi &amp; Optimus optionality, the perfect-execution bull case, and the dated watch-list. For analysis and education only &mdash; not investment advice.</p>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-09 20:52</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-09)</h4>
+      <table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/TSLA?range=5y&interval=1d</td><td>Tesla 5-year daily OHLC + adjusted close + live spot (deep, liquid tape — every window computes).</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile · J: base rates</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=5y&interval=1d</td><td>S&P 500 index — broad-market benchmark.</td><td class="mods">I: beta vs S&P 500</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?range=5y&interval=1d</td><td>Nasdaq 100 — mega-cap growth benchmark (Tesla is a top constituent).</td><td class="mods">I: beta vs Nasdaq 100</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?range=5y&interval=1d</td><td>US 10-year Treasury yield — rate-duration macro factor + real-rate proxy.</td><td class="mods">I: beta vs rates · J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/BYDDY?range=2y&interval=1d</td><td>BYD (ADR) — the volume-EV peer that overtook Tesla on unit sales.</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/TM?range=2y&interval=1d</td><td>Toyota — legacy-auto scale peer.</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Tesla Q4/FY2025 update & 8-K (Ex-99.1, 28 Jan 2026)</td><td>FY2025 revenue $94.8bn (-2.9%); automotive $69.53bn; energy gen & storage $12.8bn (+26.6%, record gross profit); services & other ~$12.5bn; GAAP net income $3.79bn (-47%), diluted EPS $1.08; Q4 gross margin 20.1% (two-year high), auto GM ex-credits ~17.9%; FY FCF +$6.2bn; cash & investments $44.1bn (+$7.5bn); deliveries 1.64m (-8.6%, second straight annual decline)</td><td class="mods">A engine, D forensics, E capital record, G valuation</td></tr><tr><td>Tesla Q1 2026 update & 8-K (Ex-99.1, 22 Apr 2026)</td><td>Revenue $22.39bn (+16% YoY); 358k deliveries; gross margin 21.1% (auto GM ex-credits 19.2%, aided by ~$230m warranty true-downs + tariff relief); GAAP EPS $0.13; energy revenue $2.41bn, 8.8 GWh deployed (down from a record 14.2 GWh in Q4'25); FCF turned negative on the capex ramp; warranty-reserve releases, tariff-refund windfalls, a 10-day supplier-payment stretch and new debt flagged as earnings-quality items</td><td class="mods">A engine, B driver analysis, D forensics, H kill-criteria</td></tr><tr><td>Tesla FY2025 vehicle-delivery & production reports (Jan 2026; Q1'26 report Apr 2026)</td><td>Full-year 2025 deliveries 1.64m vs 1.79m in 2024 (-8.6%); Q1'26 deliveries ~358k (a miss vs consensus, the steepest 2026 delivery drop) — the unit-decline that Module L's ASP x volume grid keys on</td><td class="mods">L unit-economics, C scenarios</td></tr><tr><td>Robotaxi / Cybercab rollout coverage (Tesla, Electrek, Teslarati, Forbes; Jan-Jun 2026)</td><td>Unsupervised robotaxi across the Austin metro; unsupervised launched in Dallas & Houston (Apr'26); ~9 US markets by mid-2026; targeting a dozen states by year-end; Cybercab volume production began ~Apr'26; FSD moving to subscription-only with record net new subscriptions in Q1 — the basis for the Module-M autonomy leg</td><td class="mods">M robotaxi optionality, C scenarios</td></tr><tr><td>Optimus programme coverage (Tesla, Teslarati, Seeking Alpha; Jan-Jun 2026)</td><td>Optimus Gen-3 mass production started at Fremont (Jan'26); a dedicated Giga Texas line targets 10m units/yr; public sales ~end-2027 at $20-30k; 2025-2026 capex signalled at >$25bn — the basis for the Module-N robotics leg</td><td class="mods">N Optimus optionality, E capital record</td></tr><tr><td>Analyst consensus & price targets (S&P Global, MarketBeat, TipRanks, Benzinga; early Jul 2026)</td><td>12m consensus PT ~$395-424 across providers (S&P Global 47-analyst avg $424.01; MarketBeat $408.52; TipRanks $399.71 with a $600 high / $24.86 low; Benzinga $395.41); consensus rating Hold-to-Buy; $415 used as the blended anchor</td><td class="mods">F positioning, I asymmetry</td></tr><tr><td>ARK Invest — Tesla 2026 valuation model</td><td>ARK's 2026 expected value ~$4,600/share, driven overwhelmingly by an at-scale robotaxi network — the explicit bull anchor for the Module-O perfect-execution overlay and the upper tail of the Module-M leg</td><td class="mods">M robotaxi optionality, O bull case</td></tr><tr><td>Peer & valuation context (stockanalysis.com / Macrotrends; Jul 2026)</td><td>TSLA ~371x trailing P/E on $1.09 TTM EPS, an order of magnitude above legacy auto (Toyota ~9x, BYD ~19x) and rich even against the Mag-7 — the multiple only reconciles if the autonomy/robotics legs are real</td><td class="mods">G valuation, K priced-in</td></tr></tbody>
+      </table>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths across four value legs. Marginals are triangular: core auto+services 2028E net income $5–18bn (mode $10bn; FY2025 group net income $3.79bn), core P/E 14–34× (mode 24×), energy 2028E revenue $20–58bn (mode $34bn; FY2025 $12.8bn, +26.6%), energy EV/Sales 3.5–11× (mode 6.5×), robotaxi 2030E risk-adjusted enterprise value $0–1,700bn (mode $450bn, your robotaxi slider), Optimus 2030E risk-adjusted enterprise value $0–1,500bn (mode $220bn, your Optimus slider). Fair value = [core NI × P/E + energy rev × EV/Sales] + [(robotaxi + Optimus) ÷ 1.10⁵] + net cash $30bn, × 1000 ÷ 3,510m shares. The two option legs are discounted a full five years (2030E) and their value is already risk-adjusted (TAM × capture × probability — see Modules M and N), so each is priced as a call option, not a base case. Dependence: a one-factor copula (loadings — robotaxi 0.90, Optimus 0.85, core NI 0.70, core P/E 0.65, energy revenue 0.55, energy multiple 0.50, scaled by your correlation knob) plus a regime-shock mixture (your tail knob). Correlation = 0 and tail = 0 reproduce the independent model exactly. The loadings reflect relative sentiment-sensitivity — a modelling choice, not estimated coefficients.</p>
+      <h4>The three labels, precisely</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: a figure fetched from a citable source (the FY2025 / Q1'26 releases, SEC EDGAR, rollout coverage, the live Yahoo tape). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation outputs, the P/E multiples, the tornado, the Bayesian posterior). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set that is judgment, not data (the robotaxi and Optimus values, core net income, energy revenue, net-cash estimate, correlation, tail probability, scenario priors, likelihood ratios, kill thresholds).</p>
+      <h4>Still excluded — post-Modules-I&amp;J audit</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Beneish M-score</b> — needs eight two-year ratios Tesla does not break out cleanly per segment; a half-estimated score is worse than none. <b>Segment operating income for energy and services</b> — Tesla discloses segment gross profit but not a clean segment net income, which is why the engine values a single core earnings block plus an energy EV/Sales leg rather than four fully-separated P&amp;Ls — a modelling simplification, not a hidden number. <b>A clean ex-one-off Q1'26 margin</b> — the ~$230m warranty true-down and tariff refunds sit inside the reported 19.2% auto GM ex-credits; stripping them requires an allocation this build does not assert. <b>Options-implied skew, daily short-interest and insider-transaction net flow</b> — fetchable for a US mega-cap from paid terminals but not from the Yahoo v8 chart endpoint this toolkit standardises on. Everything else previously flagged as "cut" (factor betas vs S&amp;P 500 / Nasdaq 100 / rates, price-history percentile, momentum, realised vol, drawdown, BYD/Toyota 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API — and, unlike SpaceX, on a full multi-year sample.</div>
+      <p class="disc">Live spot &amp; factor exposures fetched 2026-07-09; balance-sheet figures ≈ FY2025 / Q1'26 releases. For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Verify against primary filings (SEC EDGAR, CIK 1318605) before acting.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const PRICE=404.38, SHARES=3510, NETCASH=30, DISC=Math.pow(1.10,5), N=20000;
+  const ANI={lo:5,md:10,hi:18}, APE={lo:14,md:24,hi:34},
+        ERV={lo:20,md:34,hi:58}, EMU={lo:3.5,md:6.5,hi:11},
+        ROB={lo:0,md:450,hi:1700}, OPT={lo:0,md:220,hi:1500};
+  const RHO={ani:0.70,ape:0.65,erv:0.55,emu:0.50,rob:0.90,opt:0.85};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+  function fvOf(ani,ape,erv,emu,rob,opt){return ((ani*ape+erv*emu)+(rob+opt)/DISC+NETCASH)*1000/SHARES;}
+
+  function simulate(robMid, corr, pStress, paths, optMid, aniMid, ervMid){
+    const n = paths||N;
+    const o_in = optMid!==undefined?optMid:(+document.getElementById('i-opt').value);
+    const a_in = aniMid!==undefined?aniMid:(+document.getElementById('i-ani').value);
+    const e_in = ervMid!==undefined?ervMid:(+document.getElementById('i-erv').value);
+    const r_md=Math.max(0,robMid), r_lo=Math.min(ROB.lo,r_md), r_hi=Math.max(r_md+25,ROB.hi);
+    const o_md=Math.max(0,o_in),   o_lo=Math.min(OPT.lo,o_md), o_hi=Math.max(o_md+25,OPT.hi);
+    const a_md=a_in, a_lo=Math.min(ANI.lo,a_md), a_hi=Math.max(a_md+1,ANI.hi);
+    const e_md=e_in, e_lo=Math.min(ERV.lo,e_md), e_hi=Math.max(e_md+1,ERV.hi);
+    const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const ani=draw(RHO.ani,a_lo,a_md,a_hi);
+      const ape=draw(RHO.ape,APE.lo,APE.md,APE.hi);
+      const erv=draw(RHO.erv,e_lo,e_md,e_hi);
+      const emu=draw(RHO.emu,EMU.lo,EMU.md,EMU.hi);
+      const rob=draw(RHO.rob,r_lo,r_md,r_hi);
+      const opt=draw(RHO.opt,o_lo,o_md,o_hi);
+      fv[i]=fvOf(ani,ape,erv,emu,rob,opt);
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=PRICE*0.5;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMAX=900,BINS=45;
+  function xOf(v){return HX0+(Math.min(Math.max(v,0),VMAX)/VMAX)*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=VMAX/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor(fv[i]/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=(b+0.5)*bw,x=xOf(b*bw),x2=xOf((b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=0;v<=VMAX;v+=100){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median $'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(over){
+    const rob=+document.getElementById('i-rob').value;
+    const opt=+document.getElementById('i-opt').value;
+    const ani=+document.getElementById('i-ani').value;
+    const erv=+document.getElementById('i-erv').value;
+    const _ani=over.ani!==undefined?over.ani:ani;
+    const _ape=over.ape!==undefined?over.ape:APE.md;
+    const _erv=over.erv!==undefined?over.erv:erv;
+    const _emu=over.emu!==undefined?over.emu:EMU.md;
+    const _rob=over.rob!==undefined?over.rob:rob;
+    const _opt=over.opt!==undefined?over.opt:opt;
+    return fvOf(_ani,_ape,_erv,_emu,_rob,_opt);
+  }
+  function drawTornado(){
+    const rob=+document.getElementById('i-rob').value;
+    const opt=+document.getElementById('i-opt').value;
+    const ani=+document.getElementById('i-ani').value;
+    const erv=+document.getElementById('i-erv').value;
+    const rows=[
+      {n:'Robotaxi value',lo:fvAt({rob:Math.min(ROB.lo,rob)}),hi:fvAt({rob:Math.max(rob+25,ROB.hi)})},
+      {n:'Optimus value',lo:fvAt({opt:Math.min(OPT.lo,opt)}),hi:fvAt({opt:Math.max(opt+25,OPT.hi)})},
+      {n:'Core 2028E net income',lo:fvAt({ani:ANI.lo}),hi:fvAt({ani:ANI.hi})},
+      {n:'Core P/E',lo:fvAt({ape:APE.lo}),hi:fvAt({ape:APE.hi})},
+      {n:'Energy 2028E revenue',lo:fvAt({erv:ERV.lo}),hi:fvAt({erv:ERV.hi})},
+      {n:'Energy EV/Sales',lo:fvAt({emu:EMU.lo}),hi:fvAt({emu:EMU.hi})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=170,X1=688,W=X1-X0,base=allMin-4,span=(allMax+4)-base;
+    const sx=v=>X0+((v-base)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';
+    });
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const rob=+document.getElementById('i-rob').value;
+    const opt=+document.getElementById('i-opt').value;
+    const ani=+document.getElementById('i-ani').value;
+    const erv=+document.getElementById('i-erv').value;
+    const corr=(+document.getElementById('i-corr').value)/100;
+    const tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-rob').textContent=rob;
+    document.getElementById('v-opt').textContent=opt;
+    document.getElementById('v-ani').textContent=ani;
+    document.getElementById('v-erv').textContent=erv;
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+
+    const ind=simulate(rob,0,0);
+    const cor=simulate(rob,corr,tail);
+
+    document.getElementById('oi-med').textContent='$'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='$'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='$'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='$'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='$'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='$'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+
+    drawHist(cor.fv,cor.p50,ind.p10);
+
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> stress chance, the median holds near <b>$'+cor.p50.toFixed(0)+'</b> (≈ the independent $'+ind.p50.toFixed(0)+') — but the 80% band widens by about <span class="down">$'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under half the current price) moves from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at $'+PRICE.toFixed(2)+') is '+Math.round(cor.under*100)+'%.';
+
+    drawTornado();
+  }
+
+  // scenarios (computed anchors) — vary BOTH option legs together (they share the
+  // same unsupervised-autonomy gate, so they move as one thesis, not independently)
+  let SFV={bear:343,base:377,bull:461};
+  function computeScenarioAnchors(){
+    SFV.bear=simulate(100,0.6,0.06,8000,40).p50;
+    SFV.base=simulate(450,0.6,0.06,8000,220).p50;
+    SFV.bull=simulate(1200,0.6,0.06,8000,700).p50;
+    document.getElementById('sfv-bear').textContent='$'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='$'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='$'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='$'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  // valuation-context bars — TSLA trailing P/E through the cycle + auto comps
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/371,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+')"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('TSLA — now','$404 ÷ $1.09 TTM EPS · computed',371,'371×','var(--coral)'),
+    peerBar('TSLA — end 2021','prior-cycle peak, ex 2020 mania · sourced',216,'216×','var(--coral-deep)'),
+    peerBar('TSLA — end 2024','EPS rolling over · sourced',181,'181×','var(--amber-deep)'),
+    peerBar('TSLA — end 2022','post-selloff trough · sourced',34,'34×','var(--teal-deep)'),
+    peerBar('BYD','volume-EV peer · sourced',19,'≈19×','var(--teal)'),
+    peerBar('Toyota','legacy-auto scale peer · sourced',9,'≈9×','var(--teal)'),
+  ].join('');
+
+  ['i-rob','i-opt','i-ani','i-erv','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  document.querySelectorAll('.jsprice').forEach(e=>e.textContent='$'+PRICE.toFixed(2));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+</script>
+
+<script>
+  // Module O — perfect-execution bull-case calculator
+  (function(){
+    const SPOT=404.38, HORIZON=10;
+    const el=id=>document.getElementById(id);
+    const fmtT=x=>(x>=10?x.toFixed(1):x.toFixed(2));
+    const comma=n=>Math.round(n).toLocaleString('en-US');
+    const priceOf=(niB,pe,shB)=>niB*pe*1e9/(shB*1e9); // $/share in 2036 ($bn NI × PE = $bn cap; ÷ bn shares)
+    const MSCALE=3000;
+
+    function calc(){
+      const ni=+el('b-ni').value, pe=+el('b-pe').value, sh=+el('b-shares').value, disc=+el('b-disc').value/100;
+      el('bv-ni').textContent=ni;
+      el('bv-pe').textContent=pe;
+      el('bv-shares').textContent=sh.toFixed(2);
+      el('bv-disc').textContent=Math.round(disc*100);
+      el('bull-shcap').textContent=sh.toFixed(2)+'bn';
+
+      const mcapT=ni*pe/1000;                 // $T
+      const price=priceOf(ni,pe,sh);
+      const pv=price/Math.pow(1+disc,HORIZON);
+      const cagr=(Math.pow(price/SPOT,1/HORIZON)-1)*100;
+      const pvCagr=(Math.pow(pv/SPOT,1/HORIZON)-1)*100;
+      const multx=price/SPOT;
+
+      el('bo-mcap').textContent='$'+fmtT(mcapT)+'T';
+      el('bo-price').textContent='$'+comma(price);
+      el('bo-pv').textContent='$'+comma(pv);
+      el('bo-cagr').textContent=(cagr>=0?'+':'')+cagr.toFixed(0)+'%/yr';
+      el('bo-multx').textContent=multx.toFixed(1)+'×';
+
+      const pos=Math.min(price/MSCALE,1)*100;
+      el('bo-mk').style.left=pos.toFixed(1)+'%';
+      el('bo-mklb').style.left=pos.toFixed(1)+'%';
+      el('bo-mklb').textContent='2036 · $'+comma(price);
+
+      const verdict = pv>SPOT
+        ? 'Even discounted a full decade at <b>'+Math.round(disc*100)+'%</b>, the flawless path is worth <b>$'+comma(pv)+'</b> today — <b>'+(pv/SPOT).toFixed(1)+'× the live $'+SPOT.toFixed(2)+'</b>, a <span style="color:var(--teal-deep);font-weight:600">+'+pvCagr.toFixed(0)+'%/yr</span> present-value return. On these inputs the stock is a genuinely good investment <i>if</i> autonomy and Optimus both land.'
+        : 'Discounted at <b>'+Math.round(disc*100)+'%</b>, the flawless path is worth only <b>$'+comma(pv)+'</b> today — below the live $'+SPOT.toFixed(2)+'. Even the perfect scenario needs a lower hurdle or a bigger outcome to clear the current price.';
+      el('bull-read').innerHTML='At <b>$'+ni+'bn</b> of 2035–36 net income on a <b>'+pe+'×</b> P/E, Tesla is a <b>$'+fmtT(mcapT)+'T</b> company — implying <b>$'+comma(price)+'/share</b> in 2036 across '+sh.toFixed(2)+'bn diluted shares, a <b>'+multx.toFixed(1)+'×</b> gain (<b>'+(cagr>=0?'+':'')+cagr.toFixed(0)+'%/yr</b>) from today. '+verdict;
+
+      buildMatrix(ni,pe,sh);
+    }
+
+    const MNI=[60,100,150,200,300], MPE=[25,35,50,65];
+    function buildMatrix(curNi,curPe,sh){
+      const nearNi=MNI.reduce((a,b)=>Math.abs(b-curNi)<Math.abs(a-curNi)?b:a);
+      const nearPe=MPE.reduce((a,b)=>Math.abs(b-curPe)<Math.abs(a-curPe)?b:a);
+      let s='';
+      MNI.forEach(ni=>{
+        s+='<tr><td class="num">$'+ni+'bn</td>';
+        MPE.forEach(pe=>{
+          const p=ni*pe/sh;   // $bn*x / bn shares = $/share
+          const hot=(ni===nearNi&&pe===nearPe);
+          const strong=p>=SPOT*3;
+          const col=hot?'':(strong?'':'color:var(--faint)');
+          s+='<td class="'+(hot?'num cur':'num')+'"'+(col?' style="'+col+'"':'')+'>$'+comma(p)+'</td>';
+        });
+        s+='</tr>';
+      });
+      el('bull-matrix').innerHTML=s;
+      el('bull-read2').innerHTML='<b>How to read the grid.</b> The teal cell is your current setting. Every cell at or above a ~3× outcome ($'+comma(SPOT*3)+') is a market cap the autonomy bulls (ARK foremost) already sketch for the 2030s. The grid&rsquo;s message is the asymmetry: the <i>downside</i> of these assumptions being wrong is the disciplined base case (~$260–550, Modules A–N); the <i>upside</i> of them being right is four-figure — which is exactly why a small, kill-criteria-sized position can be rational even when the base case is mixed-to-bearish.';
+    }
+
+    ['b-ni','b-pe','b-shares','b-disc'].forEach(id=>el(id).addEventListener('input',calc));
+    calc();
+  })();
+</script>
+</body>
+</html>

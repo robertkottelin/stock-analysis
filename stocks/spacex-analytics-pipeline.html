@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpaceX — Institutional Analytics Layer (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:780px}
+
+  .legend{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .strictbar{margin-top:12px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;line-height:1.5}
+  .strictbar b{color:var(--ink)}
+
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .hl{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--teal-deep);white-space:nowrap}
+  .hl.neg{color:var(--coral-deep)} .hl.warn{color:var(--amber-deep)} .hl.blue{color:var(--blue-deep)}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:52px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:10px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)}
+  .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:190px 1fr 70px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:130px 1fr 56px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .tg-inline{font-family:var(--mono);font-size:8.5px;font-weight:600;padding:1px 6px;border-radius:7px;margin-left:5px;vertical-align:1px}
+
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:118px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:88px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Institutional analytics layer · strict-data build · Space Exploration Technologies · NASDAQ: SPCX · built 2026-07-09</div>
+  <h1>SpaceX — the analyst's instrument panel
+    <span class="sub">Built to a hard rule: every number here is either <b>sourced</b> (fetched from a citable source — the S-1/424B4 prospectus, exchange notices, the live tape), <b>computed</b> (calculated by this tool from sourced inputs), or an explicit <b>assumption</b> you set yourself. Nothing is asserted from memory. SpaceX listed on 2026-06-12; where only three weeks of tape exist, metrics say <b>n/a</b> instead of pretending.</span>
+  </h1>
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-09 16:31</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="strictbar"><b>What this build adds.</b> A five-leg sum-of-the-parts — <b>Starlink</b>, <b>launch/Starship</b>, <b>orbital datacenters</b> (space-based AI compute), <b>other frontier</b> (moon factories, payload-to-orbit, point-to-point) and the <b>AI segment</b> — so the price is decomposed across every driver, not just the AI mark. Two institutional modules computed live from the Yahoo Finance v8 chart API: <b>I — Price-asymmetry layer</b> (reverse-DCF on the AI-segment value, Kelly f*, payoff-asymmetry, VaR/CVaR, realised vol, betas vs S&amp;P 500 / Nasdaq-100 / Tesla, own-history percentile) and <b>J — Base rates &amp; factor composite</b>. Plus hand-authored <b>K — priced-in decomposition</b>, <b>L — Starlink unit-economics</b>, <b>M — frontier optionality</b> and <b>N — orbital datacenters</b> (the space-based-compute leg, gated on the Starship $/kg collapse, decomposed into GW × revenue/GW × capture). SpaceX listed <b>2026-06-12</b> — only ~4 weeks of tape exist, so every long-window metric honestly reports <b>n/a</b> rather than a backfilled guess; re-run <code>python refresh_all.py</code> weekly and the n/a cells fill themselves in as history accrues. Balance-sheet facts are from the S-1/424B4; nothing is asserted from memory.</div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <section class="mod" id="mExec" style="border:1.5px solid var(--line-strong);margin-top:18px">
+    <div class="mod-head">
+      <div class="mod-no" style="color:var(--amber-deep);font-size:20px">∑</div>
+      <div class="ht">
+        <h2>Executive summary</h2>
+        <div class="hq">The whole instrument panel in one read — the fourteen modules, distilled.</div>
+      </div>
+      <span class="tagchip a">Synthesis · net verdict</span>
+    </div>
+
+    <div class="verdict mixed"><span class="vchip">MIXED · LEANS BEAR</span><span class="vtext">Fourteen independent reads net to <b>0 bull / 12 mixed / 2 bear</b>. A generational business — priced as if the next act has already happened. The base-case median (~<b>$148</b>) sits modestly below the live tape (<span class="jsprice">$170.86</span>), so the disciplined stance is to participate below the anchor and size by the kill-criteria, not the narrative.</span></div>
+
+    <p class="body"><b>The thesis in one paragraph.</b> SpaceX is decomposed into <b>five value legs</b>. What you can underwrite today is the <b>Starlink cash pillar</b> (~44% of value at mode — 63% segment margins, subscribers doubling) and the <b>launch monopoly</b> (~5%) that built it. Sitting on top are two deep-space call options you get largely for free — <b>orbital datacenters</b> (~4%, Module N) and <b>other frontier</b>: moon factories / payload-to-orbit / point-to-point (~4%, Module M) — each with a much larger right tail, every step a physical, verifiable milestone. The number doing most of the valuation work is the <b>AI segment</b>: the market marks it near <span class="hl neg">$976bn</span> (Module I reverse-DCF, ≈3.9× the $250bn xAI merger anchor) against <span class="hl neg">$3.2bn</span> of 2025 revenue and a <span class="hl neg">−$6.35bn</span> operating loss. Once the frontier legs are priced in, the payoff is genuinely two-sided — the deep-space tail, not the AI mark, is now the cleanest source of upside.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Net stance · 14 reads</div><div class="v">Mixed<small>0B / 12M / 2 bear</small></div></div>
+      <div class="kgi"><div class="k">Engine median FV (mode)</div><div class="v">~$148<small>P90 ≈ $200 · P10 ≈ $115</small></div></div>
+      <div class="kgi neg"><div class="k">Implied AI-segment mark</div><div class="v">$976bn<small>≈3.9× $250bn anchor</small></div></div>
+      <div class="kgi pos"><div class="k">Payoff shape (Module I)</div><div class="v">1.33×<small>asymmetry · Kelly f* +13%</small></div></div>
+    </div>
+
+    <div class="cmp">
+      <div class="cmpcard">
+        <div class="ct"><span class="dd" style="background:var(--coral)"></span>The fragile leg — the AI mark</div>
+        <div class="cmprow"><span class="ck">Segment revenue (2025)</span><span class="cv neg">$3.2bn</span></div>
+        <div class="cmprow"><span class="ck">Operating loss (2025)</span><span class="cv neg">−$6.35bn</span></div>
+        <div class="cmprow"><span class="ck">Implied EV vs xAI anchor</span><span class="cv neg">≈3.9×</span></div>
+        <div class="cmprow"><span class="ck">Valuation (Module G)</span><span class="cv neg">~120× EV/rev · BEAR</span></div>
+      </div>
+      <div class="cmpcard hot" style="border-color:var(--teal)">
+        <div class="ct"><span class="dd" style="background:var(--teal)"></span>The asymmetric legs — frontier</div>
+        <div class="cmprow"><span class="ck">Priced at mode (combined)</span><span class="cv">~8% of value</span></div>
+        <div class="cmprow"><span class="ck">Tail worth (Module M+N)</span><span class="cv pos">~$81/share</span></div>
+        <div class="cmprow"><span class="ck">Gate</span><span class="cv">Starship $/kg collapse</span></div>
+        <div class="cmprow"><span class="ck">Every step</span><span class="cv pos">physical milestone</span></div>
+      </div>
+    </div>
+
+    <div class="note a"><b>Bottom line.</b> Underwrite Starlink and the launch monopoly; treat the frontier legs as the free calls they are; do not pay up for the AI mark. With Nasdaq-100 inclusion flows arriving now and a Sep–Dec lock-up wall ahead, the tape has mechanical currents in both directions — own it event-by-event. The reads that follow (A–N) build this verdict from live data; the full synthesis and dated watch-list are in the <a href="#mConc" style="color:var(--blue-deep);font-weight:600">Conclusions</a> and <a href="#mSum" style="color:var(--blue-deep);font-weight:600">Scorecard</a>. For the other side of the distribution — the flawless-execution right tail, priced end-to-end and discounted back — see <a href="#mO" style="color:var(--teal-deep);font-weight:600">Module O · the bull case</a>: if everything goes right, a <b>$10–30T+</b> 2035–36 outcome implies <b>$550–2,000+/share</b>, and the stock is a genuinely good investment even discounted to today. <span style="color:var(--faint)">For analysis and education only — not investment advice.</span></div>
+  </section>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mExec"><span class="n">∑</span>Summary</a>
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Tornado</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Valuation context</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mK"><span class="n">K</span>Priced-in</a>
+    <a href="#mL"><span class="n">L</span>Starlink</a>
+    <a href="#mM"><span class="n">M</span>Frontier</a>
+    <a href="#mN"><span class="n">N</span>Orbital DC</a>
+    <a href="#mO"><span class="n">O</span>Bull case</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mConc"><span class="n">✓</span>Conclusions</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <!-- A — ENGINE -->
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Sum-of-the-parts engine — correlated &amp; fat-tailed</h2><div class="hq">Starlink cash machine + launch option + orbital datacenters + other frontier + a trillion-dollar AI question mark.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>$148</b> with an 80% band of roughly <b>$115–$205</b> — the two frontier-class legs (<b>orbital datacenters</b> and <b>other frontier</b>: moon factories, payload-to-orbit) fatten the upper tail while the AI mark and Starlink multiple carry the downside. Against the live price shown below, that median is roughly fair: a genuinely two-sided distribution, no longer one-directionally bearish once the deep-space options are priced in.</span></div>
+    <p class="body">20,000 paths across <b>five value legs</b>. The two operating legs are anchored to <b>real S-1 figures</b>: Connectivity (Starlink) did $11.4bn revenue in 2025 at a 63% segment-EBITDA margin with subscribers doubling to 8.9m (10.3m by Mar'26); Space (launch) did $4.09bn revenue at a small operating loss. The engine values both on 2030E ranges and discounts 4 years at 10%. It then adds two <b>frontier-class</b> legs, each a <i>risk-adjusted</i> 2035E revenue on a shared EV/Sales multiple, discounted a full 9 years: <b>orbital datacenters</b> (space-based, solar-powered AI compute — the xAI "AI satellites" thesis, gated on Starship's $/kg collapse; <b>Module N</b>) and <b>other frontier</b> (moon factories, payload-to-orbit new markets, point-to-point; <b>Module M</b>). Finally the <b>AI segment</b> (xAI + X + <i>ground</i> Colossus) at a directly-drawn enterprise value, because no revenue-multiple logic survives a segment doing $3.2bn of revenue against a $6.35bn operating loss. Orbital datacenters are kept separate from the AI segment to avoid double-counting compute. Drivers co-move through a one-factor copula plus a regime-shock overlay; set both to zero to recover the independent model.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The value knobs are <b>your</b> calls, not data: the central AI-segment mark (the xAI merger went through at ≈$250bn in Feb 2026; frontier-lab private marks argue for far more), the orbital-datacenter revenue (space-based AI compute — decomposed in Module N), the other-frontier size (moon-factory / payload-to-orbit / point-to-point — Module M), plus how tightly drivers co-move and how often a stress regime hits.</p>
+
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs: 13,170m shares (from the $2.25tn IPO-era cap), live price <span class="jsprice">$170.86</span> (re-fetched at build), net cash ≈ +$25bn (<span class="asm">assumption</span>: $75bn IPO raise − $29.1bn LT debt − est. H1'26 burn). Operating legs on 2030E ranges discounted 4y at 10%; the frontier leg on 2035E discounted 9y at 10%. Segment ranges calibrated to S-1 actuals &amp; sell-side 2030 models.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Central AI-segment value <span>$bn · assumption</span></span><span class="cval">$<span id="v-mid">700</span>bn</span></label>
+          <input type="range" id="i-mid" min="250" max="1600" step="25" value="700">
+          <div class="tri">xAI merged in at ≈$250bn (Feb '26) · reverse-DCF implies ≈$1tn at today's price</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Orbital datacenters <span>$bn · 2035E space-compute rev · assumption</span></span><span class="cval">$<span id="v-orb">25</span>bn</span></label>
+          <input type="range" id="i-orb" min="0" max="200" step="5" value="25">
+          <div class="tri">space-based AI compute · gated on Starship $/kg &lt; ~$200–500 — discounted 9y (Module N)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Other frontier optionality <span>$bn · 2035E risk-adj. rev · assumption</span></span><span class="cval">$<span id="v-front">25</span>bn</span></label>
+          <input type="range" id="i-front" min="0" max="200" step="5" value="25">
+          <div class="tri">moon factories · payload-to-orbit · point-to-point — discounted 9y (Module M)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">60</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="60">
+          <div class="tri">0% = independent (naive model) · 100% = full</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Tail / regime-shock risk <span>assumption</span></span><span class="cval"><span id="v-tail">6</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="15" step="1" value="6">
+          <div class="tri">chance a path hits a correlated stress state</div>
+        </div>
+      </div>
+
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent (naive model)</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv" id="oi-med">$130</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv" id="oi-p10">$95</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv" id="oi-p90">$172</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &gt;50% down)</span><span class="cv" id="oi-tail">6%</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + fat tails</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv warn" id="co-med">$130</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">$92</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">$175</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &gt;50% down)</span><span class="cv neg" id="co-tail">8%</span></div>
+        </div>
+      </div>
+
+      <div class="hist-wrap">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; <span class="jsprice">$170.86</span></span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; <span class="jsprice">$170.86</span></span>
+          <span><span class="sw" style="background:var(--ink)"></span>price <span class="jsprice">$170.86</span></span>
+          <span><span class="sw" style="background:var(--amber)"></span>median</span>
+          <span><span class="sw" style="background:var(--faint)"></span>independent P10</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> The median barely moves with correlation — but <i>both</i> tails fatten: the AI mark, the Starlink multiple and the frontier leg all load on the same sentiment factor, so the left tail deepens in a stress regime while the frontier optionality stretches the right tail when the deep-space story is believed. This is the defining risk shape of SPCX: one segment (Connectivity) produces essentially all the cash today, the AI mark produces most of the downside variance, and the frontier leg is where the genuine upside optionality lives. Dependence is a two-sided-tail story here even more than usual.
+      <div class="src">Sources: SpaceX S-1/424B4 segment disclosures (SEC EDGAR); IPO terms via CNBC (Jun 2026). Engine computed live in this page.</div>
+    </div>
+  </section>
+
+  <!-- B — TORNADO -->
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Sensitivity — the tornado</h2><div class="hq">Which input actually moves the answer?</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Fair value is still dominated by the unobservable AI-segment mark, but <b>Starlink 2030 revenue</b> and the <b>orbital-datacenter</b> leg are now the next-largest swings — both ahead of the launch business. The cash-generating fundamentals (margin, launch) move the answer far less than the sentiment-priced and option-valued legs. A fragile central estimate, but with real two-sided optionality now visible.</span></div>
+    <p class="body">Each bar swings one driver from its P10 to its P90 (others held at mode) and shows the fair-value range. Computed from the same marginals as the engine.</p>
+    <svg id="tornado" viewBox="0 0 700 280" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="note t"><b>Read:</b> the <b>AI-segment value</b> still carries the widest swing — a segment with $3.2bn of revenue and a −$6.35bn operating loss — which is why the reverse-DCF in Module I concentrates on it. But <b>Starlink revenue</b>, the <b>orbital-datacenter</b> leg and <b>other frontier</b> now take the next three bars, several times the launch line: the upside is no longer a single-number story. <b>Module N</b> decomposes the orbital-datacenter bar (GW × revenue/GW × capture); <b>Module M</b> covers the rest of the frontier.</div>
+  </section>
+
+  <!-- C — SCENARIOS + BAYES -->
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
+      <span class="tagchip a">Computed + your assumptions</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At neutral priors the probability-weighted value lands near the live price; the bull AI anchor (~$1.2tn) sits above it, while the bear (AI reverts to ≈$350bn) implies real downside. The market is around base-to-bull AI assumptions. The genuine upside beyond these cards is the frontier <i>tail</i> (Module M) and the AI right tail — neither is captured by the base-case medians, which hold the frontier leg at its mode.</span></div>
+    <p class="body">The three fair values below are <b>computed</b> — each is the engine's median run at a different central AI-segment mark (the dominant driver), with the other three legs (Starlink, launch, frontier optionality) held at their Module-M/K modes. The prior weights and the evidence likelihood-ratios are <b>your</b> subjective inputs; the panel just does the Bayesian arithmetic and the probability-weighted blend.</p>
+
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — AI mark reverts</div><div class="sd">The AI segment re-marks toward the ≈$250bn xAI acquisition value plus modest Colossus optionality (~$350bn).</div><div class="sfv" id="sfv-bear">$104</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — frontier-lab par</div><div class="sd">AI segment holds a valuation broadly at par with the large private frontier labs (~$700bn).</div><div class="sfv" id="sfv-base">$130</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — AI premium sticks</div><div class="sd">Grok + X + orbital compute earn a durable premium (~$1.2tn) and Starlink compounds unabated.</div><div class="sfv" id="sfv-bull">$168</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+
+    <div class="controls" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ctrl"><label><span class="lab">Prior — Bear <span>assumption</span></span><span class="cval"><span id="v-pb">25</span>%</span></label><input type="range" id="i-pb" min="0" max="100" step="5" value="25"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Base <span>assumption</span></span><span class="cval"><span id="v-pn">50</span>%</span></label><input type="range" id="i-pn" min="0" max="100" step="5" value="50"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Bull <span>assumption</span></span><span class="cval"><span id="v-pu">25</span>%</span></label><input type="range" id="i-pu" min="0" max="100" step="5" value="25"></div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">Toggle evidence as it arrives → <span class="asm">(likelihood ratios are illustrative assumptions)</span></div>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="0.5,1.1,1.7">Starship v3 achieves routine orbital reuse <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.2,1.5">Starlink net adds beat (&gt;1.8m/quarter) <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.4">Grok/X subscription revenue re-accelerates <span class="ar">▲bull</span></div>
+      <div class="ev bearish" data-lr="1.9,1.0,0.5">AI capex overruns; op-loss run-rate widens <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.7,1.0,0.6">Lock-up expiry supply (Sep–Dec '26) unabsorbed <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.8,1.0,0.5">D2C competition (ASTS/Kuiper) dents Starlink ARPU <span class="ar">▼bear</span></div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Posterior weights</div>
+      <div class="wbar" id="wbar"><div class="wp bear" id="wp-b"></div><div class="wp base" id="wp-n"></div><div class="wp bull" id="wp-u"></div></div>
+      <div class="wlab"><span id="wl-b">Bear 25%</span><span id="wl-n">Base 50%</span><span id="wl-u">Bull 25%</span></div>
+    </div>
+
+    <div class="blend">
+      <span class="bn" id="blend-fv">$130</span>
+      <span class="bl">probability-weighted fair value vs <b class="jsprice">$170.86</b> price · <span id="blend-gap">≈ near price</span>. The anchors are computed; the weighting is your judgment.</span>
+    </div>
+  </section>
+
+  <!-- D — FORENSICS -->
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Financial quality — on the one audited basis that exists</h2><div class="hq">S-1/424B4 figures; no trend scores are fakeable from a single public year.</div></div>
+      <span class="tagchip s">Sourced (S-1) + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">One world-class cash engine (Connectivity: 63% segment-EBITDA margin, subscribers doubled) welded to two cash sinks (Space at a small loss; AI at −$6.35bn op). Group adj. EBITDA +$6.58bn against a −$4.9bn GAAP net loss — the gap is real capex, not accounting games.</span></div>
+    <p class="body">Run on the S-1's restated consolidated basis (which folds in xAI from Feb '26 and X from Mar '25 as common-control transactions): FY2025 revenue $18.674bn (+33%), operating loss −$2.589bn, adjusted EBITDA +$6.584bn, net loss −$4.9bn; Q1'26 revenue $4.694bn, operating loss −$1.943bn. Piotroski, Altman and Beneish all need two audited public years — they are <b>excluded, not estimated</b>, and slot in after FY2026 reports.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Connectivity EBITDA margin</span><span class="tg s">sourced</span></div><div class="scv">63<span class="un">%</span></div><div class="scband good">Elite</div><div class="scd">$7.0bn segment EBITDA on $11.4bn revenue in 2025, $4.4bn operating profit. SaaS-grade economics on a satellite network — the segment that funds everything else.</div></div>
+      <div class="sc"><div class="scl"><span>Starlink subscriber growth</span><span class="tg s">sourced</span></div><div class="scv">2.0<span class="un">×</span></div><div class="scband good">Compounding</div><div class="scd">4.4m → 8.9m subscribers during 2025; 10.3m by end-Mar 2026 across 164 countries, on 9,600+ deployed satellites.</div></div>
+      <div class="sc"><div class="scl"><span>EBITDA ↔ net-loss gap</span><span class="tg c">computed</span></div><div class="scv">$11.5<span class="un">bn</span></div><div class="scband mid">Capex-driven</div><div class="scd">Adj. EBITDA +$6.58bn vs GAAP −$4.9bn. The wedge is depreciation on rocket/satellite fleets, data-centre build-out and SBC — cash-hungry growth, not earnings manipulation.</div></div>
+      <div class="sc"><div class="scl"><span>AI-segment operating loss</span><span class="tg s">sourced</span></div><div class="scv">−$6.35<span class="un">bn</span></div><div class="scband bad">Accelerating</div><div class="scd">FY2025 figure; Q1'26 operating losses already ran ≈75% of the full 2025 total, with the AI segment taking 61% of 2025 capex and 76% in Q1'26. Starlink's cash is subsidising this.</div></div>
+      <div class="sc"><div class="scl"><span>Long-term debt</span><span class="tg s">sourced</span></div><div class="scv">$29.1<span class="un">bn</span></div><div class="scband mid">Pre-IPO</div><div class="scd">As of end-Mar 2026 — before the $75bn primary raise, which flips the group to a substantial net-cash position (the engine's +$25bn assumption, stated openly).</div></div>
+      <div class="sc"><div class="scl"><span>Starship development spend</span><span class="tg s">sourced</span></div><div class="scv">&gt;$15<span class="un">bn</span></div><div class="scband mid">Over budget</div><div class="scd">Disclosed as exceeding the original budget; twelfth test flight flown around the filing. The launch option is real but not yet a return on capital.</div></div>
+    </div>
+    <div class="note b"><b>The honest limitation, flagged:</b> a single restated public basis means no F-score trend, no Z-score time series, no accruals history. What <i>is</i> checkable checks out: the loss is explained by disclosed capex and disclosed segment losses, and the profitable segment's economics are exceptional.
+      <div class="src">Sources: SpaceX S-1/424B4 (SEC EDGAR, CIK 1181412); segment tables via Yahoo Finance, Via Satellite, Morningstar and Hargreaves Lansdown S-1 coverage (May–Jun 2026).</div>
+    </div>
+  </section>
+
+  <!-- E — CAPITAL RECORD -->
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Astonishing execution capital (reusable launch, a 9,600-satellite network built from internal cash flow) against a governance pattern of large related-party, all-stock transactions struck at Musk-set values — the xAI merger, the Cursor option, Valor lease-backs.</span></div>
+    <p class="body" style="font-size:13px">No letter grades — here is the sourced record; the read is yours to form.</p>
+    <div class="rec">
+      <div class="ri"><div class="rk">IPO raise</div><div class="rd"><b>$75bn primary</b> at a fixed, founder-dictated $135 — the largest IPO ever, ~3× the previous record, ~2× oversubscribed with ~30% reserved for retail.</div></div>
+      <div class="ri"><div class="rk">Capex mix</div><div class="rd">The AI segment absorbed <b>61% of 2025 capex, rising to 76% in Q1'26</b>; compute scaled 0.3 → 0.8 → 1.0 GW (2024 → 2025 → Q1'26). Capital is rotating from rockets to GPUs.</div></div>
+      <div class="ri"><div class="rk">xAI merger</div><div class="rd">All-stock, effective <b>2026-02-02</b>, ≈$1.25tn combined (~$1tn SpaceX + ~$250bn xAI) — a related-party transaction between two Musk-controlled entities, accounted for as common-control.</div></div>
+      <div class="ri"><div class="rk">Cursor option</div><div class="rd">Disclosed option to acquire Cursor for <b>$60bn in Class A stock</b>; walking away costs a $1.5bn termination fee plus an $8.5bn deferred-services fee.</div></div>
+      <div class="ri"><div class="rk">Related-party flows</div><div class="rd">xAI leases &gt;$20bn of equipment from Valor (board member Gracias's firm; $1.7bn repaid Jan'25–Feb'26); Colossus compute is rented out to Anthropic — the "neocloud" revenue line.</div></div>
+      <div class="ri"><div class="rk">Shareholder returns</div><div class="rd"><b>None</b> — no dividend, no buyback authorization; every internally generated dollar is reinvested. Consistent with the stated Mars/AI mission; irrelevant to income investors.</div></div>
+    </div>
+    <div class="note a"><b>Read (judgment, not data):</b> the operational record is arguably the best in modern industrial history, and it was funded largely by Starlink's own cash. The pattern to underwrite is governance: value-setting transactions repeatedly occur between entities under common control, priced by the controller.
+      <div class="src">Sources: SpaceX S-1/424B4 related-party &amp; use-of-proceeds sections; CNBC IPO coverage (May–Jun 2026); HL S-1 analysis.</div>
+    </div>
+  </section>
+
+  <!-- F — POSITIONING -->
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning, ownership &amp; flows</h2><div class="hq">Who holds it, who must buy it, who can sell it — and when.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Near-term flows are mechanically supportive — Nasdaq-100 inclusion on Jul 7 forces index buying at a 0.47–0.70% weight. Structurally offset by absolute founder control, a thin effective float, and a 90–180-day lock-up wall landing Sep–Dec 2026.</span></div>
+    <table style="margin-bottom:6px">
+      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Control</td><td class="num">Musk</td><td>CEO/CTO/Chairman with super-voting Class B (10× votes; Shotwell alone holds 7.1m Class B). Public Class A holders own economics, not governance — every major decision is one person's call.</td></tr>
+        <tr><td>Largest outside holder</td><td class="num">~7.3%</td><td>Valor Equity entities (board member Antonio Gracias) across dozens of fund vehicles; Tesla holds ~1% of Class A via its Jan-2026 xAI investment converting in the merger.</td></tr>
+        <tr><td>Retail allocation</td><td class="num">~30%</td><td>Unusually large retail tranche via Robinhood/Fidelity/Schwab/SoFi/E*TRADE — a fully-exhausted, ~2× oversubscribed book. Retail-heavy registers tend to raise realised volatility.</td></tr>
+        <tr><td>Index inclusion</td><td class="num">Jul 7</td><td>Added to the Nasdaq-100 at an estimated 0.47–0.70% weight, bypassing seasoning rules — forced systematic buying from every NDX tracker in the first weeks of trading.</td></tr>
+        <tr><td>Lock-up wall</td><td class="num">Sep–Dec '26</td><td>Standard 90–180-day lock-ups on employees and early investors — a generational-liquidity register (Founders Fund, DFJ, D1, Fidelity, Thrive, thousands of employees) becomes free to sell into year-end.</td></tr>
+        <tr><td>First 3 weeks of tape</td><td class="num">$147–$226</td><td>Priced $135 → opened $150 → closed day 1 at $160.95 (+19%) → ATH $225.64 (Jun 16) → ATL $147.11 (Jun 23) → ~$171 now. A ±35% range in eight sessions; price discovery, not equilibrium.</td></tr>
+      </tbody>
+    </table>
+    <div class="note c"><b>Cut, not faked:</b> short interest, borrow cost, options skew and insider-transaction flow are the textbook crowdedness reads — none exists yet for a three-week-old listing (first exchange short-interest print pending; the options surface is days old). They slot in as the data ages.
+      <div class="src">Sources: S-1 ownership tables; Nasdaq index notices; CNBC IPO explainer &amp; live coverage; TradingView/Investing.com price history (Jun–Jul 2026).</div>
+    </div>
+  </section>
+
+  <!-- G — VALUATION CONTEXT -->
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Valuation context</h2><div class="hq">SPCX computed; anchors sourced. There is no true public comp.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">At ≈<b>120× EV/annualised revenue</b> (and ≈340× trailing adj. EBITDA), SPCX is priced beyond every profitability convention of the trillion-dollar club: the smallest member by revenue (Micron) does $58bn vs SpaceX's $18.7bn, and the least profitable (Tesla) earned +$3.8bn vs SpaceX's −$4.9bn.</span></div>
+    <p class="body" style="font-size:13px">SPCX's multiple is <b>computed</b>: EV ≈ $2.25tn (price $170.86 × 13,170m shares, net cash roughly offsetting) ÷ Q1'26 annualised revenue $18.78bn ≈ <b>120×</b>; ÷ FY2025 adj. EBITDA $6.58bn ≈ <b>342×</b>. No public company mixes launch, satellite broadband and a frontier AI lab — so the honest reference set is SpaceX's <b>own observable marks</b> (below) and the trillion-club fundamentals (sourced, CNBC).</p>
+    <div class="bars" id="peerbars"></div>
+    <div class="note t"><b>Read:</b> the market re-rated the same company from ~27× to ~120× EV/revenue in eighteen months — the fundamentals grew ~43%, the multiple did the rest. That re-rating is precisely the AI-segment repricing the reverse-DCF in Module I quantifies. Whether ~120× is right depends on believing the AI segment is worth on the order of $1tn (~4× the xAI anchor) — with the deep-space frontier leg (Module M) a separate, verifiable call on top; neither can be defended on the operating segments alone.
+      <div class="src">Sources: private-round marks via Sacra/Nasdaq Private Market; IPO terms &amp; trillion-club comparison via CNBC (Jun 2026); SPCX multiples computed from sourced inputs.</div>
+    </div>
+  </section>
+
+  <!-- H — KILL CRITERIA -->
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A discipline overlay, not a direction. Several triggers — the lock-up wall, AI loss run-rate, Starlink deceleration — are datable to specific 2026–27 prints, so the journal writes itself.</span></div>
+    <p class="body">Decision <i>rules</i>, not data — thresholds set now, while disinterested, so a future narrative can't rationalise holding through thesis failure. Edit them to your own conviction.</p>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>Starlink decelerates.</b> Net adds print <span class="kv">&lt; 1.2m/quarter for two consecutive quarters</span> or Connectivity EBITDA margin falls <span class="kv">below 55%</span> — the cash engine that funds everything is stalling.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>AI losses outrun AI revenue.</b> AI-segment operating-loss run-rate exceeds <span class="kv">$25bn/yr</span> without segment revenue at least tripling from the $3.2bn 2025 base.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Starship stalls.</b> No routine orbital reuse of the v3 stack by <span class="kv">mid-2027</span> — the launch-cost thesis underpinning both Starlink economics and the Mars narrative slips a generation.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Lock-up supply unabsorbed.</b> The Sep–Dec 2026 expiries push the stock <span class="kv">&gt;25% below the $135 IPO price</span> on sustained volume — the register is telling you the inside view.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Governance event.</b> A further large related-party transaction priced by the controlling shareholder without independent process — the pattern compounds.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Valuation exit.</b> Price implies an AI-segment value <span class="kv">~$1tn</span> in the Module-I reverse-DCF — ~4× the xAI anchor and ~50% of the market cap; trim into strength regardless of narrative.</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today's prediction — e.g. "AI segment settles near frontier-lab par ≈$700bn, fair value ≈$130" — and the Aug 6 first earnings print, Q3 Starlink adds, and the December lock-up flow that would confirm or refute it. If a kill-criterion fires, act without re-litigating. The process is the edge.</div>
+  </section>
+
+  <!-- ∑ — SCORECARD -->
+
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The pay-off distribution is broadly symmetric to price — no institutional edge without additional evidence. Live spot <b>$148.30</b> · MC median <b>$149.97</b> (P10 $104.34, P90 $205.15) · P(FV &gt; price) <b>52%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-09) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (SPCX)</div><div class="v">$148.30 <small>as of 2026-07-09</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">$145.20–$225.64</div></div>
+      <div class="kgi pos"><div class="k">Price percentile · own 5y</div><div class="v">0%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+26.6% <small>PT $187.80</small></div></div>
+    </div>
+
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">975.62 $bn</div>
+        <div class="l">is the value of <b>AI-segment enterprise value</b> that reconciles the median MC fair value to today's <b>$148.30</b> price. That is <b>+39.4% above</b> the pipeline's base-case mode of <b>700.0 $bn</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+12.8%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.33×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.24</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in $.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+3.0%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-29.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-38.5%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-36.6%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-44.2%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (17 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed. <b>Note:</b> the listing history is shorter than the metric windows — cells report n/a rather than a backfilled guess, and fill in automatically on future re-runs as the tape accrues.</p>
+    <table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">n/a</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">n/a</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (available history)</td><td class="num">-29.8%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">n/a / n/a / n/a / n/a</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs S&P 500</td><td class="num">n/a</td><td>R² = n/a. 252-day OLS.</td></tr>
+        <tr><td>Beta vs Nasdaq-100</td><td class="num">n/a</td><td>R² = n/a. 252-day OLS.</td></tr>
+        
+      </tbody>
+    </table>
+
+    
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a AI-segment enterprise value of <b>975.62 $bn</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (SPCX, ^GSPC, ^NDX, TSLA) — fetched 2026-07-09. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>61/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Group EV / annualised revenue at each observable mark through the cycle</div>
+    <table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>Dec 2024 secondary ($350bn / FY24 rev $13.1bn)</td><td class="num">26.70×</td><td>Insider sale at $185 pre-split-basis (Sacra).</td></tr><tr><td>Jul 2025 round ($400bn / ~$16bn run-rate)</td><td class="num">25.00×</td><td>Secondary at $212 (Sacra).</td></tr><tr><td>Dec 2025 insider sale ($800bn / FY25 rev $18.7bn)</td><td class="num">42.80×</td><td>At $421; pre-xAI-merger (Sacra).</td></tr><tr><td>IPO price Jun 2026 ($1.77tn / Q1'26 ann. $18.78bn)</td><td class="num">94.20×</td><td>Fixed $135 offer; largest IPO ever, $75bn raised.</td></tr><tr class='cur'><td>Now ($2.25tn / Q1'26 annualised $18.78bn)</td><td class="num now">119.80×</td><td>At $170.86 spot, 2026-07-01.</td></tr></tbody>
+    </table>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:100.0%"></div>
+      <div class="lb" style="left:100.0%">now · ≈120× EV/rev</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (17 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">n/a</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">n/a</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">n/a</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">n/a</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n neg">-262 bp</div>
+        <div class="l"><b>Owner-earnings yield -0.25%</b> ($-4900m ÷ $1953111m market cap) minus <b>real 10y ≈ 2.37%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: FY2025 GAAP net loss −$4.9bn (S-1) as a conservative owner-earnings proxy; adj. EBITDA +$6.58bn, but AI-heavy capex exceeds D&A so cash owner earnings are negative — the spread below is a cost of holding, not a yield. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi hot"><div class="fk">Value</div><div class="fv">100</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi"><div class="fk">Quality</div><div class="fv">45</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi"><div class="fk">Momentum</div><div class="fv">50</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">50</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi hot" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">61</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-262 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-09.</div>
+    </div>
+  </section>
+
+  
+  <!-- K — PRICED-IN DECOMPOSITION · five-leg SOTP (SpaceX build) -->
+  <section class="mod" id="mK">
+    <div class="mod-head"><div class="mod-no">K</div>
+      <div class="ht"><h2>What the price already contains &mdash; the five-leg decomposition</h2><div class="hq">Starlink, launch, orbital datacenters, other frontier and the AI mark &mdash; separated, each as a share of value.</div></div>
+      <span class="tagchip s">Sourced &middot; live</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext"><b>Two pillars, not one &mdash; but the AI mark is still the swing.</b> At the pipeline&rsquo;s own mode assumptions Starlink (<b>44%</b>) and the AI segment (<b>42%</b>) are co-equal pillars; launch (<b>5%</b>), orbital datacenters (<b>4%</b>) and other frontier (<b>4%</b>) are the smaller wings. Yet the reverse-DCF still says today&rsquo;s price implies an AI-segment value of <b>$976bn</b> &mdash; <b>3.9&times; the xAI acquisition anchor</b> ($250bn) and <b>50%</b> of the entire market cap.</span></div>
+
+    <p class="body"><b>The arithmetic.</b> Live spot <span class="hl">$148.30</span> &times; 13,170m shares = <span class="hl">$1953bn</span> market cap; net cash ~$25bn keeps EV within ~1% of it. The engine at every driver&rsquo;s <i>mode</i> produces <span class="hl">$127/share</span>, decomposed in the table below. The gap between that mode value and today&rsquo;s price &mdash; <b>$+21/share</b> &mdash; is the market&rsquo;s incremental mark on the AI segment above the pipeline&rsquo;s $700bn mode: it grids out to an implied <b>$976bn</b>. The 2025 build let that one residual absorb <i>everything</i> the operating segments couldn&rsquo;t explain; this build gives the deep-space future two explicit legs (orbital datacenters &rarr; Module N, other frontier &rarr; Module M) so the residual is smaller and honestly labelled.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Value leg</th><th style="text-align:right">EV at mode</th><th style="text-align:right">$/share</th><th style="text-align:right">% of value</th><th>Priced on</th></tr></thead>
+      <tbody>
+        <tr><td>Connectivity / Starlink</td><td class="num">$734bn</td><td class="num">$56</td><td class="num">44%</td><td>2030E rev $70bn &times; 64% EBITDA &times; 24&times;, disc. 4y</td></tr>
+        <tr><td>Space / launch + Starship</td><td class="num">$87bn</td><td class="num">$7</td><td class="num">5%</td><td>2030E rev $16bn &times; 8&times; EV/Sales, disc. 4y</td></tr>
+        <tr><td>Orbital datacenters &rarr; Module N</td><td class="num">$64bn</td><td class="num">$5</td><td class="num">4%</td><td>2035E space-compute rev $25bn &times; 6&times; EV/Sales, disc. 9y</td></tr>
+        <tr><td>Other frontier &rarr; Module M</td><td class="num">$64bn</td><td class="num">$5</td><td class="num">4%</td><td>2035E rev $25bn &times; 6&times; EV/Sales, disc. 9y</td></tr>
+        <tr class="cur"><td>AI segment (xAI + X + ground Colossus)</td><td class="num now">$700bn</td><td class="num now">$53</td><td class="num now">42%</td><td>EV drawn directly; $700bn mode (xAI anchor $250bn)</td></tr>
+        <tr><td>Net cash</td><td class="num">$25bn</td><td class="num">$2</td><td class="num">1%</td><td>$75bn raise &minus; $29.1bn LT debt &minus; est. burn</td></tr>
+        <tr><td><b>Total &mdash; mode fair value</b></td><td class="num"><b>$1674bn</b></td><td class="num"><b>$127</b></td><td class="num"><b>100%</b></td><td>vs live spot $148.30</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cmp" style="margin-top:16px">
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:8px">Priced in</div>
+        <div class="cmprow"><span class="ck">Starlink at ~$70bn 2030 revenue</span><span class="cv">$56/sh via a 24&times; segment multiple</span></div>
+        <div class="cmprow"><span class="ck">xAI merger at ~$250bn (Feb&rsquo;26)</span><span class="cv">and then some &mdash; the mark is now ~3.9&times; that</span></div>
+        <div class="cmprow"><span class="ck">Orbital datacenters (space-based AI compute)</span><span class="cv">$5/sh at mode &mdash; a real, sized leg now (Module N)</span></div>
+        <div class="cmprow"><span class="ck">Other frontier (moon factories, P2P)</span><span class="cv">$5/sh &mdash; the base case, not the tail (Module M)</span></div>
+        <div class="cmprow"><span class="ck">Ground Colossus rented to Anthropic</span><span class="cv">a real, monetised revenue leg &mdash; embedded in AI rev</span></div>
+      </div>
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin-bottom:8px">Not priced / unproven</div>
+        <div class="cmprow"><span class="ck">The orbital-datacenter right tail</span><span class="cv">space compute at scale would add ~$46/sh &mdash; pure optionality (Module N)</span></div>
+        <div class="cmprow"><span class="ck">The other-frontier right tail</span><span class="cv">moon factories at scale ~$35/sh more</span></div>
+        <div class="cmprow"><span class="ck">Cursor $60bn acquisition close</span><span class="cv">walk-away costs $1.5bn + $8.5bn deferred fee</span></div>
+        <div class="cmprow"><span class="ck">Sep&ndash;Dec 2026 lock-up wall</span><span class="cv">90&ndash;180-day founder/PE/employee unlocks</span></div>
+        <div class="cmprow"><span class="ck">Common-control governance discount</span><span class="cv">market has not yet demanded one</span></div>
+      </div>
+    </div>
+
+    <div class="note b"><b>How the reverse-DCF frames it.</b> Module I solves for the AI-segment value that reconciles the median MC fair value to spot: <span class="hl blue">$976bn</span>. That sits <b>+39%</b> above the pipeline&rsquo;s $700bn mode, near the top of the frontier-lab peer range (OpenAI ~$500bn secondary mid-2025; Anthropic ~$183bn primary Sep-2025), and roughly 3.9&times; the xAI transaction anchor. The decomposition above is the point: Starlink is a real, cash-generative pillar you can underwrite; the two frontier-class legs (orbital datacenters, other frontier) are genuine optionality with long right tails; but the marginal dollar of today&rsquo;s price is still an AI-mark call. Note the orbital-datacenter leg is <i>space-based</i> compute &mdash; the ground Colossus is already inside the AI segment, so there is no double-count. Upside from here needs either that AI mark to be defensible <i>or</i> the frontier tails to start printing revenue.</div>
+  </section>
+
+
+  <!-- L — CONNECTIVITY UNIT-ECONOMICS MODEL (SpaceX build) -->
+  <section class="mod" id="mL">
+    <div class="mod-head"><div class="mod-no">L</div>
+      <div class="ht"><h2>Connectivity unit-economics &mdash; what has to be true</h2><div class="hq">Decomposing the Starlink leg (2030 revenue) into subscribers &times; ARPU.</div></div>
+      <span class="tagchip c">Computed &middot; new model</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>Base case reachable, but not by more of the same.</b> The pipeline&rsquo;s $70bn mode requires <b>~40M subs at $150/mo</b> or <b>~60M subs at $100/mo</b> &mdash; either is a 4&ndash;6&times; leap from today, on a base whose blended ARPU is already <i>falling</i> as direct-to-cell mix rises.</span></div>
+
+    <p class="body"><b>The equation.</b> Connectivity segment revenue = average subscribers &times; blended ARPU &times; 12. Everything above this in the engine (EBITDA margin &times; multiple &times; discount factor) simply prices what this line delivers. So the entire Starlink leg of the sum-of-the-parts comes down to <i>which cell in the grid below</i> the world settles at.</p>
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;overflow-x:auto">
+      2030 Connectivity revenue [$bn] = subscribers_2030 [M] &times; ARPU_2030 [$/mo] &times; 12 &divide; 1000<br>
+      2030 Connectivity EBITDA [$bn] = revenue [$bn] &times; margin (base 64%)<br>
+      2030 Connectivity segment value [$bn] = EBITDA [$bn] &times; multiple (base 24&times;) &divide; 1.10<sup>4</sup>&nbsp; <span style="color:var(--faint)">// discount 4y at 10%</span>
+    </div>
+
+    <p class="body" style="margin-top:12px"><b>Calibration.</b> FY2025: revenue <span class="hl">$11.4bn</span>, avg subs (5.3 &rarr; 8.9)M = 7.1M &rArr; blended ARPU <span class="hl">$134/mo</span> at 63% EBITDA margin. Q1&rsquo;26 imputed (Connectivity ~61% of the $4.694bn total, avg subs 9.6M) &rArr; blended ARPU <span class="hl neg">$0/mo</span>. That is a <b>~100% ARPU decline in one quarter</b> &mdash; the D2C mix shift, low-ARPU consumer international, and volume-tier pricing all pulling the same direction. Whether ARPU stabilises or continues down decides the grid.</p>
+
+    <p class="body" style="margin-top:14px"><b>The grid.</b> Green cells = inside the pipeline&rsquo;s 2030 revenue range ($45&ndash;100bn); teal-shaded = at the $70bn mode; faint = outside the range.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>Subs 2030 &darr;&nbsp;&nbsp;/&nbsp;&nbsp;ARPU &rarr;</th><th style="text-align:right">$70/mo</th><th style="text-align:right">$90/mo</th><th style="text-align:right">$110/mo</th><th style="text-align:right">$130/mo</th><th style="text-align:right">$150/mo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>20M</td><td class='num' style='color:var(--faint)'>$17bn</td><td class='num' style='color:var(--faint)'>$22bn</td><td class='num' style='color:var(--faint)'>$26bn</td><td class='num' style='color:var(--faint)'>$31bn</td><td class='num' style='color:var(--faint)'>$36bn</td></tr>
+        <tr><td class='num'>30M</td><td class='num' style='color:var(--faint)'>$25bn</td><td class='num' style='color:var(--faint)'>$32bn</td><td class='num' style='color:var(--faint)'>$40bn</td><td class='num'>$47bn</td><td class='num'>$54bn</td></tr>
+        <tr><td class='num'>40M</td><td class='num' style='color:var(--faint)'>$34bn</td><td class='num' style='color:var(--faint)'>$43bn</td><td class='num'>$53bn</td><td class='num'>$62bn</td><td class='num cur'>$72bn</td></tr>
+        <tr><td class='num'>50M</td><td class='num' style='color:var(--faint)'>$42bn</td><td class='num'>$54bn</td><td class='num'>$66bn</td><td class='num'>$78bn</td><td class='num'>$90bn</td></tr>
+        <tr><td class='num'>60M</td><td class='num'>$50bn</td><td class='num'>$65bn</td><td class='num'>$79bn</td><td class='num'>$94bn</td><td class='num' style='color:var(--faint)'>$108bn</td></tr>
+        <tr><td class='num'>80M</td><td class='num cur'>$67bn</td><td class='num'>$86bn</td><td class='num' style='color:var(--faint)'>$106bn</td><td class='num' style='color:var(--faint)'>$125bn</td><td class='num' style='color:var(--faint)'>$144bn</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note t" style="margin-top:14px"><b>Why the grid matters.</b> Two consumer businesses are competing inside Starlink&rsquo;s ARPU line: (1) high-ARPU aviation / maritime / enterprise / DoD ($500&ndash;5,000/mo per active seat) and (2) low-ARPU consumer + direct-to-cell (D2C is essentially a wholesale wireless-carrier line, monetised at cents per underlying phone user). If (2) scales faster, blended ARPU keeps falling and Starlink needs an <i>enormous</i> subscriber count to hit the pipeline&rsquo;s $70bn mode. If (1) scales faster, fewer subs get there but the achievable ceiling (subs &times; ARPU) is tighter.</div>
+
+    <p class="body" style="margin-top:14px"><b>What must be verified before the Q2 print.</b></p>
+    <table class="brtab">
+      <thead><tr><th>Metric</th><th style="text-align:right">FY2025</th><th style="text-align:right">Q1&rsquo;26</th><th>Direction that keeps the mode intact</th></tr></thead>
+      <tbody>
+        <tr><td>Subscribers (period end)</td><td class="num">8.9M</td><td class="num">10.3M</td><td>&gt;12M by YE 2026 (implies ~+35% CAGR to 40M by 2030)</td></tr>
+        <tr><td>Connectivity revenue growth y/y</td><td class="num">+48%</td><td class="num">flat q/q</td><td>&gt;+30% y/y at Q2 print &mdash; the deceleration cannot start yet</td></tr>
+        <tr><td>Blended ARPU trajectory</td><td class="num">~$134</td><td class="num">~$0</td><td>Stabilise &ge;$95 &mdash; break below implies a D2C-dominant path</td></tr>
+        <tr><td>Segment EBITDA margin</td><td class="num">63%</td><td class="num">n/d</td><td>Hold &gt;55% &mdash; break below signals capacity ahead of demand</td></tr>
+      </tbody>
+    </table>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>The Starlink leg&rsquo;s mode is defensible, but not from the current trajectory.</b> To hit $70bn conn_rev in 2030, subscribers have to compound at 30&ndash;40% for four years <i>while</i> ARPU stops falling. (2) <b>The Q1&rsquo;26 ARPU drop is the single loudest signal in the S-1.</b> If it repeats in Q2 without volume acceleration, the grid slides toward the low-ARPU column and the $45bn low is more likely than the $70bn mode. (3) <b>Starlink is one of two co-equal pillars now</b> (Module K) &mdash; a real, cash-generative business, unlike the AI mark it sits beside. (4) <b>First live test:</b> Q2&rsquo;26 subs and Connectivity revenue growth, printing Aug&ndash;Sep 2026.</div>
+
+    <div class="note c"><b>Where this model breaks.</b> ARPU trajectory is imputed from segment share &times; total revenue &mdash; segment quarterly disclosure would collapse the assumption. If SpaceX begins reporting Starlink revenue separately, replace the ARPU calibration here with the printed number. Direct-to-cell economics are still forming; today&rsquo;s ~$5/mo wholesale rate per underlying carrier customer could be a floor or a ceiling. All of these become fetchable as the tape and the filings mature; the grid does not need to be re-derived, only re-calibrated.</div>
+  </section>
+
+
+  <!-- M — OTHER FRONTIER OPTIONALITY (SpaceX build) -->
+  <section class="mod" id="mM">
+    <div class="mod-head"><div class="mod-no">M</div>
+      <div class="ht"><h2>Other frontier optionality &mdash; moon factories, payload, point-to-point</h2><div class="hq">The deep-space markets beyond orbital datacenters (those are Module N) &mdash; priced as a risk-adjusted, deeply-discounted call option.</div></div>
+      <span class="tagchip c">Computed &middot; frontier leg</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>Huge, uniquely-held, and genuinely unpriced by cash flows.</b> The deep-space markets beyond orbital compute &mdash; lunar/in-space manufacturing, payload-to-orbit new markets, point-to-point &mdash; barely exist today, so the leg is a <i>risk-adjusted</i> 2035E revenue (TAM &times; capture &times; probability) on a shared frontier EV/Sales multiple, discounted nine years. At mode it adds <b>$5/share</b> (4% of value); the right tail &mdash; the moon-factory vision at scale &mdash; is worth <b>~$35/share</b>. (Orbital datacenters, the flagship frontier use-case, are broken out separately in <b>Module N</b>.)</span></div>
+
+    <p class="body"><b>Why this leg exists.</b> Starship is the hinge. A fully-reusable vehicle lifting <b>150 t reusable / 250 t expendable</b> to LEO at a target of <b>$100&ndash;200/kg</b> (aspirationally $10) against ~$1,500/kg today is not an incremental improvement &mdash; it is the ~10&times; cost collapse that makes an entire class of markets economically possible for the first time. SpaceX is the only entity that owns the launch and the satellite bus (Starlink) needed to build them. Musk has publicly re-prioritised a self-sustaining <b>city on the Moon</b> this decade; the &ldquo;moon factory&rdquo; thesis (lunar &amp; in-space manufacturing) sits here, while the solar-powered orbital-datacenter piece of it is valued in Module N.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Frontier market</th><th>Basis / status (2026)</th><th>Independent size signal</th><th>What to watch</th></tr></thead>
+      <tbody>
+        <tr><td><b>Payload-to-orbit cost collapse</b></td><td>Starship 150&ndash;250 t to LEO; $100&ndash;200/kg target vs ~$1,500 today</td><td class="num">~10&times;</td><td>Full-reuse demo; realised $/kg; flight cadence</td></tr>
+        <tr><td><b>Moon factories</b> (lunar &amp; in-space mfg)</td><td>Shotwell &ldquo;AI on the Moon&rdquo;; Musk &ldquo;city on the Moon&rdquo; this decade; NASA Artemis HLS landing ~2028</td><td>emerging</td><td>First lunar-manufacturing / ISRU demo; HLS cadence</td></tr>
+        <tr><td><b>Point-to-point Earth transport</b></td><td>USSF &ldquo;Rocket Cargo&rdquo; demo (~$102m, scalable to $1bn+); sub-hour global delivery</td><td class="num">DoD-led</td><td>Operational cargo contract; safety/regulatory path</td></tr>
+        <tr><td><b>Launch-TAM expansion</b> (defence, deep space)</td><td>NASA HLS ~$2.89bn + $1.15bn awards; NSSL; deep-space science</td><td class="num">$615bn sat mkt &rsquo;32</td><td>Contract book vs Boeing/ULA/RKLB; cadence</td></tr>
+        <tr><td style="color:var(--faint)">Orbital datacenters &rarr; <b>Module N</b></td><td style="color:var(--faint)">Split into its own leg (space-based AI compute)</td><td class="num" style="color:var(--faint)">see N</td><td style="color:var(--faint)">valued separately to avoid burying it</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>The decomposition.</b> The engine draws a risk-adjusted 2035E revenue for these other-frontier markets ($4&ndash;90bn, mode $25bn) &mdash; itself <b>TAM &times; effective-capture</b> (capture share &times; probability the category is real at scale). The grid shows which pair each revenue anchor needs. Green cells = inside the driver&rsquo;s $4&ndash;90bn band; teal-shaded = at the ~$25bn mode; faint = outside.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>2035 TAM &darr;&nbsp;&nbsp;/&nbsp;&nbsp;effective capture &rarr;</th><th style="text-align:right">5%</th><th style="text-align:right">10%</th><th style="text-align:right">20%</th><th style="text-align:right">35%</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>$100bn</td><td class='num'>$5bn</td><td class='num'>$10bn</td><td class='num cur'>$20bn</td><td class='num'>$35bn</td></tr>
+        <tr><td class='num'>$250bn</td><td class='num'>$12bn</td><td class='num cur'>$25bn</td><td class='num'>$50bn</td><td class='num'>$88bn</td></tr>
+        <tr><td class='num'>$500bn</td><td class='num cur'>$25bn</td><td class='num'>$50bn</td><td class='num' style='color:var(--faint)'>$100bn</td><td class='num' style='color:var(--faint)'>$175bn</td></tr>
+        <tr><td class='num'>$900bn</td><td class='num'>$45bn</td><td class='num'>$90bn</td><td class='num' style='color:var(--faint)'>$180bn</td><td class='num' style='color:var(--faint)'>$315bn</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;margin-top:14px;overflow-x:auto">
+      other-frontier revenue 2035 [$bn] = TAM [$bn] &times; capture-share &times; probability&nbsp; <span style="color:var(--faint)">// mode $25bn</span><br>
+      other-frontier EV 2035 [$bn]       = revenue &times; EV/Sales (mode 6&times;)&nbsp; <span style="color:var(--faint)">// $150bn</span><br>
+      other-frontier value today [$bn]   = EV 2035 &divide; 1.10<sup>9</sup>&nbsp; <span style="color:var(--faint)">// ~$64bn &rarr; $5/share</span>
+    </div>
+
+    <div class="note t" style="margin-top:14px"><b>Why nine years and why risk-adjusted.</b> These revenues are 2030s events, not 2030 events, so the leg is discounted to 2035 (9y at 10%) &mdash; roughly half the undiscounted value. And the driver is <i>already</i> probability-weighted: a $25bn mode is, e.g., a $250bn 2035 in-space-manufacturing + P2P pool at a 10% effective capture, <i>not</i> a promise that SpaceX books $25bn. That is why the modal contribution is a modest $5/share while the tail is large: this is a call option, priced like one.</div>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>Deep-space goals now have an explicit home.</b> Moon factories, cheap heavy lift and point-to-point are priced here; the orbital-datacenter flagship is priced in Module N. (2) <b>It is optionality, not a base case.</b> At mode it is ~4% of value; its honest role is to fatten the upside tail (Module A&rsquo;s P90, Module B&rsquo;s tornado). (3) <b>The unlock is verifiable.</b> Unlike the AI mark, this leg has physical milestones &mdash; realised $/kg, first lunar-manufacturing demo, an operational Rocket-Cargo contract. (4) <b>Kill/confirm:</b> if Starship full reuse and $/kg stall, the whole leg is a mirage; if $/kg falls as targeted, the mode is conservative.</div>
+
+    <div class="note c"><b>Where this leg breaks.</b> Every number here is a <i>forward</i> estimate on markets that are pre-revenue for SpaceX today, so the ranges are wide by design and the sourcing is directional (analyst TAMs, executive statements, comparable raises), not audited filings. The point is not precision &mdash; it is to stop the deep-space future from being priced at zero <i>or</i> hidden inside the AI mark. As real contracts, cadence and $/kg print, re-calibrate the driver in stocks/config.py; the leg does not need to be re-derived.</div>
+  </section>
+
+
+  <!-- N — ORBITAL DATACENTERS (SpaceX build) -->
+  <section class="mod" id="mN">
+    <div class="mod-head"><div class="mod-no">N</div>
+      <div class="ht"><h2>Orbital datacenters &mdash; space-based AI compute, its own leg</h2><div class="hq">Datacenters in space, broken out of the frontier lump: sized, decomposed, and gated on the one thing SpaceX uniquely controls.</div></div>
+      <span class="tagchip c">Computed &middot; new leg</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>Yes, it&rsquo;s priced &mdash; now visibly.</b> Space-based, solar-powered AI compute is the flagship &ldquo;moon factory&rdquo; use-case, so it gets its own leg rather than hiding inside the frontier lump. At mode it adds <b>$5/share</b> (4% of value); the right tail &mdash; a gigawatt-scale orbital-compute constellation &mdash; is worth <b>~$46/share</b>. Distinct from the <i>ground</i> Colossus already inside the AI segment, so no double-count.</span></div>
+
+    <p class="body"><b>Why SpaceX, and why this is a real leg.</b> Orbital datacenters solve terrestrial AI&rsquo;s power/land/cooling wall with 24/7 solar and radiative cooling &mdash; but they only pay off if launch is cheap enough. The break-even to beat ground datacenters is roughly <b>$500/kg</b> for GPU payloads, and Google puts full viability at <b>&lt;$200/kg by 2035</b>, plausible only if Starship reaches ~180 launches/year. That gate is exactly the payload-cost collapse <b>SpaceX uniquely owns</b> (Module M) &mdash; and SpaceX also owns the satellite bus (Starlink) and, via xAI, the compute and the demand. No competitor holds all three. This is why the datacenter-in-space opportunity is a SpaceX leg, not a generic space-economy line.</p>
+
+    <table class="brtab">
+      <thead><tr><th>Evidence</th><th>2026 status</th><th>Read</th></tr></thead>
+      <tbody>
+        <tr><td><b>The gate: launch $/kg</b></td><td>Break-even ~$500/kg for GPUs; &lt;$200/kg by 2035 for full viability (Google)</td><td>Ties this leg directly to Starship &mdash; the Module-M hinge</td></tr>
+        <tr><td><b>Starcloud</b></td><td>NVIDIA H100 flown in orbit; 5 GW single-site concept (4 km solar array); unicorn raise</td><td>First mover; proves the physics at small scale</td></tr>
+        <tr><td><b>Google &ldquo;Project Suncatcher&rdquo;</b></td><td>Solar-powered TPU satellite constellation; demo mission ~2027</td><td>A hyperscaler validating the thesis &mdash; and a customer/competitor</td></tr>
+        <tr><td><b>SpaceX / xAI</b></td><td>xAI merger framed around solar-powered AI satellites; Shotwell &ldquo;AI on the Moon&rdquo;</td><td>The stated strategy this leg prices</td></tr>
+        <tr><td><b>Market size</b></td><td>~$1.8bn (2029) &rarr; ~$39bn (2035); $10&ndash;50bn/yr by 2030 on demand projections</td><td>Near-term TAM is modest; the vision (GW-scale) is the tail</td></tr>
+      </tbody>
+    </table>
+
+    <p class="body" style="margin-top:16px"><b>The decomposition.</b> The orbital driver is SpaceX&rsquo;s risk-adjusted 2035E space-compute revenue ($4&ndash;$120bn, mode $25bn). Read it as <b>GW deployed &times; revenue/GW-year &times; SpaceX effective capture</b> (capture share &times; probability the category is real). The grid uses ~$8bn/GW-year (a ~1 GW AI datacentre&rsquo;s rough annual revenue). Green = inside the driver&rsquo;s $4&ndash;$120bn band; teal-shaded = at the ~$25bn mode; faint = outside.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>Orbital GW 2035 &darr;&nbsp;&nbsp;/&nbsp;&nbsp;SpaceX effective capture &rarr;</th><th style="text-align:right">5%</th><th style="text-align:right">10%</th><th style="text-align:right">20%</th><th style="text-align:right">35%</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class='num'>5 GW</td><td class='num' style='color:var(--faint)'>$2bn</td><td class='num'>$4bn</td><td class='num'>$8bn</td><td class='num'>$14bn</td></tr>
+        <tr><td class='num'>10 GW</td><td class='num'>$4bn</td><td class='num'>$8bn</td><td class='num'>$16bn</td><td class='num cur'>$28bn</td></tr>
+        <tr><td class='num'>25 GW</td><td class='num'>$10bn</td><td class='num cur'>$20bn</td><td class='num'>$40bn</td><td class='num'>$70bn</td></tr>
+        <tr><td class='num'>50 GW</td><td class='num cur'>$20bn</td><td class='num'>$40bn</td><td class='num'>$80bn</td><td class='num' style='color:var(--faint)'>$140bn</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;margin-top:14px;overflow-x:auto">
+      orbital revenue 2035 [$bn]  = GW &times; ~$8bn/GW-yr &times; SpaceX capture&nbsp; <span style="color:var(--faint)">// mode $25bn</span><br>
+      orbital EV 2035 [$bn]       = orbital revenue &times; EV/Sales (shared 6&times;)&nbsp; <span style="color:var(--faint)">// $150bn</span><br>
+      orbital value today [$bn]   = orbital EV 2035 &divide; 1.10<sup>9</sup>&nbsp; <span style="color:var(--faint)">// ~$64bn &rarr; $5/share</span>
+    </div>
+
+    <div class="note b" style="margin-top:14px"><b>The double-count guard.</b> Today&rsquo;s AI compute &mdash; the <i>ground</i> Colossus clusters, incl. capacity rented to Anthropic &mdash; is already inside the <b>AI segment</b> ($700bn mode, Module K). This leg is only the <i>space-based</i> datacenter business (2035E), so the two do not overlap. If you believe orbital compute simply migrates the AI segment&rsquo;s existing revenue off-planet rather than adding new revenue, dial this slider down and the AI slider up; if you believe it is a genuinely new market, this leg is where it lives.</div>
+
+    <div class="reading"><b>How to read it.</b> (1) <b>This is the &ldquo;datacenters in space&rdquo; question, answered.</b> It is priced &mdash; $5/share at mode (4% of value), ~$46/share in the tail &mdash; and now has its own slider in Module A and its own bar in the Module B tornado. (2) <b>It is optionality gated on hardware.</b> The whole leg lives or dies on Starship $/kg; watch the realised cost curve before the TAM. (3) <b>The near-term TAM is small, the vision is not.</b> $39bn by 2035 is the base; a gigawatt-scale constellation is the $46/share tail. (4) <b>First real signals:</b> Starcloud/Suncatcher milestones and the first MW-scale orbital-compute contract.</div>
+
+    <div class="note c"><b>Where this leg breaks.</b> Radiation, thermal rejection at scale, on-orbit servicing and latency are unsolved at GW scale; the ~$8bn/GW-year revenue assumption is illustrative, not sourced; and if $/kg stalls above ~$500 the economics never close. As real cost, capacity and contracts print, re-calibrate <code>orbital_rev</code> in stocks/config.py &mdash; the leg does not need to be re-derived.</div>
+  </section>
+
+
+  <!-- O — PERFECT-EXECUTION BULL CASE (SpaceX build) -->
+  <section class="mod" id="mO" style="border:1.5px solid var(--teal)">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">O</div>
+      <div class="ht"><h2>Perfect-execution bull case &mdash; the right tail, priced end-to-end</h2><div class="hq">If <i>everything</i> goes right: what is SPCX worth in 2035&ndash;36, and what does that discount back to today?</div></div>
+      <span class="tagchip a">Scenario overlay &middot; your assumptions</span>
+    </div>
+
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext"><b>Deliberately outside the disciplined fourteen &mdash; the flawless-execution tail, sized.</b> Extend the Morgan&nbsp;Stanley / ARK trajectories to their bull ends and the picture inverts: <b>$1&ndash;3T of 2035&ndash;36 revenue</b> at a still-premium <b>10&ndash;25&times; sales</b> supports a <b>$10&ndash;30T+ market cap</b>. Even after diluting to ~16B shares <i>and</i> discounting a full decade at 12%, the implied present value clears today&rsquo;s <span class="jsprice">$148.30</span> by a wide margin &mdash; so if the perfect path is even partly real, the stock is a good investment at today&rsquo;s price. This is the far-right tail Modules A&ndash;N hold at their modes; here it is the whole picture.</span></div>
+
+    <p class="body"><b>What this panel is &mdash; and is not.</b> The fourteen reads above are underwriting: what you can defend on today&rsquo;s data. This one is the opposite exercise &mdash; the <i>everything-goes-right</i> scenario the sell-side bulls model, made explicit and end-to-end computable. Every input below is <b>your assumption</b> (the amber label everywhere on this page), anchored to published bull cases but not asserted as fact. The point is symmetry: Module A&rsquo;s engine deliberately keeps the frontier legs at their modes, so its P90 (~$200) understates the flawless path. This panel prices that path directly, on a 2035&ndash;36 horizon, and discounts it back so it is comparable to the live tape.</p>
+
+    <p class="body"><b>Why perfect execution is not trivial upside.</b> It compounds four things at once: <b>Starship</b> at full reuse and <span class="hl">$200/kg</span> or better, driving cheap deployment, point-to-point, and lunar/Mars logistics; <b>Starlink</b> scaling to billions of connections (broadband + direct-to-cell + AI/robotics nodes) at high-margin recurring revenue; the <b>AI segment</b> (xAI + Colossus + orbital datacenters from ~2028) leasing compute to hyperscalers at hundreds of GW; and a <b>vertical-integration moat</b> &mdash; launch + satellites + compute + connectivity under one roof &mdash; capturing a slice of the S-1&rsquo;s <span class="hl">$28.5T</span> AI-era TAM. Get all four and revenue is $1T+ from AI alone by mid-decade, with Starlink another $400&ndash;700B.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin:18px 0 6px">◆ External bull-case anchors (as supplied &mdash; sell-side / directional, not audited)</div>
+    <table class="brtab">
+      <thead><tr><th>Source</th><th style="text-align:right">2030</th><th style="text-align:right">2040</th><th>Read</th></tr></thead>
+      <tbody>
+        <tr><td>Morgan Stanley &mdash; revenue</td><td class="num">$319bn</td><td class="num">$3.3tn</td><td>AI alone $190bn (2030) &rarr; $2.6tn (2040); connectivity to $688bn; op-margin toward ~59%. Bull PT $600.</td></tr>
+        <tr><td>ARK / Mach33 &mdash; enterprise value</td><td class="num">$2.5&ndash;3.1tn</td><td class="num">$12.8&ndash;14.5tn</td><td>Base/bull EV. Starlink ~$300bn annual revenue by mid-2030s; Mars optionality in the outer years.</td></tr>
+        <tr><td>Goldman Sachs &mdash; revenue</td><td class="num">~$474bn</td><td class="num">&mdash;</td><td>AI-heavy 2030 revenue mix.</td></tr>
+        <tr><td>Ron Baron (investor)</td><td class="num">&mdash;</td><td class="num">~$30tn</td><td>Floated 2040 valuation on full mission execution.</td></tr>
+        <tr class="cur"><td><b>This panel &mdash; 2035&ndash;36 window</b></td><td class="num" colspan="2" style="text-align:right"><b>$1&ndash;3tn revenue</b></td><td>The 10-year horizon: AI/compute dominant ($1T+), Starlink $400&ndash;700B+, space/Mars emerging.</td></tr>
+      </tbody>
+    </table>
+    <div class="src">Anchors above are as supplied in the bull-case brief (Morgan Stanley, ARK Invest / Mach33, Goldman Sachs roadshow notes, Ron Baron remarks, SpaceX S-1 TAM). Directional and sell-side &mdash; treated here as scenario inputs, not sourced facts. Short-term Street targets for context: Wedbush $190, MS $300 base / $600 bull.</div>
+
+    <div class="mc-wrap" style="margin-top:18px">
+      <div class="mc-title">◆ Perfect-execution price calculator &mdash; 2035&ndash;36, discounted to today</div>
+      <div class="mc-sub">Fixed: live spot <span class="jsprice">$148.30</span>, 10-year horizon (2026 &rarr; 2036). Market cap = revenue &times; EV/Sales; price = market cap &divide; diluted shares; present value discounts that price back 10 years at your required return. Every input is <span class="asm">your assumption</span>.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">2035&ndash;36E annual revenue <span>$tn · assumption</span></span><span class="cval">$<span id="bv-rev">2.0</span>tn</span></label>
+          <input type="range" id="b-rev" min="0.5" max="3.5" step="0.1" value="2.0">
+          <div class="tri">AI/compute $1T+ · Starlink $0.4&ndash;0.7T · space/Mars emerging (MS $3.3T by 2040)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">EV / Sales multiple <span>× · assumption</span></span><span class="cval"><span id="bv-mult">12</span>×</span></label>
+          <input type="range" id="b-mult" min="6" max="25" step="1" value="12">
+          <div class="tri">a maturing-but-premium growth multiple &mdash; a future-scale Nvidia/Amazon hybrid</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Diluted shares 2036 <span>bn · assumption</span></span><span class="cval"><span id="bv-shares">16.0</span>bn</span></label>
+          <input type="range" id="b-shares" min="13" max="20" step="0.5" value="16">
+          <div class="tri">13.17bn today · raises + comp dilute capex-heavy growth stories to ~15&ndash;18bn</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Required return (discount) <span>%/yr · assumption</span></span><span class="cval"><span id="bv-disc">12</span>%</span></label>
+          <input type="range" id="b-disc" min="0" max="20" step="1" value="12">
+          <div class="tri">the hurdle you discount the 2036 price back at to compare with today</div>
+        </div>
+      </div>
+
+      <div class="kelly" style="grid-template-columns:repeat(5,1fr)">
+        <div class="kbox good"><div class="t">2036 market cap</div><div class="n pos" id="bo-mcap">$24.0T</div><div class="d">revenue &times; EV/Sales.</div></div>
+        <div class="kbox good"><div class="t">Implied 2036 price</div><div class="n pos" id="bo-price">$1,500</div><div class="d">market cap &divide; diluted shares.</div></div>
+        <div class="kbox"><div class="t">Present value (today)</div><div class="n pos" id="bo-pv">$483</div><div class="d">2036 price discounted 10y.</div></div>
+        <div class="kbox"><div class="t">Return vs today</div><div class="n pos" id="bo-cagr">+26%/yr</div><div class="d">CAGR on live spot to 2036.</div></div>
+        <div class="kbox"><div class="t">× today&rsquo;s price</div><div class="n pos" id="bo-multx">10.1×</div><div class="d">undiscounted 2036 / spot.</div></div>
+      </div>
+
+      <div class="cbar" style="margin-top:26px">
+        <div class="fl" style="left:0;right:0"></div>
+        <div class="mk" id="bo-mk" style="left:60%"></div>
+        <div class="lb" id="bo-mklb" style="left:60%">2036 · $1,500</div>
+        <div class="lb" style="left:5.9%;color:var(--ink)">today $148</div>
+      </div>
+      <div style="height:26px"></div>
+      <div class="reading" id="bull-read"></div>
+    </div>
+
+    <p class="body" style="margin-top:18px"><b>The three canonical rungs.</b> The same arithmetic at the market caps the bull models cluster around, holding ~16B diluted shares. Each is a legitimate &ldquo;everything goes right&rdquo; outcome; they differ only in how much of the $28.5T TAM SpaceX captures.</p>
+    <div class="kelly" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kbox"><div class="t">Strong execution &mdash; $10T cap</div><div class="n pos">$550&ndash;670</div><div class="d">~$1T revenue &times; ~10&times;. Extends MS&rsquo;s bull trajectory; ~4&times; today undiscounted, roughly fair once discounted &mdash; the &ldquo;bull base&rdquo;.</div></div>
+      <div class="kbox good"><div class="t">Flawless &mdash; $15&ndash;20T cap</div><div class="n pos">$800&ndash;1,300</div><div class="d">$1.5&ndash;2T revenue &times; 10&ndash;15&times;. AI compute leasing + Starlink at scale both firing; ARK&rsquo;s late-2030s zone.</div></div>
+      <div class="kbox good"><div class="t">Full-TAM &mdash; $25&ndash;30T+ cap</div><div class="n pos">$1,400&ndash;2,000+</div><div class="d">$2&ndash;3T revenue &times; 15&ndash;25&times;. Orbital compute at hundreds of GW + Mars optionality; Baron&rsquo;s $30T corner.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:18px"><b>The full grid.</b> 2036 price per share at the current diluted-share count (<span id="bull-shcap">16.0bn</span>) &mdash; revenue down the side, EV/Sales across. Teal-shaded = the cell nearest your slider setting; green = &ge; a ~4&times;-from-today outcome.</p>
+    <table class="brtab">
+      <thead>
+        <tr><th>Revenue &darr;&nbsp;&nbsp;/&nbsp;&nbsp;EV&divide;Sales &rarr;</th><th style="text-align:right">10×</th><th style="text-align:right">15×</th><th style="text-align:right">20×</th><th style="text-align:right">25×</th></tr>
+      </thead>
+      <tbody id="bull-matrix"></tbody>
+    </table>
+
+    <div class="reading" id="bull-read2"></div>
+
+    <div class="note t" style="margin-top:14px"><b>How to hold this next to the base case.</b> Modules A&ndash;N are the disciplined anchor &mdash; what you pay for today, sized by kill-criteria. This panel is the <i>reward side</i> of the same coin: it quantifies why a Starlink-plus-launch cash pillar, with two verifiable deep-space call options and an AI segment that could genuinely lead, is worth owning as a small, event-sized position rather than avoiding. The honest synthesis is a <b>barbell</b>: underwrite the base case, size for the kill-criteria &mdash; and recognise that the right tail this page previously left at its mode is, if execution is flawless, a multi-bagger. Both statements are true at once; that is the whole point of a distribution.</div>
+
+    <div class="note c"><b>Where this panel breaks &mdash; read before believing it.</b> This is the <i>upper</i> tail, and it stacks best-case on best-case: a $28.5T TAM that is itself a projection, orbital datacenters that are unproven at GW scale (Module N), Starship $/kg that has not yet collapsed (Module M), an AI mark already ~3.9&times; its arm&rsquo;s-length anchor (Module I/K), and a 10&ndash;25&times; sales multiple sustained for a decade. Any one of the kill-criteria in Module H firing takes the flawless path off the table. Perfect execution is rare precisely because it requires <i>everything</i>; the base case exists because most futures are not perfect. Use this to size the reward, not to abandon the discipline. <span style="color:var(--faint)">For analysis and education only &mdash; not investment advice.</span></div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the fourteen reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base-case calibration (AI mark $700bn, frontier leg at mode, neutral priors).</div></div>
+    </div>
+    <table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~$148 (≈ live spot) at mode; frontier-optionality leg makes the payoff two-sided</td></tr>
+        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>Single-factor (AI mark) dependence → fragile estimate</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted value near the live price; bull AI anchor clears it, bear well below; frontier tail is the extra upside</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip mixed">MIXED</span></td><td>Elite Starlink economics vs −$6.35bn AI op loss; loss is capex, not games</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Historic execution vs common-control transactions priced by the controller</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>NDX-inclusion buying now vs a Sep–Dec lock-up wall; founder control</td></tr>
+        <tr><td>G · Valuation context</td><td><span class="vchip bear">BEAR</span></td><td>~120× EV/rev, ~342× EBITDA — outside every trillion-club convention</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; triggers datable to specific 2026–27 prints</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip mixed">MIXED</span></td><td>Kelly f* +13%, asymmetry 1.33×, market implies +39.4% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 61/100 · OE-yield spread -262 bp real</td></tr>
+        <tr><td>K &middot; Priced-in</td><td><span class="vchip bear">BEAR</span></td><td>Five-leg SOTP: Starlink & AI co-equal pillars; AI still ~50% of mcap ($976bn implied vs $250bn xAI anchor)</td></tr>
+        <tr><td>L &middot; Unit-econ</td><td><span class="vchip mixed">MIXED</span></td><td>Starlink base mode reachable; Q1&rsquo;26 ARPU drop is the loudest signal in the S-1</td></tr>
+        <tr><td>M &middot; Frontier</td><td><span class="vchip mixed">MIXED</span></td><td>Other frontier (moon factories / payload-to-orbit / point-to-point): ~4% at mode, ~$35/sh tail</td></tr>
+        <tr><td>N &middot; Orbital DC</td><td><span class="vchip mixed">MIXED</span></td><td>Orbital datacenters (space-based AI compute): ~4% at mode, ~$46/sh tail &mdash; gated on Starship $/kg</td></tr>
+        <tr style="background:var(--teal-wash)"><td>O &middot; Bull case <span style="font-family:var(--mono);font-size:8.5px;color:var(--faint)">overlay</span></td><td><span class="vchip bull">BULL</span></td><td>Perfect-execution right tail: $10–30T+ cap by 2035–36 &rarr; $550–2,000+/share. Not in the net-14 count &mdash; the reward side of the distribution</td></tr>
+      </tbody>
+    </table>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:0.0%"></div><div class="tp mixed" style="width:85.7%"></div><div class="tp bear" style="width:14.3%"></div></div>
+      <div class="tlab"><span class="tb">0 Bull</span><span class="tm">12 Mixed</span><span class="tr">2 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED, LEANING BEAR</span>
+      <div class="ov-text"><b>A generational business, valued as four legs, at a price that already assumes the next act.</b> What you can underwrite today is Starlink — 63% segment margins, subscribers doubling, a moat nobody has replicated — and the launch monopoly that built it. On top sit two forward legs. One is a deep-space frontier option — moon factories, orbital data centres, payload-to-orbit economics and point-to-point transport (Module M) — which you get largely for free and can track by physical milestones. The other is the number doing most of the valuation work: an AI segment marked by the market near $1tn (Module I reverse-DCF, ~4× the $250bn acquisition anchor) against $3.2bn of revenue and a −$6.35bn operating loss. Once the frontier leg is priced in, the engine's median (~$148, with a P90 near $200) sits roughly at the live price and the payoff is two-sided — the deep-space tail, not the AI mark, is now the cleanest source of upside. With index-inclusion flows now and a lock-up wall in Q4, the tape has mechanical currents in both directions. The disciplined position is sized by the kill-criteria, not the narrative.</div>
+    </div>
+  </section>
+
+  
+  <!-- CONCLUSIONS (SpaceX build) -->
+  <section class="mod" id="mConc">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">&#10003;</div>
+      <div class="ht"><h2>Conclusions &amp; watch-list &mdash; the single-source summary</h2><div class="hq">Everything the SpaceX build concluded, in one place, with dates.</div></div>
+      <span class="tagchip a">Synthesis &middot; live</span>
+    </div>
+    <p class="body"><b>The thesis in one paragraph.</b> SpaceX is the best-executing industrial company of the modern era, valued as the sum of five legs: a real Starlink cash pillar (~44% of value at mode), a launch business (~5%), two deep-space options &mdash; orbital datacenters (~4%, Module N) and other frontier (~4%, Module M), each with a much larger right tail &mdash; and a common-controlled AI mark (~42% at mode but ~50% of the market cap once the price&rsquo;s premium over mode is attributed to it). The engine at every driver&rsquo;s mode returns <span class="hl">$127/share</span>; live spot is <span class="hl">$148.30</span>; the <b>$+21/share</b> in between is the market&rsquo;s AI re-rating &mdash; an implied <b>$976bn</b>, ~3.9&times; the xAI anchor. What you can underwrite is Starlink and the launch monopoly; what you get for free is the frontier optionality &mdash; including datacenters in space (Module N), gated on the Starship $/kg collapse SpaceX uniquely controls; what you cannot yet underwrite is the AI mark. The disciplined position is <b>sized by kill-criteria, not narrative</b>: participate below the anchor, trim into the top of the range, own the tape event-by-event, and treat the frontier legs as the free calls they are.</p>
+
+    <table class="brtab">
+      <thead><tr><th>When</th><th>Event</th><th>What to verify</th></tr></thead>
+      <tbody>
+        <tr><td class="num">7 Jul 2026</td><td>Nasdaq-100 inclusion at ~0.47&ndash;0.70% weight</td><td>Mechanical inflow into the first days; not a fundamental read &mdash; do not confuse the flow with a re-rating</td></tr>
+        <tr><td class="num">Aug&ndash;Sep 2026</td><td>First post-IPO earnings print (Q2 2026)</td><td>Connectivity revenue y/y (need &gt;+30%); subs vs 12M target; blended ARPU trajectory vs Q1&rsquo;26&rsquo;s ~$100; segment EBITDA margin vs 63% baseline; any FAA/FCC/DoD commentary</td></tr>
+        <tr><td class="num">Sep&ndash;Dec 2026</td><td>90&ndash;180-day lock-up wall (Founders Fund, DFJ, D1, Fidelity, Thrive, employees)</td><td>Actual sold volume vs disclosed intent; new institutional buyers absorbing supply; price behaviour into each unlock date</td></tr>
+        <tr><td class="num">Q4 2026</td><td>Starship flight-test cadence; realised payload cost per kg</td><td>Whether full reuse is transitioning Starship from development to revenue &mdash; the hinge for the entire frontier leg (Module M)</td></tr>
+        <tr><td class="num">2027</td><td>First MW-scale orbital-compute contract; lunar-manufacturing / ISRU demo; xAI 1M-GPU Colossus target</td><td>Whether the frontier tail starts printing revenue, and whether the $976bn AI mark has revenue underneath it</td></tr>
+        <tr><td class="num">2028</td><td>NASA Artemis first crewed landing on Starship HLS</td><td>Cadence and cost &mdash; the proof point that anchors the moon-factory optionality</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cmp" style="margin-top:16px">
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin-bottom:8px">Why the AI mark is the fragile leg</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--muted)">The mark did not appear from an arm&rsquo;s-length transaction &mdash; it came from a Feb-2026 all-stock merger between two Musk-controlled entities, then re-rated ~3.9&times; in the tape. Frontier-lab peer marks (OpenAI ~$500bn, Anthropic ~$183bn) are lower and themselves debated. The AI segment printed <b>-$6.35bn operating loss on $3.2bn revenue</b> in 2025 &mdash; capex intensity, not fraud, but capex intensity does not price at 300&times; sales. If one large frontier-lab peer marks down, or a related-party governance case is filed, the AI leg compresses and the operating segments cannot fill the gap.</div></div>
+      <div class="cmpcard"><div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:8px">Why the frontier legs are the asymmetric ones</div>
+        <div style="font-size:12.5px;line-height:1.6;color:var(--muted)">Orbital datacenters (Module N) and other frontier (Module M) are marked at only ~8% of value at mode combined, yet their tails are worth ~$81/share &mdash; and, unlike the AI mark, every step is a <b>physical, verifiable milestone</b> (realised $/kg, the first MW-scale orbital datacentre, a lunar-manufacturing demo, an Artemis landing). You are not paying up for this today; you own it as a call, gated on the Starship cost collapse SpaceX uniquely controls. That is the cleanest source of upside in the whole structure, and it is the part the earlier build priced at zero.</div></div>
+    </div>
+
+    <div class="note t" style="margin-top:14px"><b>Fastest information channel.</b> SEC EDGAR (CIK 1181412) for filings; the SpaceX IR site once stood up; Nasdaq notices for index rebalancing; FCC ECFS for spectrum; FAA for launch licences; NASA/USSF award notices for the frontier contracts. Sacra and Nasdaq Private Market discontinued SpaceX private-round tracking at IPO &mdash; the public tape is the price discovery now, which is why Modules I &amp; J start reading immediately even on a few weeks of history.</div>
+    <p class="disc" style="font-size:11px;color:var(--faint);margin-top:12px">Modules K, L, M, N and &#10003; Conclusions synthesise the SpaceX build: five-leg priced-in decomposition, connectivity unit-economics, other-frontier optionality, orbital datacenters, and history/landscape context. For analysis and education only &mdash; not investment advice.</p>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-09 16:31</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-09)</h4>
+      <table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/SPCX?range=5y&interval=1d</td><td>Daily OHLC, adjusted close + live spot since the 2026-06-12 IPO (Yahoo serves whatever history exists).</td><td class="mods">I, J</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC?range=5y&interval=1d</td><td>S&P 500 daily series — benchmark beta (needs ≥60 overlapping sessions; n/a until the SPCX tape matures).</td><td class="mods">I</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ENDX?range=5y&interval=1d</td><td>Nasdaq-100 daily series — second benchmark (SPCX joins the index 2026-07-07).</td><td class="mods">I</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/TSLA?range=5y&interval=1d</td><td>Tesla daily series — Musk-complex co-movement regression.</td><td class="mods">I</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/RKLB?range=2y&interval=1d</td><td>Rocket Lab — 12m peer relative return (n/a until SPCX has 12m of history).</td><td class="mods">I</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ASTS?range=2y&interval=1d</td><td>AST SpaceMobile — direct-to-cell satellite comp, 12m peer relative.</td><td class="mods">I</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?range=1mo&interval=1d</td><td>US 10y yield — real-rate proxy for the owner-earnings spread.</td><td class="mods">J</td></tr></tbody>
+      </table>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>SpaceX Form S-1 / 424B4 prospectus — SEC EDGAR, CIK 1181412</td><td>FY2025 revenue $18.674bn, op. loss $2.589bn, adj. EBITDA $6.584bn, net loss $4.9bn; Q1'26 revenue $4.694bn; segment split (Connectivity $11.4bn / Space $4.086bn / AI $3.2bn rev; AI op. loss −$6.35bn); LT debt $29.1bn; Starship dev spend >$15bn; 5-for-1 split; Class A/B/C structure</td><td class="mods">A, D, E, F</td></tr><tr><td>IPO pricing & allocation coverage (CNBC, Jun 2026)</td><td>Fixed $135 offer, ~$75bn raised (largest IPO ever), ~$1.77tn IPO valuation, ~30% retail tranche; day-1 open $150 / close $160.95</td><td class="mods">A, E, F</td></tr><tr><td>S-1 ownership & related-party sections</td><td>Musk control via 10×-vote Class B; Valor/Gracias entities ~7.3% of Class A; Tesla ~1% Class A (via Jan-2026 xAI investment); Shotwell 7.1m Class B; xAI merger eff. 2026-02-02 (~$1.25tn combined); Cursor option: $60bn in Class A stock, $1.5bn termination + $8.5bn deferred-services fees; Colossus compute rented to Anthropic</td><td class="mods">E, F</td></tr><tr><td>Nasdaq index notices</td><td>SPCX added to the Nasdaq-100 effective 2026-07-07, bypassing seasoning requirements; est. 0.47–0.70% weight</td><td class="mods">F</td></tr><tr><td>Investing.com / TradingView consensus pages</td><td>12m consensus PT $187.80 (high $310 / low $62); EPS TTM −$2.94; post-IPO ATH $225.64 (Jun 16) / ATL $147.11 (Jun 23)</td><td class="mods">F, I</td></tr><tr><td>Sacra / Nasdaq Private Market round history</td><td>$350bn (Dec 2024, $185), $400bn (Jul 2025, $212), $800bn (Dec 2025, $421) private marks used in the Module-J reference class</td><td class="mods">J</td></tr><tr><td>Sell-side 2030E models (Goldman Sachs, JPMorgan, Morgan Stanley — IPO-roadshow coverage, Jun–Jul 2026)</td><td>2030E group revenue $330bn (MS) / $470bn (JPM) / $474bn (GS) vs Musk's ~$1tn aspiration; Starlink ~$144bn, launch ~$8.3bn, AI ~68% of mix; group EBITDA ~$352bn by 2030 (GS). Calibrates the Module-A leg ranges and the Module-K decomposition.</td><td class="mods">A, K, M</td></tr><tr><td>SpaceX / xAI lunar & in-space manufacturing programme (Shotwell 'AI on the Moon' remarks; Musk 'city on the Moon'; press Mar–Jul 2026)</td><td>Stated goal: manufacture solar-powered AI satellites / orbital data centres via lunar & in-space manufacturing ('moon factories'); xAI merger ($1.25tn combined) framed around orbital compute; NASA Artemis first crewed landing on Starship HLS ~2028. Basis for the Module-N orbital-datacenter & Module-M frontier legs.</td><td class="mods">M, N</td></tr><tr><td>Starship payload & launch-cost targets (SpaceX technical statements; independent trackers, 2025–26)</td><td>150 t reusable / 250 t expendable to LEO; cost-per-kg target ~$100–200 (aspirational $10) vs ~$1,500 today — the cost collapse that makes the frontier markets economically possible and gates orbital datacenters (Google: orbital compute needs <$200/kg by 2035, plausible if Starship reaches ~180 launches/yr). NASA HLS awards ~$2.89bn + $1.15bn; USSF 'Rocket Cargo' point-to-point demo (~$102m, scalable).</td><td class="mods">M, N</td></tr><tr><td>Orbital-datacenter economics & market sizing (Starcloud 5 GW / NVIDIA H100 in orbit; Google 'Project Suncatcher'; industry TAMs, 2026)</td><td>Space-based-datacenter market ~$1.8bn (2029) → ~$39bn (2035), $10–50bn/yr by 2030 on demand projections; Starcloud 5 GW single-site concept (4 km solar array); break-even ~$500/kg for GPU payloads, <$200/kg by 2035 for full viability — the pool and the gate for the Module-N orbital-datacenter leg.</td><td class="mods">N</td></tr></tbody>
+      </table>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths across five value legs. Marginals are triangular: Connectivity revenue 2030E $45–100bn (mode $70bn; 2025 actual $11.4bn, +48% y/y), Connectivity EBITDA margin 52–72% (mode 64%; 63% reported), EV/EBITDA 16–34× (mode 24×), Space revenue 2030E $8–30bn (mode $16bn; 2025 actual $4.09bn), Space EV/Sales 4–14× (mode 8×), Orbital-datacenter 2035E risk-adjusted revenue $4–120bn (mode $25bn, your orbital slider), Other-frontier 2035E risk-adjusted revenue $4–90bn (mode $25bn, your frontier slider), both on a shared frontier EV/Sales of 3–12× (mode 6×), AI-segment EV $250–1,600bn drawn around your central-mark slider. Fair value = [Conn·rev × margin × multiple + Space·rev × EV/S] ÷ 1.10⁴ + [(Orbital·rev + Frontier·rev) × EV/S] ÷ 1.10⁹ + AI value + net cash $25bn, × 1000 ÷ 13,170m shares. The two frontier-class legs are discounted a full nine years (2035E) and their revenue is already risk-adjusted (TAM × capture × probability — see Modules N and M), so each is priced as a deep call option, not a base case; splitting the old single frontier lump (mode $50bn) into orbital $25bn + other $25bn revalues nothing at mode. Dependence: a one-factor copula (loadings — AI mark 0.90, Orbital revenue 0.85, Frontier revenue 0.85, Conn revenue 0.80, Conn multiple 0.75, Frontier EV/S 0.70, Space revenue 0.60, margin 0.55, Space multiple 0.50, scaled by your correlation knob) plus a regime-shock mixture (your tail knob). Correlation = 0 and tail = 0 reproduce the independent model exactly. The loadings reflect relative sentiment-sensitivity — a modelling choice, not estimated coefficients.</p>
+      <h4>The three labels, precisely</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: a figure fetched from a citable source (the S-1/424B4, SEC EDGAR, Nasdaq notices, CNBC/Morningstar/HL S-1 coverage, Sacra round history, the live Yahoo tape). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation outputs, the EV/revenue multiples, the tornado, the Bayesian posterior). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set that is judgment, not data (the central AI mark, net-cash estimate, correlation, tail probability, scenario priors, likelihood ratios, kill thresholds).</p>
+      <h4>Still excluded — post-Modules-I&amp;J audit</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Pre-IPO private marks as a return series</b> — Forge/Hiive/NPM marks are sparse, stale and never tradable at size; only the post-IPO tape (from 2026-06-12) feeds the return statistics, so long-window metrics read n/a until the history exists. <b>Options-implied skew &amp; vol surface</b> — SPCX options listed days ago; the surface is too thin to cite. <b>Short interest &amp; borrow cost</b> — the first post-IPO exchange short-interest print is not yet published. <b>Piotroski / Altman / Beneish</b> — each needs at least two audited public years; SpaceX has one S-1 basis (with the xAI/X common-control restatement), so a half-estimated score would be worse than none. <b>The frontier leg (Module M) is deliberately option-valued, not base-cased</b> — moon factories, orbital data centres and point-to-point are priced as a risk-adjusted 2035E revenue discounted nine years, so they add a material modal contribution with a long right tail rather than a certainty; as real contracts and cadence print, the leg is re-calibrated, not re-derived. All of these slot straight into stocks/config.py as the tape and filings mature.</div>
+      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures fetched 2026-07-02; balance-sheet figures ≈ FY2025 / Q1'26 releases; verify against primary filings (SEC EDGAR, CIK 1181412) before acting.</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  const PRICE=148.30, SHARES=13170, NETCASH=25, DISC=Math.pow(1.10,4), DISC2=Math.pow(1.10,9), N=20000;
+  const CONNR={lo:45,md:70,hi:100}, CONNM={lo:0.52,md:0.64,hi:0.72}, CONNX={lo:16,md:24,hi:34},
+        SPR={lo:8,md:16,hi:30}, SPX={lo:4,md:8,hi:14},
+        ORB={lo:4,md:25,hi:120}, FRR={lo:4,md:25,hi:90}, FRX={lo:3,md:6,hi:12}, AI={lo:250,hi:1600};
+  const RHO={ai:0.90,cr:0.80,cx:0.75,sr:0.60,cm:0.55,sx:0.50,orb:0.85,fr:0.85,fx:0.70};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+  function fvOf(cr,cm,cx,sr,sx,orb,fr,fx,ai){return ((cr*cm*cx+sr*sx)/DISC+((orb+fr)*fx)/DISC2+ai+NETCASH)*1000/SHARES;}
+
+  function simulate(mid, corr, pStress, paths, front, orbital){
+    const n = paths||N;
+    const fr_in = front!==undefined?front:(+document.getElementById('i-front').value);
+    const or_in = orbital!==undefined?orbital:(+document.getElementById('i-orb').value);
+    const f_md = Math.max(0, fr_in), f_lo = Math.min(FRR.lo, f_md), f_hi = Math.max(f_md+10, FRR.hi);
+    const o_md = Math.max(0, or_in), o_lo = Math.min(ORB.lo, o_md), o_hi = Math.max(o_md+10, ORB.hi);
+    const fv=new Float64Array(n);
+    const a_lo=AI.lo, a_md=mid, a_hi=Math.max(mid+25,AI.hi);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const ai=draw(RHO.ai,a_lo,a_md,a_hi);
+      const cr=draw(RHO.cr,CONNR.lo,CONNR.md,CONNR.hi);
+      const cm=draw(RHO.cm,CONNM.lo,CONNM.md,CONNM.hi);
+      const cx=draw(RHO.cx,CONNX.lo,CONNX.md,CONNX.hi);
+      const sr=draw(RHO.sr,SPR.lo,SPR.md,SPR.hi);
+      const sx=draw(RHO.sx,SPX.lo,SPX.md,SPX.hi);
+      const orb=draw(RHO.orb,o_lo,o_md,o_hi);
+      const fr=draw(RHO.fr,f_lo,f_md,f_hi);
+      const fx=draw(RHO.fx,FRX.lo,FRX.md,FRX.hi);
+      fv[i]=fvOf(cr,cm,cx,sr,sx,orb,fr,fx,ai);
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=PRICE*0.5;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMAX=320,BINS=40;
+  function xOf(v){return HX0+(Math.min(Math.max(v,0),VMAX)/VMAX)*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=VMAX/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor(fv[i]/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=(b+0.5)*bw,x=xOf(b*bw),x2=xOf((b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=0;v<=VMAX;v+=40){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median $'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(over){
+    const mid=+document.getElementById('i-mid').value;
+    const frmd=+document.getElementById('i-front').value;
+    const ormd=+document.getElementById('i-orb').value;
+    const ai=over.ai!==undefined?over.ai:mid;
+    const cr=over.cr!==undefined?over.cr:CONNR.md;
+    const cm=over.cm!==undefined?over.cm:CONNM.md;
+    const cx=over.cx!==undefined?over.cx:CONNX.md;
+    const sr=over.sr!==undefined?over.sr:SPR.md;
+    const sx=over.sx!==undefined?over.sx:SPX.md;
+    const orb=over.orb!==undefined?over.orb:ormd;
+    const fr=over.fr!==undefined?over.fr:frmd;
+    const fx=over.fx!==undefined?over.fx:FRX.md;
+    return fvOf(cr,cm,cx,sr,sx,orb,fr,fx,ai);
+  }
+  function drawTornado(){
+    const mid=+document.getElementById('i-mid').value;
+    const frmd=+document.getElementById('i-front').value;
+    const ormd=+document.getElementById('i-orb').value;
+    const rows=[
+      {n:'AI-segment value',lo:fvAt({ai:AI.lo}),hi:fvAt({ai:Math.max(mid+25,AI.hi)})},
+      {n:'Starlink 2030E revenue',lo:fvAt({cr:CONNR.lo}),hi:fvAt({cr:CONNR.hi})},
+      {n:'Orbital DC 2035E revenue',lo:fvAt({orb:Math.min(ORB.lo,ormd)}),hi:fvAt({orb:Math.max(ormd+10,ORB.hi)})},
+      {n:'Starlink EV/EBITDA',lo:fvAt({cx:CONNX.lo}),hi:fvAt({cx:CONNX.hi})},
+      {n:'Starlink EBITDA margin',lo:fvAt({cm:CONNM.lo}),hi:fvAt({cm:CONNM.hi})},
+      {n:'Other frontier 2035E rev',lo:fvAt({fr:Math.min(FRR.lo,frmd)}),hi:fvAt({fr:Math.max(frmd+10,FRR.hi)})},
+      {n:'Frontier EV/Sales (shared)',lo:fvAt({fx:FRX.lo}),hi:fvAt({fx:FRX.hi})},
+      {n:'Space 2030E revenue',lo:fvAt({sr:SPR.lo}),hi:fvAt({sr:SPR.hi})},
+      {n:'Space EV/Sales',lo:fvAt({sx:SPX.lo}),hi:fvAt({sx:SPX.hi})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=170,X1=688,W=X1-X0,base=allMin-4,span=(allMax+4)-base;
+    const sx=v=>X0+((v-base)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';
+    });
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const mid=+document.getElementById('i-mid').value;
+    const orb=+document.getElementById('i-orb').value;
+    const front=+document.getElementById('i-front').value;
+    const corr=(+document.getElementById('i-corr').value)/100;
+    const tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-mid').textContent=mid;
+    document.getElementById('v-orb').textContent=orb;
+    document.getElementById('v-front').textContent=front;
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+
+    const ind=simulate(mid,0,0);
+    const cor=simulate(mid,corr,tail);
+
+    document.getElementById('oi-med').textContent='$'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='$'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='$'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='$'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='$'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='$'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+
+    drawHist(cor.fv,cor.p50,ind.p10);
+
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> stress chance, the median holds near <b>$'+cor.p50.toFixed(0)+'</b> (≈ the independent $'+ind.p50.toFixed(0)+') — but the 80% band widens by about <span class="down">$'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under half the current price, ≈ a 50% loss) moves from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at $'+PRICE.toFixed(2)+') is '+Math.round(cor.under*100)+'%.';
+
+    drawTornado();
+  }
+
+  // scenarios (computed anchors)
+  let SFV={bear:104,base:130,bull:168};
+  function computeScenarioAnchors(){
+    SFV.bear=simulate(350,0.6,0.06,8000).p50;
+    SFV.base=simulate(700,0.6,0.06,8000).p50;
+    SFV.bull=simulate(1200,0.6,0.06,8000).p50;
+    document.getElementById('sfv-bear').textContent='$'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='$'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='$'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='$'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  // valuation-context bars (SPCX computed; historical marks sourced)
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/130,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+')"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('SPCX — now','EV ÷ Q1\'26 annualised revenue · computed',119.8,'119.8×','var(--coral)'),
+    peerBar('SPCX — IPO price (Jun \'26)','$1.77tn ÷ $18.78bn · computed on sourced terms',94.2,'94.2×','var(--coral-deep)'),
+    peerBar('SPCX — Dec \'25 insider sale','$800bn ÷ FY25 revenue · sourced mark',42.8,'42.8×','var(--amber-deep)'),
+    peerBar('SPCX — Jul \'25 round','$400bn ÷ ~$16bn run-rate · sourced mark',25.0,'25.0×','var(--teal-deep)'),
+    peerBar('SPCX — Dec \'24 secondary','$350bn ÷ FY24 revenue · sourced mark',26.7,'26.7×','var(--teal)'),
+  ].join('');
+
+  ['i-mid','i-orb','i-front','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  document.querySelectorAll('.jsprice').forEach(e=>e.textContent='$'+PRICE.toFixed(2));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
+  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
+  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+</script>
+
+<script>
+  // Module O — perfect-execution bull-case calculator
+  (function(){
+    const SPOT=148.30, HORIZON=10;
+    const el=id=>document.getElementById(id);
+    const fmtT=x=>(x>=100?x.toFixed(0):x.toFixed(1));
+    const comma=n=>Math.round(n).toLocaleString('en-US');
+    const priceOf=(revT,mult,shB)=>revT*mult*1e12/(shB*1e9); // $/share in 2036
+    const MK0=5.9;                                            // 'today $148' anchor on the 0..2500 scale (148/2500*100)
+    const MSCALE=2500;
+
+    function calc(){
+      const rev=+el('b-rev').value, mult=+el('b-mult').value, sh=+el('b-shares').value, disc=+el('b-disc').value/100;
+      el('bv-rev').textContent=rev.toFixed(1);
+      el('bv-mult').textContent=mult;
+      el('bv-shares').textContent=sh.toFixed(1);
+      el('bv-disc').textContent=Math.round(disc*100);
+      el('bull-shcap').textContent=sh.toFixed(1)+'bn';
+
+      const mcapT=rev*mult;
+      const price=priceOf(rev,mult,sh);
+      const pv=price/Math.pow(1+disc,HORIZON);
+      const cagr=(Math.pow(price/SPOT,1/HORIZON)-1)*100;
+      const pvCagr=(Math.pow(pv/SPOT,1/HORIZON)-1)*100;
+      const multx=price/SPOT;
+
+      el('bo-mcap').textContent='$'+fmtT(mcapT)+'T';
+      el('bo-price').textContent='$'+comma(price);
+      el('bo-pv').textContent='$'+comma(pv);
+      el('bo-cagr').textContent=(cagr>=0?'+':'')+cagr.toFixed(0)+'%/yr';
+      el('bo-multx').textContent=multx.toFixed(1)+'×';
+
+      const pos=Math.min(price/MSCALE,1)*100;
+      el('bo-mk').style.left=pos.toFixed(1)+'%';
+      el('bo-mklb').style.left=pos.toFixed(1)+'%';
+      el('bo-mklb').textContent='2036 · $'+comma(price);
+
+      const verdict = pv>SPOT
+        ? 'Even discounted a full decade at <b>'+Math.round(disc*100)+'%</b>, the flawless path is worth <b>$'+comma(pv)+'</b> today — <b>'+(pv/SPOT).toFixed(1)+'× the live $'+SPOT.toFixed(2)+'</b>, a <span style="color:var(--teal-deep);font-weight:600">+'+pvCagr.toFixed(0)+'%/yr</span> present-value return. On these inputs the stock is a genuinely good investment <i>if</i> execution is perfect.'
+        : 'Discounted at <b>'+Math.round(disc*100)+'%</b>, the flawless path is worth only <b>$'+comma(pv)+'</b> today — below the live $'+SPOT.toFixed(2)+'. Even the perfect scenario needs a lower hurdle or a bigger outcome to clear the current price.';
+      el('bull-read').innerHTML='At <b>$'+rev.toFixed(1)+'T</b> of 2035–36 revenue on a <b>'+mult+'×</b> sales multiple, SpaceX is a <b>$'+fmtT(mcapT)+'T</b> company — implying <b>$'+comma(price)+'/share</b> in 2036 across '+sh.toFixed(1)+'bn diluted shares, a <b>'+multx.toFixed(1)+'×</b> gain (<b>'+(cagr>=0?'+':'')+cagr.toFixed(0)+'%/yr</b>) from today. '+verdict;
+
+      buildMatrix(rev,mult,sh);
+    }
+
+    const MREV=[1.0,1.5,2.0,2.5,3.0], MMULT=[10,15,20,25];
+    function buildMatrix(curRev,curMult,sh){
+      const nearRev=MREV.reduce((a,b)=>Math.abs(b-curRev)<Math.abs(a-curRev)?b:a);
+      const nearMult=MMULT.reduce((a,b)=>Math.abs(b-curMult)<Math.abs(a-curMult)?b:a);
+      let s='';
+      MREV.forEach(r=>{
+        s+='<tr><td class="num">$'+r.toFixed(1)+'T</td>';
+        MMULT.forEach(m=>{
+          const p=priceOf(r,m,sh);
+          const hot=(r===nearRev&&m===nearMult);
+          const strong=p>=SPOT*4;
+          const cls=hot?'num cur':(strong?'num':'num');
+          const col=hot?'':(strong?'':'color:var(--faint)');
+          s+='<td class="'+cls+'"'+(col?' style="'+col+'"':'')+'>$'+comma(p)+'</td>';
+        });
+        s+='</tr>';
+      });
+      el('bull-matrix').innerHTML=s;
+      el('bull-read2').innerHTML='<b>How to read the grid.</b> The teal cell is your current setting. Every cell at or above a ~4× outcome ($'+comma(SPOT*4)+') is a market cap the sell-side bull models (MS, ARK, Baron) already sketch for the 2030s. The grid&rsquo;s message is the asymmetry: the <i>downside</i> of these assumptions being wrong is the disciplined base case (~$130–200, Modules A–N); the <i>upside</i> of them being right is four-figure — which is exactly why a small, kill-criteria-sized position can be rational even when the base case is mixed-to-bearish.';
+    }
+
+    ['b-rev','b-mult','b-shares','b-disc'].forEach(id=>el(id).addEventListener('input',calc));
+    calc();
+  })();
+</script>
+</body>
+</html>
