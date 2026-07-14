@@ -89,6 +89,34 @@ def _make_orion_engine() -> Callable[[dict], float]:
     return engine
 
 
+def _make_kesko_engine() -> Callable[[dict], float]:
+    """Sum-of-the-parts, split the way the market actually splits Kesko: three
+    reported divisions on their own EV/EBIT multiples --
+
+      * Grocery trade      -- stable, market-leading, defensive (staples multiple)
+      * Building & technical trade -- deeply cyclical, priced off the construction
+                              cycle; the swing factor and the reverse-DCF target
+      * Car trade          -- small, thin-margin; valued at a fixed dealer multiple
+
+    less a small capitalised group-common / eliminations cost (group comparable
+    operating profit is ~EUR 25m below the sum of the three divisions), less
+    interest-bearing net debt EXCLUDING IFRS-16 lease liabilities. Leases are
+    excluded because the ~EUR 2.1bn lease liability is matched by right-of-use
+    assets and the rent charge already sits inside each division's post-IFRS-16
+    EBIT via right-of-use depreciation -- so it is not an extra claim on equity
+    in this EBIT framework. That lease treatment is the one modelling choice,
+    flagged in Module A and the footer.
+    """
+    shares, netdebt, central_cap, car_mult = 398.08, 1308.9, 300.0, 10.0
+    def engine(d):
+        grocery  = d["gp"] * d["gmlt"]
+        building = d["bp"] * d["bmlt"]
+        car      = d["cp"] * car_mult
+        ev = grocery + building + car - central_cap
+        return (ev - netdebt) / shares
+    return engine
+
+
 # -------------------- STOCKS registry --------------------
 
 STOCKS: dict[str, dict[str, Any]] = {
@@ -533,6 +561,95 @@ STOCKS: dict[str, dict[str, Any]] = {
         ),
         "strictbar_replacement": None,
         "tally": {"bull": 2, "mixed": 7, "bear": 1},
+    },
+
+    "kesko": {
+        "ticker": "KESKOB.HE",
+        "html_file": "kesko-pipeline.html",
+        "pipeline_price": 19.58,
+        "shares_m": 398.08,
+        "consensus_pt": 20.83,
+        "eps_ttm": 1.03,
+        "engine": _make_kesko_engine(),
+        "drivers": {
+            "gp":   {"lo":  380, "md":  418, "hi":  455, "rho": 0.35},
+            "gmlt": {"lo": 12.5, "md": 15.3, "hi": 18.0, "rho": 0.45},
+            "bp":   {"lo":  116, "md":  180, "hi":  320, "rho": 0.80},
+            "bmlt": {"lo":  9.0, "md": 12.0, "hi": 15.0, "rho": 0.65},
+            "cp":   {"lo":   65, "md":   83, "hi":  100, "rho": 0.55},
+        },
+        "reverse_dcf_target": "bp",
+        "reverse_dcf_label":  "Building &amp; technical trade comparable operating profit (€m, at mode grocery / car / multiples)",
+        "reverse_dcf_unit":   "€m",
+        "peers": ["AXFO.ST", "KGF.L"],
+        "macro_ticker": None,
+        "macro_label": None,
+        "quality_score": 0.68,
+        "base_rates": {
+            "variable": "Building &amp; technical trade comparable operating profit (€m)",
+            "unit": "€m",
+            "series": [
+                ("2021",             318.0, "construction-boom level — reported"),
+                ("2022",             340.0, "cycle peak — reported"),
+                ("2023",             212.5, "cycle rolling over — reported"),
+                ("2024 trough",      116.3, "reported FY2024 comparable — the low"),
+                ("2025",             178.6, "reported FY2025 comparable — recovering"),
+                ("mid-cycle normal", 280.0, "analyst normalised mid-cycle — estimate"),
+            ],
+            "current_label": "2025 = €178.6m (recovering off the 2024 trough)",
+            "current_value": 178.6,
+            "reversion_mid": 260.0,
+        },
+        "oe_anchor_m": 377.0,
+        "oe_note": "free cash flow +€377m FY2025 (Yahoo fundamentals — after elevated store-site &amp; acquisition capex; operating cash flow €879.7m)",
+        "endpoints": [
+            ("https://query1.finance.yahoo.com/v8/finance/chart/KESKOB.HE?range=5y&interval=1d",
+             "Kesko B-share 5-year daily OHLC + regularMarketPrice",
+             "I: realised vol / beta / momentum / drawdown / own-history percentile"),
+            ("https://query1.finance.yahoo.com/v8/finance/chart/^OMXH25?range=5y&interval=1d",
+             "OMX Helsinki 25 index — benchmark for local beta",
+             "I: beta vs OMXH25"),
+            ("https://query1.finance.yahoo.com/v8/finance/chart/^STOXX?range=5y&interval=1d",
+             "STOXX Europe 600 — pan-European benchmark",
+             "I: beta vs STOXX 600"),
+            ("https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d",
+             "US 10-year Treasury yield — real-rate proxy",
+             "J: owner-earnings yield vs real 10y"),
+            ("https://query1.finance.yahoo.com/v8/finance/chart/AXFO.ST?range=2y&interval=1d",
+             "Axfood (Nasdaq Stockholm) — Nordic grocery-retail peer",
+             "I: peer-relative 12m"),
+            ("https://query1.finance.yahoo.com/v8/finance/chart/KGF.L?range=2y&interval=1d",
+             "Kingfisher (LSE) — European building/DIY-retail peer",
+             "I: peer-relative 12m"),
+        ],
+        "primary_sources": [
+            ("Kesko financial statements release 1.1.–31.12.2025 (4 Feb 2026)",
+             "Net sales €12,474.7m (+comparable 2.3%), comparable operating profit €654.9m (+€4.8m); divisional comparable operating profit — grocery trade €418.1m (net sales €6,447.7m, 6.5% margin), building &amp; technical trade €178.6m (2024: €116.3m), car trade €83.1m (5.9% margin); comparable EPS €1.07 / reported €1.02; ROCE (comparable) 10.4%, ROE (comparable) 15.3%; operating cash flow €879.7m; interest-bearing net debt excl. leases €1,308.9m (2024: €857.2m), lease liabilities €2,098m, net debt/EBITDA 1.6×; dividend proposal €0.90/share (~€358m); FY2026 outlook comparable operating profit €650–750m",
+             "A engine, B driver analysis, D forensics, E capital record"),
+            ("Kesko interim report Q1/2026 (23 Apr 2026)",
+             "Growth across all three divisions; grocery gaining market share; car trade comparable operating profit €83.1m / 5.9% on a rolling-12-month basis; continued but gradual building-trade recovery",
+             "B driver analysis, C scenarios, H kill-criteria"),
+            ("Yahoo Finance fundamentals-timeseries (KESKOB.HE, annual 2022–2025)",
+             "Income statement, balance sheet and cash-flow line items (revenue, gross profit, EBIT/EBITDA, net income, diluted EPS &amp; shares, equity, total debt incl. leases, cash, operating &amp; free cash flow, capex, interest expense, current assets/liabilities, inventory)",
+             "D forensics, Q fundamental dashboard"),
+            ("Kesko largest-shareholders &amp; ownership register (1 Sep 2025 / 31 Dec 2024)",
+             "A shares 31.7% of capital but ~82% of votes (10 votes vs 1 for B); K-Retailers' Association ~7.54% of shares / 19.56% of votes (largest by votes); Ilmarinen &amp; Varma pension funds ~2–3% each; nominee-registered ~25%; &gt;113,000 registered holders",
+             "F positioning"),
+            ("MarketScreener / Investing.com — Kesko consensus",
+             "Consensus PT ≈ €20.8 (high €22.5 / low €18), rating Buy/Accumulate; 2026 sell-side EPS ≈ €1.17 (+15%)",
+             "F positioning"),
+            ("Inderes — Kesko research note (30 Apr 2026)",
+             "Accumulate recommendation; construction-cycle turn is the key swing factor for the building &amp; technical trade division",
+             "B driver analysis, F positioning"),
+        ],
+        "cut_replacements": (
+            '<b>The divisional EV/EBIT sum-of-the-parts is a transparent proxy, not a hidden number.</b> Kesko discloses divisional comparable operating profit but not a divisional balance sheet, so each division is valued on its own EV/EBIT multiple and IFRS-16 lease liabilities (~€2.1bn) are excluded from net debt — they are matched by right-of-use assets and the rent already reduces divisional EBIT via right-of-use depreciation. Valuing on lease-inclusive EV/EBITDA instead would move the mix, not the conclusion. '
+            '<b>Beneish M-score</b> — needs eight two-year ratios not fully disclosed; a half-estimated score is worse than none. '
+            '<b>Options skew, precise borrow cost, and detailed insider transaction flow</b> — not reliably fetchable for a Nasdaq Helsinki name from a public API; would slot in from a Bloomberg terminal. '
+            'Everything else previously flagged as "cut" (factor betas, own-history percentile, momentum, realised vol, drawdown, 12-month peer relative return, base-rate frequencies, owner-earnings yield vs real rate) is now <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.'
+        ),
+        "strictbar_replacement": None,
+        "tally": {"bull": 2, "mixed": 8, "bear": 0},
     },
 }
 
