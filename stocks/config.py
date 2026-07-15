@@ -669,6 +669,13 @@ STOCKS["amazon"] = AMAZON_CONFIG
 from stocks.config_tesla import TESLA_CONFIG  # noqa: E402
 STOCKS["tesla"] = TESLA_CONFIG
 
+# Terveystalo Oyj (Nasdaq Helsinki: TTALO) — same pattern: config lives in its own
+# module, wired in here so no framework code needs to change. Two-leg EV/EBIT SOTP
+# (Healthcare Services + Portfolio Businesses) with the Silmaasema deal and 2026
+# demand downturn carried as explicit drivers/scenarios.
+from stocks.config_terveystalo import TERVEYSTALO_CONFIG  # noqa: E402
+STOCKS["terveystalo"] = TERVEYSTALO_CONFIG
+
 
 # -------------------- Framework-wide (data-provider notes) --------------------
 # These are shared across all stocks and shipped alongside every audit

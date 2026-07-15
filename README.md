@@ -17,13 +17,16 @@ there).
 │   ├── config_spacex.py                  # SpaceX config (wired into config.py)
 │   ├── config_amazon.py                  # Amazon config (wired into config.py)
 │   ├── config_tesla.py                   # Tesla config (wired into config.py)
+│   ├── config_terveystalo.py             # Terveystalo config (wired into config.py)
 │   ├── konecranes-pipeline.html          # the report files
 │   ├── neste-analytics-pipeline.html
 │   ├── sampo-pipeline.html
 │   ├── mandatum-pipeline.html
 │   ├── orion-pipeline.html
+│   ├── kesko-pipeline.html
 │   ├── spacex-analytics-pipeline.html
-│   └── tesla-pipeline.html
+│   ├── tesla-pipeline.html
+│   └── terveystalo-pipeline.html
 └── utils/                                # reusable framework (no per-stock strings)
     ├── paths.py                          # path helpers
     ├── analytics.py                      # fetch + MC + metrics library
@@ -78,9 +81,11 @@ python utils/build_one.py spacex --skip-verify
 | sampo        | SAMPO.HE  | Combined-ratio underwriting + investment                    |
 | mandatum     | MANTA.HE  | Fee-business SOTP                                           |
 | orion        | ORNBV.HE  | Nubeqa royalty stream + rest-of-Orion SOTP                  |
+| kesko        | KESKOB.HE | Divisional EV/EBIT SOTP (grocery / building / car trade)    |
 | spacex       | SPCX      | Five-leg SOTP (Starlink / launch / orbital DC / frontier / AI) |
 | amazon       | AMZN      | AWS + non-AWS two-block SOTP                                |
-| **tesla**    | **TSLA**  | **Four-leg SOTP (auto core / energy / robotaxi / Optimus) + bull-case overlay.** Deep multi-year tape → every Module I/J window computes on a full sample (no `n/a` backfills). Config in `stocks/config_tesla.py`. |
+| tesla        | TSLA      | Four-leg SOTP (auto core / energy / robotaxi / Optimus) + bull-case overlay. Config in `stocks/config_tesla.py`. |
+| **terveystalo** | **TTALO.HE** | **Two-leg EV/EBIT SOTP (Healthcare Services core + Portfolio Businesses incl. Sweden).** The live 2026 demand downturn (Q1'26 revenue −11%, FY2026 adjusted-EBIT guidance cut to €135–165m) and the €574m Silmäasema eye-care acquisition are carried as explicit drivers / scenarios / kill-criteria. Config in `stocks/config_terveystalo.py`. |
 
 ## Adding a new stock
 
