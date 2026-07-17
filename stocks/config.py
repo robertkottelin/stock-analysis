@@ -81,7 +81,7 @@ def _make_orion_engine() -> Callable[[dict], float]:
     EBIT is disclosed -- both halves are valued on EV/Sales, not EV/EBIT,
     which is why each half gets its own explicit multiple driver.
     """
-    shares, netdebt = 140.69, 144.4
+    shares, netdebt = 140.69, 131.0  # interest-bearing net liabilities per Q1'26 interim report (31 Mar 2026)
     def engine(d):
         innovative_medicines = d["nub"] * d["nmlt"]
         rest_of_orion = d["base"] * d["bmlt"]
@@ -471,10 +471,10 @@ STOCKS: dict[str, dict[str, Any]] = {
     "orion": {
         "ticker": "ORNBV.HE",
         "html_file": "orion-pipeline.html",
-        "pipeline_price": 70.00,
+        "pipeline_price": 66.95,
         "shares_m": 140.69,
-        "consensus_pt": 74.33,
-        "eps_ttm": 3.56,
+        "consensus_pt": 75.13,
+        "eps_ttm": 3.76,
         "engine": _make_orion_engine(),
         "drivers": {
             "nub":  {"lo":  700, "md":  900, "hi": 1050, "rho": 0.75},
@@ -495,12 +495,13 @@ STOCKS: dict[str, dict[str, Any]] = {
             "unit": "€m",
             "series": [
                 ("2024",                    368.3, "FY2024 reported — royalties + product sales to Bayer"),
+                ("Q1'26 ×4 (tier trough)",   580.0, "Q1'26 print (€145.0m: royalties €95m + product sales €50m) annualised — understates the FY because royalty tiers reset each January (CEO, Q1'26 call)"),
                 ("2025",                     609.8, "FY2025 reported — royalties €432.5m + product sales €177.3m"),
                 ("Q4'25 run-rate ×4",        850.4, "Q4'25 print (€212.6m) annualised — computed, not a forecast"),
                 ("2026 sell-side consensus", 915.0, "≈+50% YoY per analyst consensus cited on the Q1'26 call — estimate, not company guidance"),
                 ("2030 company ambition",   1000.0, "Orion's stated \"potential to exceed €1bn by the end of the decade\" (14 Jan 2026)"),
             ],
-            "current_label": "2025 = €609.8m (Q4'25 annualised ≈ €850m)",
+            "current_label": "2025 = €609.8m · Q1'26 print €145m (+~50% YoY)",
             "current_value": 609.8,
             "reversion_mid": 800.0,
         },
@@ -534,17 +535,23 @@ STOCKS: dict[str, dict[str, Any]] = {
              "Net sales €1,889.5m (+22.5%), operating profit €631.6m (+51.6%), EPS €3.56, dividend €1.80 proposed; balance sheet (assets €2,009.8m, equity €1,284.5m, interest-bearing net liabilities €144.4m, equity ratio 64.1%, gearing 11.2%, ROE 43.7%, ROCE 43.8%); net-sales split by business division (Innovative Medicines €812.7m, Branded Products €314.6m, Generics &amp; Consumer Health €552.8m, Animal Health €140.9m, Fermion €68.7m); Nubeqa® split (royalties €432.5m / product sales €177.3m); Bayer/MSD/Tenax licensing terms; shares 141,134,278; market cap €8,944.0m",
              "A engine, D forensics, E capital record, F positioning"),
             ("Orion Group Interim Report 1–3/2026 (23 Apr 2026)",
-             "Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Innovative Medicines division +~54%; FY2026 outlook raised to €1.95–2.10bn net sales / €600–750m operating profit; DASL-HiCaP darolutamide read-out expected 2028",
-             "B driver analysis, C scenarios"),
+             "Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Innovative Medicines division +~54%; FY2026 outlook raised to €1.95–2.10bn net sales / €600–750m operating profit; interest-bearing net liabilities €131.0m (31 Mar 2026); EPS €0.64 (Q1'25: €0.44); DASL-HiCaP darolutamide read-out expected 2028",
+             "B driver analysis, C scenarios, P Q2 playbook"),
+            ("Orion Q1'26 earnings call — CEO Liisa Hurme / CFO René Lindell (23 Apr 2026, transcript via Investing.com)",
+             "Nubeqa® booked in Q1'26: royalties €95m + tablet sales to Bayer €50m ≈ €145m (+~50% YoY); royalty tiers reset each January — Q1 is recognised at the lowest tier, quarterly prints ramp mechanically through the year, so Q1×4 understates the FY; sell-side consensus of ~+50% FY26 Nubeqa growth was put to management on the call (\"Bayer is also optimistic on the full year… and so are we\"); FY26 operating-profit guidance raised from €550–750m to €600–750m; higher tablet deliveries expected over the rest of 2026; shares fell 6.2% on results day on generics price-erosion concerns",
+             "P Q2 playbook, C scenarios"),
+            ("Orion stock exchange release (3 Jul 2026)",
+             "Half-Year Financial Report January–June 2026 publishes Friday 17 Jul 2026 ≈ 12:00 EEST; webcast &amp; analyst call 14:00 EEST",
+             "P Q2 playbook"),
             ("Bayer media release, Feb 2022 (ASCO GU / ARASENS data) &amp; FDA approval releases 2024–2025",
              "Nubeqa® global peak-sales estimate raised to &gt;€3bn (from &gt;€1bn); average total royalty rate to Orion ~20–25% of in-market sales including product sales to Bayer, tiered upward as sales grow; mHSPC label expansion (ADT+docetaxel 2022, ADT-only EU 2025/US 2025, China NMPA 2026)",
              "A engine, C scenarios"),
             ("Jefferies research note via Investing.com (30 Jan 2026)",
              "Downgrade to Hold from Buy — \"Nubeqa upside is priced in\"; worldwide Nubeqa peak-sales estimate raised to €4.6bn (from €4.2bn); risk-reward called neutral over 12 months despite the estimate upgrade",
              "F positioning, G peers"),
-            ("Investing.com — Orion Oyj B (ORNBV) quote &amp; consensus (28 Jun 2026)",
-             "Spot €70.00 (prev. close €70.25), 52-week range €56.50–75.30; 6-analyst consensus PT €74.33 (high €81 / low €55); consensus rating Buy (4 buy / 1 sell)",
-             "F positioning"),
+            ("Yahoo Finance v8 quote (17 Jul 2026 morning, pre-release) &amp; Vara Research consensus via Orion IR (upd. 17 Jul 2026)",
+             "Spot €66.95 pre-H1-release (−4.4% vs the 28 Jun €70.00 anchor; €72.00 on 3 Jul, €69.65 on 10 Jul), 52-week range €56.50–75.30; Vara Research 8-analyst consensus PT €75.13 (prev. €75.86), recommendations 6 positive / 1 neutral / 1 negative",
+             "F positioning, P Q2 playbook"),
             ("DrugPatentWatch / Grokipedia darolutamide patent trackers",
              "US patent estate (9 filings, none expired) points to generic entry ≈2038–2042; EU core compound patents ~2027–2030 with per-country SPC extensions pushing effective exclusivity into the mid-2030s in most member states",
              "H kill-criteria"),
@@ -560,7 +567,7 @@ STOCKS: dict[str, dict[str, Any]] = {
             'Everything else previously flagged as "cut" (factor &amp; FX betas, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.'
         ),
         "strictbar_replacement": None,
-        "tally": {"bull": 2, "mixed": 7, "bear": 1},
+        "tally": {"bull": 2, "mixed": 8, "bear": 0},
     },
 
     "kesko": {
