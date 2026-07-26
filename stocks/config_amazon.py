@@ -41,10 +41,11 @@ AMAZON_CONFIG: dict[str, Any] = {
     "ticker": "AMZN",
     "html_file": "amazon-pipeline.html",
     "currency": "$",
-    "pipeline_price": 243.0,          # spot at authoring, 2026-07-06 (~$243.7 on Jul 2)
+    "pipeline_price": 247.23,         # Yahoo v8 regularMarketPrice, 2026-07-18
     "shares_m": 10837.0,              # FY2025 diluted (net income $77.7bn / EPS $7.17)
     "consensus_pt": 313.0,            # Investing.com, 62 analysts, avg $312.99 (high $370 / low $207)
-    "eps_ttm": 8.36,                  # $7.17 FY25 - $1.59 Q1'25 + $2.78 Q1'26 (incl. Anthropic mark-up gains)
+    "eps_ttm": 8.36,                  # Yahoo trailingDilutedEPS as of 2026-03-31 (incl. Anthropic mark-up)
+    "eps_fwd_12m": 8.68, "eps_fwd_24m": 9.91,   # consensus curr./next-FY EPS (Yahoo, build-time)
     "engine": _make_amazon_engine(),
     "drivers": {
         # FY2026e AWS revenue, $bn — FY25 $128.7bn, Q1'26 run-rate $150bn at +28%
@@ -86,13 +87,12 @@ AMAZON_CONFIG: dict[str, Any] = {
         "current_value": 28.4,
         "reversion_mid": 22.0,
     },
-    # Owner earnings: FY2025 TTM free cash flow per the Q4'25 release. The
-    # honest wrinkle: the ~$200bn 2026 AI-capex plan crushed TTM FCF to
-    # ~$1.2bn by Q1'26 — Module J's negative OE-yield spread is the point,
-    # not a bug. (Using OCF $139.5bn instead would assume all capex is
-    # growth capex — an assumption, so we don't.)
-    "oe_anchor_m": 11194.0,
-    "oe_note": "TTM FCF $11,194m per the Q4'25 release (Q1'26 TTM fell to ~$1.2bn on the ~$200bn AI-capex plan — sourced)",
+    # Owner earnings: Yahoo fundamentals trailingFreeCashFlow as of 2026-03-31.
+    # The ~$200bn 2026 AI-capex plan has driven TTM FCF negative — Module J's
+    # negative OE-yield spread is the point, not a bug. (Using OCF instead
+    # would assume all capex is growth capex — an assumption, so we don't.)
+    "oe_anchor_m": -2472.0,
+    "oe_note": "Yahoo trailingFreeCashFlow −$2,472m as of 2026-03-31 (AI-capex wave; FY2025 annual FCF was +$7.7bn) — sourced",
     "endpoints": [
         ("https://query1.finance.yahoo.com/v8/finance/chart/AMZN?range=5y&interval=1d",
          "Amazon 5-year daily OHLC + regularMarketPrice",
@@ -135,6 +135,12 @@ AMAZON_CONFIG: dict[str, Any] = {
         ("Simply Wall St — Amazon health snapshot (Q1'26 basis)",
          "Equity $441.9bn, total debt $130.6bn (D/E 29.6%), cash + ST investments $143.1bn; net interest income (coverage n.m.); ~$200bn 2026 capex committed to AI infrastructure incl. Trainium silicon and Leo satellites",
          "D forensics, E capital record"),
+        ("Yahoo Finance fundamentals-timeseries (AMZN, fetched 2026-07-18)",
+         "FY2025: revenue $716.9bn, op income $80.0bn, net income $77.7bn, diluted EPS $7.17, OCF $139.5bn, capex $131.8bn, FCF $7.7bn; total assets $818.0bn, equity $411.1bn, total debt $153.0bn, cash $86.8bn. Trailing to 2026-03-31: revenue $742.8bn, op income $85.4bn, net income $90.8bn, diluted EPS $8.36, OCF $148.5bn, capex $151.0bn, FCF −$2.5bn",
+         "D forensics, J owner-earnings, A engine cross-check"),
+        ("Yahoo Finance v8 chart API (AMZN, 2026-07-18)",
+         "Spot $247.23; 52-week range $196.00–$278.56; peers MSFT ~$393.82, GOOGL ~$346.77",
+         "I asymmetry, F positioning, G peers"),
     ],
     "cut_replacements": (
         '<b>Beneish M-score</b> \u2014 needs eight two-year ratios at a granularity Amazon does not break out per segment; a half-estimated score is worse than none. '
@@ -146,14 +152,11 @@ AMAZON_CONFIG: dict[str, Any] = {
     "strictbar_replacement": (
         '<div class="strictbar"><b>What this build adds.</b> Two institutional modules: '
         '<b>I \u2014 Price-asymmetry layer</b> (reverse-DCF on the AWS multiple, Kelly f*, payoff-asymmetry ratio, VaR/CVaR, realised vol / beta vs S&amp;P 500 &amp; Nasdaq 100 &amp; rates, momentum, own-history percentile, MSFT/GOOGL 12m relative \u2014 all computed live from the Yahoo Finance v8 chart API) and '
-        '<b>J \u2014 Base rates &amp; factor composite</b> (reference-class distribution of AWS growth through the cycle, empirical return base-rates from 5y prices, V/Q/M/L factor composite, owner-earnings yield vs real 10y \u2014 which for Amazon in mid-capex-cycle is deliberately ugly) '
-        '\u2014 plus three chat-layer modules: <b>K \u2014 Priced-in audit</b>, <b>L \u2014 War &amp; geopolitics overlay</b> and <b>M \u2014 Margin model</b> (the depreciation wave, decomposed). '
+        '<b>J \u2014 Base rates &amp; factor composite</b> (reference-class distribution of AWS growth through the cycle, empirical return base-rates from 5y prices, V/Q/M/L factor composite, owner-earnings yield vs real 10y \u2014 which for Amazon in mid-capex-cycle is deliberately ugly). '
         'The single question every module keys on: does the ~$200bn/yr AI build earn its cost of capital \u2014 i.e. is the AWS re-acceleration (+28% Q1\'26) durable enough to justify the multiple the market is paying for it?</div>'
     ),
-    # 13 scorecard rows: A-H authored (1 bull / 7 mixed / 0 bear) + K/L/M
-    # authored (3 mixed) + I & J placeholders (bear / mixed). After the first
-    # live run, sync I and J to the verdicts inject.py prints (it reports
-    # "I=..., J=..." on stdout), then re-run tallies.py (refresh_all does
-    # this ordering for you on the next pass).
-    "tally": {"bull": 1, "mixed": 11, "bear": 1},
+    # 10 scorecard rows: A-H authored (1 bull / 7 mixed / 0 bear) + injected
+    # I & J. tallies.py counts the live verdict chips on the page itself; this
+    # block is only the fallback if the scorecard cannot be parsed.
+    "tally": {"bull": 1, "mixed": 8, "bear": 1},
 }

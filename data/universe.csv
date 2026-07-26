@@ -1,0 +1,15 @@
+name,ticker,html_file,currency,shares_m,has_bull_case,quality_score,consensus_pt
+konecranes,KCR.HE,konecranes-pipeline.html,€,237.64,True,0.85,34.0
+neste,NESTE.HE,neste-analytics-pipeline.html,€,769.21,False,0.75,29.85
+sampo,SAMPO.HE,sampo-pipeline.html,€,2650.0,False,0.9,10.5
+mandatum,MANTA.HE,mandatum-pipeline.html,€,503.0,False,0.7,5.5
+orion,ORNBV.HE,orion-pipeline.html,€,140.69,False,0.8,75.13
+kesko,KESKOB.HE,kesko-pipeline.html,€,398.08,False,0.68,20.83
+spacex,SPCX,spacex-analytics-pipeline.html,$,13170.0,False,0.45,187.8
+amazon,AMZN,amazon-pipeline.html,$,10837.0,False,0.85,313.0
+tesla,TSLA,tesla-pipeline.html,$,3510.0,False,0.55,415.0
+terveystalo,TTALO.HE,terveystalo-pipeline.html,€,126.655,False,0.62,9.4
+micron,MU,micron-pipeline.html,$,1129.4,True,0.7,1491.95
+investor,INVE-B.ST,investor-pipeline.html,kr,3062.9,True,0.88,393.8
+inission,INISS-B.ST,inission-pipeline.html,kr,23.05,True,0.58,75.0
+te,TEL,te-pipeline.html,$,297.0,True,0.82,260.0

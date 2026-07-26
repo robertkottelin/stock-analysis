@@ -71,11 +71,19 @@ def patch(name: str) -> str:
         html, count=1,
     )
 
-    # 6) Scorecard title — Modules I & J add two rows, so "eight reads" is stale.
-    #    Sync from the actual number of <tr> rows inside .scoretab tbody.
-    tbody_m = re.search(r'<table class="scoretab">.*?<tbody>(.*?)</tbody>', html, flags=re.S)
-    if tbody_m:
-        row_count = len(re.findall(r'<tr>', tbody_m.group(1)))
+    # 6) Scorecard title — Modules I & J (and U, where configured) add rows, so
+    #    the authored count word goes stale. Sync from the actual number of
+    #    <tr> rows inside the REAL scorecard — the .scoretab with a Module
+    #    column (Orion carries a second .scoretab, its release playbook, which
+    #    must not drive this count). Any suffix after "reads" is preserved.
+    row_count = None
+    for tm in re.finditer(r'<table class="scoretab">(.*?)</table>', html, flags=re.S):
+        if '<th>Module</th>' in tm.group(1):
+            bm = re.search(r'<tbody>(.*?)</tbody>', tm.group(1), flags=re.S)
+            if bm:
+                row_count = len(re.findall(r'<tr>', bm.group(1)))
+            break
+    if row_count:
         _NUM_WORDS = {
             2: "two", 3: "three", 4: "four", 5: "five", 6: "six",
             7: "seven", 8: "eight", 9: "nine", 10: "ten", 11: "eleven",
@@ -84,8 +92,8 @@ def patch(name: str) -> str:
         }
         n_word = _NUM_WORDS.get(row_count, str(row_count))
         html = re.sub(
-            r'<h2>Scorecard — the [a-z]+ reads</h2>',
-            f'<h2>Scorecard — the {n_word} reads</h2>',
+            r'<h2>Scorecard — the(?: [a-z]+)? reads([^<]*)</h2>',
+            lambda mo: f'<h2>Scorecard — the {n_word} reads{mo.group(1)}</h2>',
             html, count=1,
         )
 

@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micron Technology (MU) — Research Pipeline (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:800px}
+  .keystat{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .ks{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;min-width:92px}
+  .ks .kl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .ks .kv{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:2px}
+  .ks .kv small{font-size:11px;color:var(--muted);font-weight:400}
+  .legend{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .hero{margin-top:18px;background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--blue);border-radius:var(--radius);padding:clamp(16px,3vw,24px)}
+  .hero .htag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:8px}
+  .hero h3{font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.15}
+  .hero h3 b{color:var(--blue-deep)}
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:680px){.lenses{grid-template-columns:1fr}}
+  .lens{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .lens .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .lens .lh{font-family:var(--disp);font-weight:600;font-size:14px;margin-bottom:5px}
+  .lens.empir .lh{color:var(--coral-deep)} .lens.comp .lh{color:var(--blue-deep)} .lens.owner .lh{color:var(--teal-deep)}
+  .lens .lb{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .synth{margin-top:14px;background:var(--blue-wash);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55}
+  .synth b{color:var(--blue-deep)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .reactab .rr{display:grid;grid-template-columns:118px 1fr 86px;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:560px){.reactab .rr{grid-template-columns:80px 1fr 64px}}
+  .reactab .re{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  .reactab .rd{font-size:12px;color:var(--muted);line-height:1.4}
+  .reactab .rp{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;color:var(--coral-deep)}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:58px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:16px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)} .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:185px 1fr 66px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:120px 1fr 52px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:116px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:86px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+
+  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){.qgrid{grid-template-columns:1fr}}
+  .qcard{border:1px solid var(--line);border-radius:12px;padding:14px 15px 15px;background:var(--surface-2)}
+  .qtt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.01em}
+  .qsub{font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.35}
+  .qcard svg{display:block}
+  .qread{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .qread b{color:var(--ink)}
+</style>
+
+<style id="ux-fixes">
+  /* ===== Shared UX / mobile fixes (all reports) ===== */
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+  }
+
+  /* Sticky stepper: contain horizontal scroll; never pan the page */
+  .stepper{
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid transparent;
+  }
+  .stepper a{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper a:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+  }
+
+  /* Anchor offset under sticky stepper (modules + audit) */
+  .mod,.audit,#mAudit{scroll-margin-top:76px}
+
+  /* Flex children must be allowed to shrink or long text overflows */
+  .mod-head .ht{min-width:0;flex:1 1 auto}
+  .verdict .vtext{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;word-break:break-word}
+  .cmprow{gap:10px}
+  .cmprow .ck{min-width:0;overflow-wrap:anywhere}
+  .cmprow .cv{flex:0 0 auto;max-width:48%;text-align:right;overflow-wrap:anywhere}
+  .ri .rd,.kci,.note,.reading,.synth,.overall .ov-text,.blend .bl,
+  .rev .rv .l,.rev .rv .m,.sc .scd,.lens .lb,p.body,.body{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .hl{white-space:normal;overflow-wrap:break-word}
+  .verdict .vtext{overflow-wrap:break-word;word-break:normal}
+
+  /* Tag chips: wrap under title on narrow screens instead of crushing h2 */
+  @media (max-width:560px){
+    .mod-head{flex-wrap:wrap;gap:10px 12px}
+    .mod-head .tagchip,.mod-head > .tagchip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:center;line-height:1.25}
+    .verdict{align-items:flex-start}
+    .verdict .vchip{margin-top:1px}
+    .keystat .ks{min-width:0;flex:1 1 calc(50% - 8px)}
+  }
+
+  /* Horizontal table scroll without page-level horizontal scroll */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    max-width:100%;
+    margin:0 0 4px;
+    padding-bottom:2px;
+  }
+  .tbl-scroll > table{margin-top:0}
+  th,td{overflow-wrap:anywhere}
+  td.num,td.mono{overflow-wrap:normal;word-break:normal}
+
+  /* Peer / bar rows: collapse fixed label columns on small phones */
+  @media (max-width:480px){
+    .br{grid-template-columns:minmax(0,1fr) 48px !important;gap:6px 8px}
+    .br .brt{grid-column:1 / -1;order:3;height:14px}
+    .br .brl{font-size:12px}
+    .br .brv{font-size:11px}
+    .barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}
+    .barsrow .bb{grid-column:1 / -1;order:3}
+    .barsrow .bl{font-size:10px}
+    .reactab .rr{grid-template-columns:1fr 56px !important;gap:6px 8px}
+    .reactab .rd{grid-column:1 / -1;order:3}
+    .ri{flex-direction:column;gap:4px}
+    .ri .rk{width:auto !important}
+  }
+
+  /* Module I/J grids: tighter on phones */
+  @media (max-width:480px){
+    .kg{grid-template-columns:1fr 1fr}
+    .kelly{grid-template-columns:1fr !important}
+    .fac{grid-template-columns:1fr 1fr !important}
+  }
+  @media (max-width:360px){
+    .kg{grid-template-columns:1fr}
+    .fac{grid-template-columns:1fr !important}
+    .kelly{grid-template-columns:1fr !important}
+  }
+
+  /* Scenario cards: kill forced min-heights that leave huge empty gaps on mobile */
+  @media (max-width:560px){
+    .scard .sd{min-height:0 !important}
+  }
+
+  /* Range inputs: larger touch targets on touch devices */
+  @media (pointer:coarse){
+    input[type=range]{height:8px}
+    input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+    input[type=range]::-moz-range-thumb{width:22px;height:22px}
+    .ev{padding:10px 14px;min-height:40px}
+    .stepper a{padding:9px 12px}
+  }
+
+  /* SVG charts scale */
+  .qcard svg,.mod svg:not([width]){max-width:100%;height:auto}
+  #hist,#tornado{max-width:100%}
+
+  /* Long mono audit URLs / tokens */
+  .audit table td.mono,.src{overflow-wrap:anywhere;word-break:break-word}
+
+  /* cbar labels (Module J) */
+  .cbar{margin-bottom:18px;overflow:visible}
+  .cbar .lb{max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+
+  .cut,.notes,.disc{overflow-wrap:anywhere}
+
+  /* Keep page width stable without breaking position:sticky
+     (overflow-x on body/wrap makes sticky fail in Chrome/Safari).
+     Wide tables are handled by .tbl-scroll wrappers. */
+  img,svg,video,canvas{max-width:100%}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:360px){.kg{grid-template-columns:1fr}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;min-width:0}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink);overflow-wrap:anywhere}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink);min-width:0;overflow-wrap:anywhere} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.kelly{grid-template-columns:1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px;min-width:0}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4;overflow-wrap:anywhere}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top;overflow-wrap:anywhere}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500;white-space:nowrap}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;margin-bottom:18px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:360px){.fac{grid-template-columns:1fr}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px;min-width:0}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
+  .barsrow{display:grid;grid-template-columns:minmax(0,120px) 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  @media(max-width:480px){.barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}.barsrow .bb{grid-column:1/-1;order:3}}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px;min-width:0;overflow-wrap:anywhere}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;max-width:100%;margin:0 0 4px;padding-bottom:2px}
+</style>
+
+
+<style id="bullcase-css">
+  /* Module U — perfect-execution bull path */
+  .bullpath{border:1.5px solid var(--teal);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:linear-gradient(180deg,#fff,var(--teal-wash));margin-top:8px}
+  .bullpath .bp-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .bullpath .bp-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.45}
+  .bp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
+  @media(max-width:780px){.bp-kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.bp-kpis{grid-template-columns:1fr}}
+  .bp-kpis .k{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px;min-width:0}
+  .bp-kpis .k .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .bp-kpis .k .val{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--teal-deep);margin-top:3px;line-height:1.1}
+  .bp-kpis .k .val small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+  .bp-kpis .k .hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.35}
+  .bp-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 22px;margin:8px 0 6px}
+  @media(max-width:560px){.bp-controls{grid-template-columns:1fr}}
+  .guard{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;line-height:1.45;background:var(--surface)}
+  .guard .gdot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px}
+  .mile{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px;line-height:1.45}
+  .mile .my{font-family:var(--mono);font-weight:600;color:var(--teal-deep);font-size:12px}
+  .mile .mt{color:var(--ink)}
+  #bull-chart{width:100%;height:auto;display:block;margin-top:8px}
+</style>
+
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Research pipeline · strict-data · Micron Technology, Inc. · NASDAQ: MU · built 2026-07-19</div>
+  <h1>Micron — the memory arm of the AI trade
+    <span class="sub">Fundamentals and the cycle first — then the valuation engine. The only scaled US memory maker (NASDAQ: MU), one of three HBM suppliers to the AI build-out, valued <b>through-cycle</b> on EBITDA margin × EV/EBITDA multiple plus net cash. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline sequence: <b>what is the business, how good is it at the peak, and what is it worth once you underwrite the whole cycle?</b></span>
+  </h1>
+
+  <div class="keystat">
+    <div class="ks"><div class="kl">Price</div><div class="kv">$848.95</div></div>
+    <div class="ks"><div class="kl">Market cap</div><div class="kv">$959<small>bn</small></div></div>
+    <div class="ks"><div class="kl">Net cash</div><div class="kv">$19.6<small>bn</small></div></div>
+    <div class="ks"><div class="kl">P/E</div><div class="kv">~19<small>× (fwd ~5.6×)</small></div></div>
+    <div class="ks"><div class="kl">EV/EBITDA</div><div class="kv">~13.8<small>×</small></div></div>
+    <div class="ks"><div class="kl">Beta</div><div class="kv">~2.1</div></div>
+    <div class="ks"><div class="kl">Cons. PT</div><div class="kv">$1,492<small> (+76%)</small></div></div>
+  </div>
+
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-19 19:03</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="hero">
+    <div class="htag">◆ How to read this build — fundamentals &amp; cycle first</div>
+    <h3>Start with <b>what the business is</b> and <b>why memory is different now</b> (HBM + oligopoly discipline). Then read the books. Only after that should you touch the through-cycle Monte-Carlo engine and the institutional layers.</h3>
+    <div class="lenses">
+      <div class="lens empir">
+        <div class="lt">Part 1 — Thesis &amp; cycle</div>
+        <div class="lh">Module T</div>
+        <div class="lb">The memory business, the HBM/AI demand driver, the DRAM oligopoly, and Micron&rsquo;s place in the AI · robotics · data · energy stack — as the most direct AI beneficiary that still trades like a hardware cyclical.</div>
+      </div>
+      <div class="lens owner">
+        <div class="lt">Part 2 — Fundamentals</div>
+        <div class="lh">Modules Q · D · E · G · F</div>
+        <div class="lb">Fetched quality dashboard (incl. the FY23 trough), forensic balance-sheet scores, the capex-dominated capital record, peer multiples and positioning. The &ldquo;how good is it, and how cyclical?&rdquo; block.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">Part 3 — Deeper analysis</div>
+        <div class="lh">Modules A–C · U · H · I · J</div>
+        <div class="lb">Through-cycle correlated MC engine, driver tornado, Bayesian scenarios, the 10-year ceiling, kill-criteria, price-asymmetry and base-rate composites — the stress tests once you understand the cycle.</div>
+      </div>
+    </div>
+    <div class="synth"><b>Master read (spoiler for later modules).</b> The most <i>predictive</i> near-term mover is the <b>AI-memory narrative</b> (HBM allocation, hyperscaler capex, competitor supply); the single <i>fundamental</i> variable that sets fair value through-cycle is the <b>durability of the HBM-era EBITDA margin</b>. The base case (~$830) sits right around the ~$849 price — the reverse-DCF (Module I) says the market is implying a ~62.5% through-cycle margin holds. The trade is a wide, two-sided bet on the cycle, not a mispricing at spot.</div>
+  </div>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mThesis"><span class="n">T</span>Thesis &amp; cycle</a>
+    <a href="#mQ"><span class="n">Q</span>Quality</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Driver analysis</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mU"><span class="n">U</span>10y upside</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+<section class="mod" id="mThesis">
+    <div class="mod-head"><div class="mod-no">T</div>
+      <div class="ht"><h2>Business thesis &amp; macro place</h2><div class="hq">What Micron is, where the cash comes from, and how it sits at the centre of the AI · robotics · data · energy build-out.</div></div>
+      <span class="tagchip a">Sourced + judgment</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL · THESIS</span><span class="vtext">Of the names in this book, Micron is the <b>most direct beneficiary of the AI build-out that still trades as a hardware cyclical</b>. Memory is the co-processor to compute: every AI accelerator needs high-bandwidth memory (HBM), and Micron is one of only three vendors on earth who can make it. The thesis is strong; the <i>valuation debate</i> (Modules A&ndash;C) is entirely about how much of the super-cycle is through-cycle.</span></div>
+
+    <p class="body"><b>What the company is.</b> Micron Technology (NASDAQ: MU) is one of the world&rsquo;s largest makers of <b>memory and storage</b> semiconductors &mdash; <b>DRAM</b> (~70%+ of revenue: the working memory in servers, PCs, phones and cars) and <b>NAND</b> flash (the balance: SSDs and storage). It is the only US-headquartered scaled memory maker, against Korea&rsquo;s Samsung and SK hynix. TTM revenue has reached ~<b>$90bn</b> with a ~<b>76% EBITDA margin</b> and net <b>cash</b> &mdash; figures unrecognisable against the FY2023 memory glut, when gross margin went negative.</p>
+
+    <p class="body"><b>Why memory is different now.</b> For decades memory was a brutal, undifferentiated commodity: three players, boom-bust capex, margins to zero at the bottom. Two things changed. First, <b>consolidation and capital discipline</b> &mdash; DRAM is a rational three-firm oligopoly. Second, and decisively, <b>HBM</b>: the stacked, high-bandwidth DRAM bolted next to every AI GPU. HBM is capacity-constrained, sold out quarters ahead, priced at a large premium, and gross-margin-accretive. It has dragged the entire memory complex into an up-cycle with a genuinely new secular demand driver on top of the old cycle.</p>
+
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:18px 0 10px">◆ Place in the macro stack — five trend lenses</div>
+    <p class="body" style="margin-bottom:12px">Micron does not train models or design GPUs. It sells the <b>memory layer</b> without which none of them run. The question is which macro waves touch that layer &mdash; and here, unlike most industrials, the answer is &ldquo;the biggest one, directly.&rdquo;</p>
+    <div class="lenses" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <div class="lens comp"><div class="lt">1 · AI (direct, not narrative)</div><div class="lh">HBM for accelerators</div><div class="lb">Every AI training/inference system pairs compute with HBM. Micron is one of three HBM suppliers; capacity is pre-sold and margin-accretive. This is the <b>core thesis</b> &mdash; a direct, contracted AI revenue line, not a second-order tailwind.</div></div>
+      <div class="lens empir"><div class="lt">2 · Computing &amp; data centres</div><div class="lh">Content-per-server growth</div><div class="lb">Beyond HBM, AI servers carry far more standard DRAM and SSD content than traditional servers. Data-center is Micron&rsquo;s fastest-growing end market &mdash; a <b>volume + mix</b> tailwind that compounds with every rack built.</div></div>
+      <div class="lens owner"><div class="lt">3 · Robotics &amp; edge AI</div><div class="lh">Memory at the edge</div><div class="lb">Autonomy, humanoids and industrial robots are memory-hungry at the edge (LPDDR, automotive-grade DRAM/NAND). Micron&rsquo;s embedded/auto franchise is a <b>long-dated call option</b> on inference moving out of the datacenter.</div></div>
+      <div class="lens empir"><div class="lt">4 · Data &amp; storage</div><div class="lh">The data-gravity flywheel</div><div class="lb">AI both consumes and generates data at scale, lifting NAND/SSD demand across cloud and enterprise. A <b>cyclical-but-secular</b> support to the NAND half of the business, historically the weaker franchise.</div></div>
+      <div class="lens comp"><div class="lt">5 · Energy &amp; supply security</div><div class="lh">Fabs, power &amp; CHIPS policy</div><div class="lb">Leading-edge memory fabs are enormous, power-hungry, and strategically prized; US/CHIPS-era incentives support Micron&rsquo;s domestic capacity. Energy cost and grid access are real inputs &mdash; and a <b>geopolitical moat</b> for the only US memory major.</div></div>
+    </div>
+
+    <div class="synth" style="margin-top:16px"><b>Investment thesis (one paragraph).</b> Own Micron if you want <b>the memory arm of the AI trade</b> &mdash; a scaled, US-based, net-cash HBM/DRAM maker in a disciplined oligopoly, at a forward multiple (~5.6× forward EPS) that screams &ldquo;the market thinks this is a peak.&rdquo; Fade it if you believe memory always reverts &mdash; that HBM commoditises as three vendors scale, the DRAM cycle glut returns, and today&rsquo;s ~76% EBITDA margin is a top, not a new plateau. The whole report is built around that single fault line: <b>the durability of the through-cycle memory margin.</b></div>
+
+    <div class="note b"><b>How to read the rest of this report.</b> The next modules are the <b>fundamentals block</b> &mdash; the fetched quality dashboard (Q), forensic scores (D), capital allocation (E), peers (G) and positioning (F). Then the report drops into the through-cycle valuation engine (A), the driver analysis (B), scenarios (C), the perfect-execution ceiling (U), kill-criteria (H) and the institutional asymmetry / base-rate layers (I · J). Start with the business and the cycle; then stress-test the price.
+      <div class="src">Business description and figures: Micron FY2025 results, the Yahoo TTM fundamentals feed, and HBM/data-center investor commentary. Macro mapping is analytic judgment layered on those sourced business lines.</div>
+    </div>
+  </section>
+<section class="mod" id="mQ"><div class="mod-head"><div class="mod-no">Q</div><div class="ht"><h2>Fundamental quality &amp; valuation dashboard</h2><div class="hq">Profitability, cash, leverage, valuation and the memory cycle &mdash; from fetched annual financials (FY2022&ndash;FY2025) plus the FY2026 TTM super-cycle.</div></div><span class="tagchip c">Fetched financials</span></div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A textbook <b>cyclical</b>: a negative-gross-margin trough (FY23) two years before an AI-driven super-cycle (TTM revenue ~$90bn, ~76% EBITDA margin, ~66% ROE). Current fundamentals are exceptional; the question the rest of the report asks is <b>how much of it is through-cycle</b>.</span></div>
+    <p class="body">Every figure is <b>fetched</b> from Yahoo&rsquo;s fundamentals feed (annual income statement, balance sheet, cash-flow) and, where a ratio, computed from those line items. The trailing-twelve-month (TTM) column reflects the FY2026-in-progress AI/HBM super-cycle and is called out separately so the annual bars stay on a readable scale.</p>
+    <div class="mc-wrap" style="margin:6px 0 4px"><div class="mc-title">Share price vs earnings &mdash; does the tape track the fundamentals?</div><div class="mc-sub">Daily close (left) against TTM diluted EPS (right), each normalised to fill the plot. This reads <b>co-movement and lead/lag</b>, not levels &mdash; the FY26 AI super-cycle is off-scale on both.</div><div class="hist-leg"><span><span class="sw" style="background:var(--blue)"></span>Share price $&nbsp;&middot;&nbsp;left</span><span><span class="sw" style="background:var(--amber-deep)"></span>TTM diluted EPS $&nbsp;&middot;&nbsp;right</span></div><svg viewBox="0 0 720 300" style="width:100%;height:auto" role="img" aria-label="Micron share price versus trailing-twelve-month diluted EPS."><defs><clipPath id="peclip"><rect x="58" y="30" width="590" height="222"/></clipPath></defs><g stroke="var(--line)" stroke-width="1"><line x1="58" y1="252.0" x2="648" y2="252.0"/><line x1="58" y1="196.5" x2="648" y2="196.5"/><line x1="58" y1="141.0" x2="648" y2="141.0"/><line x1="58" y1="85.5" x2="648" y2="85.5"/><line x1="58" y1="30.0" x2="648" y2="30.0"/></g><line x1="58" y1="30" x2="58" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/><line x1="648" y1="30" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/><line x1="58" y1="252" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/><g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--blue-deep)" text-anchor="end"><text x="50" y="255.5">$0</text><text x="50" y="200.0">$325</text><text x="50" y="144.5">$650</text><text x="50" y="89.0">$975</text><text x="50" y="33.5">$1300</text></g><g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--amber-deep)" text-anchor="start"><text x="658" y="255.5">-8</text><text x="658" y="200.0">+6</text><text x="658" y="144.5">+20</text><text x="658" y="89.0">+34</text><text x="658" y="33.5">+48</text></g><g clip-path="url(#peclip)"><polyline points="58.0,239.6 59.9,239.4 61.8,239.2 63.6,238.3 65.5,239.4 67.4,240.2 69.3,240.3 71.2,239.9 73.1,239.7 74.9,240.0 76.8,239.8 78.7,239.9 80.6,239.7 82.5,240.2 84.3,240.3 86.2,240.9 88.1,240.8 90.0,240.7 91.9,240.4 93.8,240.1 95.6,239.4 97.5,239.2 99.4,238.2 101.3,238.1 103.2,238.2 105.0,237.7 106.9,238.1 108.8,238.3 110.7,236.3 112.6,236.5 114.5,236.0 116.3,236.1 118.2,237.0 120.1,238.5 122.0,238.3 123.9,238.4 125.8,236.8 127.6,236.0 129.5,237.4 131.4,237.6 133.3,239.4 135.2,239.8 137.0,238.6 138.9,239.4 140.8,238.3 142.7,239.0 144.6,239.9 146.5,240.3 148.3,240.1 150.2,240.9 152.1,240.1 154.0,240.6 155.9,240.0 157.7,240.4 159.6,240.7 161.5,239.7 163.4,240.2 165.3,242.2 167.2,242.7 169.0,242.2 170.9,242.8 172.8,242.2 174.7,242.1 176.6,241.5 178.4,241.9 180.3,241.6 182.2,241.1 184.1,241.7 186.0,241.3 187.9,242.2 189.7,242.3 191.6,242.4 193.5,242.7 195.4,243.1 197.3,243.5 199.1,243.8 201.0,243.6 202.9,242.9 204.8,243.1 206.7,243.2 208.6,242.6 210.4,242.9 212.3,243.0 214.2,242.6 216.1,241.4 218.0,242.4 219.9,242.6 221.7,242.8 223.6,242.7 225.5,242.8 227.4,243.5 229.3,243.6 231.1,243.5 233.0,242.5 234.9,242.4 236.8,242.2 238.7,241.4 240.6,241.5 242.4,241.5 244.3,241.9 246.2,242.1 248.1,242.2 250.0,242.5 251.8,242.4 253.7,242.9 255.6,242.3 257.5,241.7 259.4,241.4 261.3,242.4 263.1,241.6 265.0,241.6 266.9,242.0 268.8,241.2 270.7,241.8 272.5,241.9 274.4,241.3 276.3,240.8 278.2,239.5 280.1,240.3 282.0,241.0 283.8,240.3 285.7,240.9 287.6,240.7 289.5,241.2 291.4,241.4 293.2,241.2 295.1,241.1 297.0,240.6 298.9,240.0 300.8,240.3 302.7,241.1 304.5,241.3 306.4,241.0 308.3,240.7 310.2,240.1 312.1,240.2 313.9,240.2 315.8,240.5 317.7,240.5 319.6,240.5 321.5,240.2 323.4,240.3 325.2,240.6 327.1,240.8 329.0,240.7 330.9,239.7 332.8,239.3 334.7,239.0 336.5,239.0 338.4,239.0 340.3,239.5 342.2,238.8 344.1,238.2 345.9,237.5 347.8,237.5 349.7,238.0 351.6,238.0 353.5,237.9 355.4,237.2 357.2,236.9 359.1,237.4 361.0,237.6 362.9,238.1 364.8,238.2 366.6,236.4 368.5,235.8 370.4,235.5 372.3,236.5 374.2,235.7 376.1,231.9 377.9,231.2 379.8,231.2 381.7,231.2 383.6,233.0 385.5,233.0 387.3,232.8 389.2,231.6 391.1,231.4 393.0,230.3 394.9,230.6 396.8,229.7 398.6,230.5 400.5,229.1 402.4,228.0 404.3,228.3 406.2,229.6 408.0,228.8 409.9,228.9 411.8,230.4 413.7,232.4 415.6,233.4 417.5,234.8 419.3,237.3 421.2,235.5 423.1,233.6 425.0,234.5 426.9,235.8 428.7,236.8 430.6,236.6 432.5,236.9 434.4,236.1 436.3,233.8 438.2,234.7 440.0,234.7 441.9,234.3 443.8,233.5 445.7,233.7 447.6,235.1 449.5,233.0 451.3,234.3 453.2,235.4 455.1,234.6 457.0,235.4 458.9,234.9 460.7,234.7 462.6,233.5 464.5,236.8 466.4,237.5 468.3,235.1 470.2,235.8 472.0,234.0 473.9,234.4 475.8,236.3 477.7,236.1 479.6,236.0 481.4,233.8 483.3,235.8 485.2,236.1 487.1,236.8 489.0,235.7 490.9,234.7 492.7,235.5 494.6,237.0 496.5,239.3 498.4,238.7 500.3,239.9 502.1,240.0 504.0,238.6 505.9,238.3 507.8,237.5 509.7,235.8 511.6,235.3 513.4,235.6 515.3,235.3 517.2,233.5 519.1,232.2 521.0,231.2 522.8,230.3 524.7,231.4 526.6,230.8 528.5,231.8 530.4,232.5 532.3,233.0 534.1,232.4 536.0,233.4 537.9,230.9 539.8,231.4 541.7,232.3 543.6,231.9 545.4,231.8 547.3,228.9 549.2,225.1 551.1,224.3 553.0,225.3 554.8,220.9 556.7,220.3 558.6,219.1 560.5,217.5 562.4,216.7 564.3,213.3 566.1,214.8 568.0,208.8 569.9,209.9 571.8,217.6 573.7,212.7 575.5,212.1 577.4,208.9 579.3,211.5 581.2,206.6 583.1,203.4 585.0,198.2 586.8,196.2 588.7,195.1 590.6,185.6 592.5,182.0 594.4,177.3 596.2,184.6 598.1,181.3 600.0,180.8 601.9,178.8 603.8,187.2 605.7,185.6 607.5,179.3 609.4,176.2 611.3,186.8 613.2,194.3 615.1,187.5 616.9,179.2 618.8,174.3 620.7,169.7 622.6,163.5 624.5,142.7 626.4,116.2 628.2,128.3 630.1,121.9 632.0,94.3 633.9,67.7 635.8,92.2 637.6,66.2 639.5,45.2 641.4,58.7 643.3,85.4 645.2,82.7 647.1,97.6 648.0,107.0" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g><polyline points="189.8,189.6 307.8,241.5 425.9,217.5 543.6,190.2 647.8,44.9" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.6"><circle cx="189.8" cy="189.6" r="3.6"/><circle cx="307.8" cy="241.5" r="3.6"/><circle cx="425.9" cy="217.5" r="3.6"/><circle cx="543.6" cy="190.2" r="3.6"/><circle cx="647.8" cy="44.9" r="3.6"/></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" font-weight="600" fill="var(--amber-deep)"><text x="307.8" y="254.5" text-anchor="middle" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">-5.34</text><text x="647.8" y="36.9" text-anchor="end" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">+44.23</text></g><g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)" text-anchor="middle"><text x="111.5" y="272">2022</text><text x="229.6" y="272">2023</text><text x="347.6" y="272">2024</text><text x="466.0" y="272">2025</text><text x="584.1" y="272">2026</text></g><text x="8" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--blue-deep)">Share price $</text><text x="658" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--amber-deep)">TTM EPS $</text></svg><div class="reading" style="margin-top:12px"><b>How to read it.</b> Price and EPS trough together (FY23) and inflect together (FY26). The <span class='asm'>scales are normalised independently</span> &mdash; only shape and timing are meaningful. The lesson: in memory, the tape follows the earnings cycle, and both just went vertical.</div></div>
+    <div class="qgrid"><div class="qcard"><div class="qtt">① Revenue ($bn) &amp; EPS</div><div class="qsub">Bars = revenue &middot; <span style='color:var(--amber-deep)'>line = diluted EPS (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">10</text><text x="39" y="97.0">20</text><text x="39" y="61.0">30</text><text x="39" y="25.0">40</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">-8</text><text x="349" y="133.0">-4</text><text x="349" y="97.0">+1</text><text x="349" y="61.0">+6</text><text x="349" y="25.0">+10</text></g><rect x="64.5" y="55.3" width="34" height="110.7" rx="2.5" fill="var(--teal)"/><text x="81.5" y="50.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">30.8</text><rect x="139.5" y="110.1" width="34" height="55.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="105.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">15.5</text><rect x="214.5" y="75.6" width="34" height="90.4" rx="2.5" fill="var(--teal)"/><text x="231.5" y="70.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">25.1</text><rect x="289.5" y="31.4" width="34" height="134.6" rx="2.5" fill="var(--teal)"/><text x="306.5" y="26.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">37.4</text><polyline points="81.5,40.0 156.5,144.7 231.5,96.4 306.5,41.3" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="40.0" r="3.2"/><circle cx="156.5" cy="144.7" r="3.2"/><circle cx="231.5" cy="96.4" r="3.2"/><circle cx="306.5" cy="41.3" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="36.0" text-anchor="start">+7.75</text><text x="162.5" y="140.7" text-anchor="start">-5.34</text><text x="237.5" y="92.4" text-anchor="start">+0.70</text><text x="312.5" y="37.3" text-anchor="start">+7.59</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>The memory cycle, in one chart.</b> Revenue $30.8&rarr;$15.5 (FY23 glut)&rarr;$37.4bn; EPS $7.75&rarr;<b>&minus;$5.34</b>&rarr;+$7.59. TTM (FY26) has since exploded to <b>~$90bn</b> revenue / <b>$44.23</b> EPS on the AI/HBM super-cycle &mdash; off this axis.</div></div><div class="qcard"><div class="qtt">② Profit margins</div><div class="qsub"><span style='color:var(--teal)'>gross</span> &middot; <span style='color:var(--blue)'>operating</span> &middot; <span style='color:var(--amber-deep)'>net</span> &divide; revenue</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">-40%</text><text x="39" y="121.0">0%</text><text x="39" y="73.0">40%</text><text x="39" y="25.0">80%</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="118.0" x2="344" y2="118.0" stroke="var(--line-strong)" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.7"/><polyline points="81.5,63.8 156.5,128.9 231.5,91.2 306.5,70.2" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="63.8" r="3.2"/><circle cx="156.5" cy="128.9" r="3.2"/><circle cx="231.5" cy="91.2" r="3.2"/><circle cx="306.5" cy="70.2" r="3.2"/></g><polyline points="81.5,80.1 156.5,159.8 231.5,111.8 306.5,86.6" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--blue)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="80.1" r="3.2"/><circle cx="156.5" cy="159.8" r="3.2"/><circle cx="231.5" cy="111.8" r="3.2"/><circle cx="306.5" cy="86.6" r="3.2"/></g><polyline points="81.5,84.2 156.5,163.0 231.5,114.3 306.5,90.6" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="84.2" r="3.2"/><circle cx="156.5" cy="163.0" r="3.2"/><circle cx="231.5" cy="114.3" r="3.2"/><circle cx="306.5" cy="90.6" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Violently cyclical.</b> Gross margin went <b>negative (&minus;9%)</b> in the FY23 glut, then back to ~40%. TTM gross margin is now ~<b>72.6%</b> and net ~55.9% &mdash; the HBM-led peak.</div></div><div class="qcard"><div class="qtt">③ Return on equity</div><div class="qsub">Net income &divide; equity &middot; <span style='color:var(--coral-deep)'>dashed = TTM</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="137.2" x2="344" y2="137.2"/><line x1="44" y1="108.4" x2="344" y2="108.4"/><line x1="44" y1="79.6" x2="344" y2="79.6"/><line x1="44" y1="50.8" x2="344" y2="50.8"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">-20%</text><text x="39" y="140.2">0%</text><text x="39" y="111.4">20%</text><text x="39" y="82.6">40%</text><text x="39" y="53.8">60%</text><text x="39" y="25.0">80%</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="112.1" width="34" height="25.1" rx="2.5" fill="var(--teal)"/><text x="81.5" y="107.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">17.4</text><rect x="139.5" y="137.2" width="34" height="19.0" rx="2.5" fill="var(--coral)"/><text x="156.5" y="167.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--coral)">-13.2</text><rect x="214.5" y="134.8" width="34" height="2.4" rx="2.5" fill="var(--teal)"/><text x="231.5" y="129.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">1.7</text><rect x="289.5" y="114.4" width="34" height="22.8" rx="2.5" fill="var(--teal)"/><text x="306.5" y="109.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">15.8</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g><line x1="44" y1="41.3" x2="344" y2="41.3" stroke="var(--coral-deep)" stroke-width="1.1" stroke-dasharray="1 2" opacity="0.9"/><text x="342" y="38.3" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral-deep)">TTM ~66.6%</text></svg><div class="qread"><b>From &minus;13% to ~66%.</b> ROE swung negative in FY23, recovered to ~16% (FY25), and TTM sits near <b>66.6%</b> at the super-cycle peak &mdash; the definition of a cyclical, not a steady compounder.</div></div><div class="qcard"><div class="qtt">④ Cash flow ($bn)</div><div class="qsub">Bars = FCF &middot; <span style='color:var(--blue)'>line = operating CF (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">-8</text><text x="39" y="121.0">-4</text><text x="39" y="73.0">0</text><text x="39" y="25.0">4</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0</text><text x="349" y="121.0">6</text><text x="349" y="73.0">12</text><text x="349" y="25.0">18</text></g><rect x="64.5" y="32.7" width="34" height="37.3" rx="2.5" fill="var(--teal)"/><text x="81.5" y="27.7" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+3.1</text><rect x="139.5" y="70.0" width="34" height="73.4" rx="2.5" fill="var(--coral)"/><text x="156.5" y="154.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--coral)">-6.1</text><rect x="214.5" y="68.6" width="34" height="1.4" rx="2.5" fill="var(--teal)"/><text x="231.5" y="63.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+0.1</text><rect x="289.5" y="50.0" width="34" height="20.0" rx="2.5" fill="var(--teal)"/><text x="306.5" y="45.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+1.7</text><polyline points="81.5,44.6 156.5,153.5 231.5,97.9 306.5,25.8" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--blue)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="44.6" r="3.2"/><circle cx="156.5" cy="153.5" r="3.2"/><circle cx="231.5" cy="97.9" r="3.2"/><circle cx="306.5" cy="25.8" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="40.6" text-anchor="start">15</text><text x="162.5" y="149.5" text-anchor="start">2</text><text x="237.5" y="93.9" text-anchor="start">9</text><text x="312.5" y="21.8" text-anchor="start">18</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>The capex reality.</b> Operating cash flow is huge and positive every year ($1.6&ndash;$17.5bn), but <b>free</b> cash flow is thin or negative &mdash; fab capex ($8&ndash;$16bn/yr) eats it. TTM OCF ~$51bn, FCF ~$7.6bn. Owner earnings live and die on the capex line.</div></div><div class="qcard"><div class="qtt">⑤ EBITDA ($bn) &amp; margin</div><div class="qsub">Bars = EBITDA &middot; <span style='color:var(--amber-deep)'>line = EBITDA margin (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">5</text><text x="39" y="97.0">10</text><text x="39" y="61.0">15</text><text x="39" y="25.0">20</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0%</text><text x="349" y="133.0">20%</text><text x="349" y="97.0">40%</text><text x="349" y="61.0">60%</text><text x="349" y="25.0">80%</text></g><rect x="64.5" y="44.5" width="34" height="121.5" rx="2.5" fill="var(--teal)"/><text x="81.5" y="39.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">16.9</text><rect x="139.5" y="148.1" width="34" height="17.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="143.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">2.5</text><rect x="214.5" y="97.0" width="34" height="69.0" rx="2.5" fill="var(--teal)"/><text x="231.5" y="92.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">9.6</text><rect x="289.5" y="32.9" width="34" height="133.1" rx="2.5" fill="var(--teal)"/><text x="306.5" y="27.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">18.5</text><polyline points="81.5,67.2 156.5,137.2 231.5,97.2 306.5,77.1" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="67.2" r="3.2"/><circle cx="156.5" cy="137.2" r="3.2"/><circle cx="231.5" cy="97.2" r="3.2"/><circle cx="306.5" cy="77.1" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="63.2" text-anchor="start">55%</text><text x="162.5" y="133.2" text-anchor="start">16%</text><text x="237.5" y="93.2" text-anchor="start">38%</text><text x="312.5" y="73.1" text-anchor="start">49%</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Engine input.</b> EBITDA $16.9&rarr;$2.5 (trough)&rarr;$18.5bn; margin 55%&rarr;16%&rarr;49%. The Module-A engine values a <b>through-cycle</b> EBITDA, not the ~$68bn / ~76% TTM peak.</div></div><div class="qcard"><div class="qtt">⑥ Leverage &amp; liquidity</div><div class="qsub">Bars = debt/equity &middot; <span style='color:var(--teal-deep)'>line = current ratio (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0.0</text><text x="39" y="133.0">0.1</text><text x="39" y="97.0">0.2</text><text x="39" y="61.0">0.3</text><text x="39" y="25.0">0.4</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0</text><text x="349" y="133.0">1</text><text x="349" y="97.0">2</text><text x="349" y="61.0">4</text><text x="349" y="25.0">5</text></g><rect x="64.5" y="112.0" width="34" height="54.0" rx="2.5" fill="var(--amber)"/><text x="81.5" y="107.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.15</text><rect x="139.5" y="50.8" width="34" height="115.2" rx="2.5" fill="var(--amber)"/><text x="156.5" y="45.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.32</text><rect x="214.5" y="54.4" width="34" height="111.6" rx="2.5" fill="var(--amber)"/><text x="231.5" y="49.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.31</text><rect x="289.5" y="65.2" width="34" height="100.8" rx="2.5" fill="var(--amber)"/><text x="306.5" y="60.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.28</text><polyline points="81.5,82.8 156.5,37.6 231.5,90.3 306.5,93.4" fill="none" stroke="var(--teal-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--teal-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="82.8" r="3.2"/><circle cx="156.5" cy="37.6" r="3.2"/><circle cx="231.5" cy="90.3" r="3.2"/><circle cx="306.5" cy="93.4" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="78.8" text-anchor="start">2.9×</text><text x="162.5" y="33.6" text-anchor="start">4.5×</text><text x="237.5" y="86.3" text-anchor="start">2.6×</text><text x="312.5" y="89.4" text-anchor="start">2.5×</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Fortress balance sheet.</b> Debt/equity peaked ~0.32 in the trough (when they drew liquidity) and is back to ~0.28; current ratio 2.5&ndash;4.5×. TTM: net <b>cash</b> ~$19.6bn, current ratio 3.4×.</div></div><div class="qcard"><div class="qtt">⑦ Valuation (year-end)</div><div class="qsub">Bars = EV/EBITDA &middot; <span style='color:var(--amber-deep)'>line = P/B (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">4</text><text x="39" y="97.0">7</text><text x="39" y="61.0">10</text><text x="39" y="25.0">14</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0</text><text x="349" y="133.0">1</text><text x="349" y="97.0">2</text><text x="349" y="61.0">2</text><text x="349" y="25.0">3</text></g><rect x="64.5" y="129.0" width="34" height="37.0" rx="2.5" fill="var(--blue)"/><text x="81.5" y="124.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">3.6×</text><text x="156.5" y="162.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--faint)">n.m.</text><rect x="214.5" y="44.6" width="34" height="121.4" rx="2.5" fill="var(--blue)"/><text x="231.5" y="39.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">11.8×</text><rect x="289.5" y="88.9" width="34" height="77.1" rx="2.5" fill="var(--blue)"/><text x="306.5" y="83.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">7.5×</text><polyline points="81.5,106.0 156.5,83.9 231.5,52.2 306.5,47.4" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="106.0" r="3.2"/><circle cx="156.5" cy="83.9" r="3.2"/><circle cx="231.5" cy="52.2" r="3.2"/><circle cx="306.5" cy="47.4" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="102.0" text-anchor="start">1.2</text><text x="162.5" y="79.9" text-anchor="start">1.7</text><text x="237.5" y="48.2" text-anchor="start">2.4</text><text x="312.5" y="43.4" text-anchor="start">2.5</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Cheap on trough optics.</b> Year-end EV/EBITDA 3.6&ndash;11.8× (FY23 n.m. on trough EBITDA), P/B 1.2&rarr;2.5×. <b>Now</b>: EV/EBITDA ~13.8×, P/B ~13.2× &mdash; the re-rating is in the price, not the multiple.</div></div><div class="qcard"><div class="qtt">⑧ Interest coverage</div><div class="qsub">EBIT &divide; interest expense</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="126.7" x2="344" y2="126.7"/><line x1="44" y1="87.5" x2="344" y2="87.5"/><line x1="44" y1="48.2" x2="344" y2="48.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0×</text><text x="39" y="129.7">15×</text><text x="39" y="90.5">30×</text><text x="39" y="51.2">45×</text></g><line x1="44" y1="166" x2="344" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="163.4" x2="344" y2="163.4" stroke="var(--coral)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="160.4" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral)" text-anchor="start">1× = danger</text><rect x="64.5" y="32.5" width="34" height="133.5" rx="2.5" fill="var(--teal)"/><text x="81.5" y="27.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">51×</text><text x="156.5" y="162.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--faint)">n.m.</text><rect x="214.5" y="160.0" width="34" height="6.0" rx="2.5" fill="var(--teal)"/><text x="231.5" y="155.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">2×</text><rect x="289.5" y="112.6" width="34" height="53.4" rx="2.5" fill="var(--teal)"/><text x="306.5" y="107.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">20×</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Comfortable outside the trough.</b> Coverage 51×&rarr;<b>n.m.</b> (FY23 loss)&rarr;2.3×&rarr;20×. The one year it broke is the whole risk: a deep memory glut turns EBIT negative.</div></div></div>
+    <div class="src">Source: Yahoo Finance fundamentals-timeseries (MU, annual FY2022&ndash;FY2025) + the MU 5-year daily chart cache for prices and the TTM column. Ratios computed at build time. Cards use reported fiscal years; the FY2026 super-cycle is shown as the trailing-twelve-month read.</div></section>
+<section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">Balance-sheet strength and accrual quality — computed from the fetched financials.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">The balance sheet is a <b>fortress at the peak</b>: net <b>cash</b> (~$19.6bn), current ratio 3.4×, interest coverage restored to ~20×+, and earnings backed by huge operating cash flow. The one forensic caveat is structural, not accounting: memory earnings quality is <b>cyclical</b> &mdash; the same scorecard would have flashed red in FY2023.</span></div>
+    <p class="body">These are the classic solvency and earnings-quality checks, computed from the reported line items. On a cyclical, read them as a <b>through-cycle</b> resilience test &mdash; can the company survive the trough that always comes? &mdash; not as a steady-state quality grade.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl">Balance sheet <span class="tg s">computed</span></div><div class="scv">Net cash</div><div class="scband good">FORTRESS</div><div class="scd">Cash &amp; ST investments ~$26bn vs total debt ~$6.4bn &rarr; net cash ~<b>$19.6bn</b>. Debt/equity ~0.09. The super-cycle paid down debt and built a cash war-chest &mdash; the trough-survival buffer.</div></div>
+      <div class="sc"><div class="scl">Liquidity <span class="tg s">computed</span></div><div class="scv">3.4<span class="un">×</span></div><div class="scband good">STRONG</div><div class="scd">Current ratio 3.4×, quick ratio 2.9×. Even in the FY23 trough, current ratio never fell below ~2.5× &mdash; ample working-capital cushion through the cycle.</div></div>
+      <div class="sc"><div class="scl">Coverage <span class="tg s">computed</span></div><div class="scv">~20<span class="un">×+</span></div><div class="scband good">AMPLE</div><div class="scd">EBIT / interest ~20× (FY25) and vastly higher on TTM EBIT. The exception is the tell: FY2023&rsquo;s operating loss broke coverage entirely &mdash; the risk is a deep glot, not leverage.</div></div>
+      <div class="sc"><div class="scl">Accrual quality <span class="tg c">computed</span></div><div class="scv">Cash-backed</div><div class="scband good">CLEAN</div><div class="scd">Operating cash flow (~$17.5bn FY25, ~$51bn TTM) runs well above net income &mdash; earnings are cash-backed, not accrual-inflated. Sloan-style accrual risk is low; the capex line, not accruals, is where cash leaks.</div></div>
+      <div class="sc"><div class="scl">Inventory <span class="tg c">computed</span></div><div class="scv">Cyclical</div><div class="scband mid">WATCH</div><div class="scd">Inventory ~$8&ndash;9bn; in a glut it swells and gets written down (FY23). At a super-cycle peak, lean, pre-sold HBM inventory is a strength &mdash; but inventory is the first cyclical warning light.</div></div>
+      <div class="sc"><div class="scl">Earnings durability <span class="tg c">computed</span></div><div class="scv">Peak</div><div class="scband mid">CYCLICAL</div><div class="scd">TTM ROE ~66% and ~56% net margin are <b>peak-cycle</b> readings. Forensically clean, but not steady-state &mdash; the base-rate module (J) shows today sits at the top of the margin cycle.</div></div>
+    </div>
+    <div class="note t"><b>Read.</b> On accounting quality Micron is clean and cash-backed, with a genuinely fortress balance sheet built during the up-cycle &mdash; a real <b>bull</b> on solvency and trough-survival. The asterisk is that every one of these gauges is riding the top of the cycle; the honest forensic risk here is not fraud or leverage but <b>mean reversion</b>, which the valuation modules price directly.
+      <div class="src">Computed from the fetched FY2022&ndash;FY2025 income statement, balance sheet and cash-flow plus the TTM feed. Cyclical framing is analytic judgment.</div>
+    </div>
+  </section>
+<section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Capital allocation in memory is dominated by one line: <b>fab capex</b>. Micron reinvests $8&ndash;$16bn/yr to hold leading-edge DRAM/HBM &mdash; the price of staying in the oligopoly. Returns to shareholders (a small dividend + buybacks) are real but second to the capex treadmill; the discipline that matters most is <b>not over-building into the next glut</b>.</span></div>
+    <p class="body">The reference-class question for a memory maker is not &ldquo;how much did they return?&rdquo; but &ldquo;did they invest counter-cyclically and avoid flooding their own market?&rdquo; The record here is the industry&rsquo;s new-found discipline &mdash; capex cut hard into the FY23 trough, ramped for HBM into the up-cycle.</p>
+    <div class="bars">
+      <div class="br"><div class="brl">Fab &amp; HBM capex<small>the dominant use of cash · $8&ndash;$16bn/yr</small></div><div class="brt"><div class="brf" style="left:0;width:88%;background:var(--blue)"></div></div><div class="brv" style="color:var(--blue-deep)">~$16bn</div></div>
+      <div class="br"><div class="brl">R&amp;D<small>leading-edge DRAM / HBM roadmap</small></div><div class="brt"><div class="brf" style="left:0;width:21%;background:var(--teal)"></div></div><div class="brv" style="color:var(--teal-deep)">~$3.8bn</div></div>
+      <div class="br"><div class="brl">Buybacks<small>main shareholder return · opportunistic</small></div><div class="brt"><div class="brf" style="left:0;width:14%;background:var(--amber)"></div></div><div class="brv" style="color:var(--amber-deep)">variable</div></div>
+      <div class="br"><div class="brl">Dividend<small>small, growing · ~0.1% yield at this price</small></div><div class="brt"><div class="brf" style="left:0;width:4%;background:var(--faint)"></div></div><div class="brv" style="color:var(--muted)">token</div></div>
+    </div>
+    <p class="body" style="margin-top:16px"><b>The debt round-trip.</b> Micron drew liquidity and let debt/equity rise to ~0.32 through the FY23 trough (prudent &mdash; funding through the bottom), then used super-cycle cash to pay debt down and flip to a <b>net-cash</b> position. That is exactly the counter-cyclical balance-sheet management you want to see; the open question is whether HBM capex now gets over-extended at the top.</p>
+    <div class="note a"><b>Read.</b> Disciplined through the last cycle, net-cash today, but this is a <b>capital-intensity</b> story: owner returns are gated by a $10&ndash;$16bn annual capex bill that never stops. The bull needs that capex to build a durable HBM lead; the bear&rsquo;s capital-allocation nightmare is a supply race that turns today&rsquo;s HBM capex into tomorrow&rsquo;s glut. <b>Mixed</b> &mdash; excellent balance-sheet stewardship, structurally capex-hungry.
+      <div class="src">Sources: Micron FY2025 cash-flow statement (capex, R&amp;D), the fetched debt/equity history, and HBM capex commentary. Buyback/dividend cadence per company capital-return disclosures.</div>
+    </div>
+  </section>
+<section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer multiples</h2><div class="hq">Micron computed; comparables sourced/approx. The live peer read is in Module I.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">On <b>forward</b> earnings Micron looks absurdly cheap (~5.6× forward EPS); on <b>trailing EV/EBITDA</b> (~13.8× on peak EBITDA) it is full. Both are true &mdash; the entire memory group trades at a low multiple of peak earnings because the market prices the revert. The clean, unambiguous comparison is the <b>live 12-month relative return vs SK hynix &amp; Western Digital</b> in Module I.</span></div>
+    <p class="body"><b>The memory-multiple paradox.</b> A forward P/E of ~5.6× would be remarkable for almost any other business. For memory it is normal at a cycle peak: the market refuses to capitalise peak earnings, so the multiple compresses precisely when earnings are highest. Read the peer bars as &ldquo;the whole complex is optically cheap on peak numbers,&rdquo; not as a discount to be arbitraged.</p>
+    <div class="bars" id="peerbars"></div>
+    <p class="body" style="margin-top:16px"><b>Micron&rsquo;s own multiples (computed, live).</b> Trailing P/E ~19×, forward P/E ~5.6×, EV/EBITDA ~13.8×, P/B ~13.2×. The gap between trailing and forward P/E is the market&rsquo;s implied earnings <i>decline</i> &mdash; i.e. it is pricing a roll-over, not extrapolating the super-cycle.</p>
+    <div class="note b"><b>Read.</b> Peer multiples don&rsquo;t settle the debate here &mdash; every memory name is cheap on peak earnings and dear on trough earnings. That is why this report leans on the <b>through-cycle engine</b> (Module A) and the <b>base-rate</b> position (Module J) rather than a single peer multiple. The one crisp peer signal &mdash; has Micron out- or under-performed its arch-rival SK hynix over the last year &mdash; is computed live in Module I.
+      <div class="src">Micron multiples computed from live price + fetched fundamentals. Peer forward-P/E bars are approximate, sourced context (memory names trade at low-single-digit-to-low-double-digit forward multiples on peak earnings); exact live peer multiples vary by provider, so the peer <i>return</i> comparison is deferred to Module I where the data is unambiguous.</div>
+    </div>
+  </section>
+<section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">Only what's actually fetchable.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The sell-side is <b>emphatically bullish</b> &mdash; a strong-buy consensus, a mean target ~<b>$1,492</b> (~+76% above spot) across 42 analysts. But the same crowding, a beta of ~<b>2.1</b>, and a stock already up ~7× off its low make this a high-momentum, high-reflexivity name where positioning cuts both ways.</span></div>
+    <p class="body"><b>What is fetchable.</b> Micron is one of the most heavily-covered, most-owned semis in the market &mdash; broad institutional ownership, deep options liquidity, and index membership (S&amp;P 500, Nasdaq 100, semis ETFs). The clean, sourced positioning signals are the analyst consensus and the price&rsquo;s own factor profile.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Consensus rating</div><div class="v">Strong buy <small>42 analysts</small></div></div>
+      <div class="kgi pos"><div class="k">Mean price target</div><div class="v">$1,492 <small>+76% vs spot</small></div></div>
+      <div class="kgi"><div class="k">Target range</div><div class="v">$361 – $2,200</div></div>
+      <div class="kgi neg"><div class="k">Beta (5y)</div><div class="v">~2.1 <small>high sensitivity</small></div></div>
+    </div>
+    <p class="body" style="margin-top:16px"><b>The reflexivity caveat.</b> A ~$360-to-$2,200 target range is not consensus &mdash; it is a coin-flip on the cycle dressed up as a mean. When the sell-side is this crowded on a 2.1-beta name that has already 7×&rsquo;d, the marginal buyer is thin and the down-moves are violent (the stock is already ~30% off its 52-week high). Strong sponsorship is a support in an up-tape and an accelerant in a down-tape.</p>
+    <div class="note c"><b>Read.</b> Bullish, aligned sell-side and blue-chip index sponsorship &mdash; genuinely supportive &mdash; against extreme dispersion, high beta and a stock that has already made its big move. <b>Mixed</b>: the positioning is a tailwind you cannot lean on, because the same factors that lift it in an AI up-cycle amplify the drawdown when memory sentiment turns.
+      <div class="src">Sources: Yahoo Finance consensus (rating, mean/high/low target, 42 analysts) and the fetched 5-year beta; index membership per the universe screener. Insider/short-flow detail excluded (see footer).</div>
+    </div>
+  </section>
+<section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Valuation engine — correlated &amp; fat-tailed</h2><div class="hq">Through-cycle EBITDA margin × EV/EBITDA multiple, plus net cash.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>$830</b> vs the ~$849 price &mdash; essentially fair (~46% of paths above price), with an enormous cyclical band (P10 ~$560, P90 ~$1,170). No edge at spot; the entire value lives in the <b>through-cycle margin</b> and the <b>multiple</b> knobs.</span></div>
+    <p class="body">20,000 paths. Fair value per share = <b>EV/EBITDA multiple × (revenue × EBITDA margin) + net cash</b>, ÷ 1,129.4m shares. Because memory is too cyclical to capitalise on spot earnings, every marginal is a <b>through-cycle</b> range spanning trough to peak: the EBITDA margin runs 44&ndash;80% (FY23 trough ~16%, TTM peak ~76%), the multiple 8.5&ndash;20× (the market caps memory), revenue $72&ndash;$138bn, net cash $8&ndash;$34bn.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The through-cycle EBITDA margin (does the HBM-era ~62% hold, or does memory revert toward ~45%?) and the central multiple (does the market ever pay up for shallower cycles?) are <b>your</b> calls. Correlation and tail control how hard the drivers fall together in a glut.</p>
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs (sourced): 1,129.4m shares, price $848.95 (live, 2026-07-19); revenue and net-cash marginals centred on the TTM/through-cycle base ($100bn / $20bn net cash).</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Through-cycle EBITDA margin <span>% · assumption</span></span><span class="cval"><span id="v-mgn">62</span>%</span></label>
+          <input type="range" id="i-mgn" min="44" max="80" step="0.5" value="62">
+          <div class="tri">FY23 trough ~16% · FY25 ~49% · TTM peak ~76% · mode 62%</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Central EV/EBITDA multiple <span>× · assumption</span></span><span class="cval"><span id="v-mlt">15.0</span>×</span></label>
+          <input type="range" id="i-mlt" min="8.5" max="20" step="0.1" value="15.0">
+          <div class="tri">now ~13.8× on peak EBITDA · memory stays multiple-capped · re-rate = bull</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">60</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="60">
+          <div class="tri">0% = independent · 100% = full co-movement (a real glut)</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Tail / glut-shock risk <span>assumption</span></span><span class="cval"><span id="v-tail">6</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="15" step="1" value="6">
+          <div class="tri">chance a path hits a correlated memory downturn</div>
+        </div>
+      </div>
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent drivers</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv" id="oi-med">$830</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv" id="oi-p10">$590</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv" id="oi-p90">$1110</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; $450)</span><span class="cv" id="oi-tail">1%</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + fat tails</div>
+          <div class="cmprow"><span class="ck">Median fair value</span><span class="cv warn" id="co-med">$830</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">$560</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">$1170</span></div>
+          <div class="cmprow"><span class="ck">P(deep loss, &lt; $450)</span><span class="cv neg" id="co-tail">2%</span></div>
+        </div>
+      </div>
+      <div class="hist-wrap">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; $848.95</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; $848.95</span>
+          <span><span class="sw" style="background:var(--ink)"></span>price</span>
+          <span><span class="sw" style="background:var(--amber)"></span>median</span>
+          <span><span class="sw" style="background:var(--faint)"></span>indep P10</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> Correlation barely moves the median but fattens the downside dramatically &mdash; exactly right for memory, where margin, volume and multiple all collapse together in a glut. The independent model radically understates how bad a real cycle turn is. The base case is <i>fair</i>; the trade is a bet on which knob &mdash; margin durability up, or mean-reversion down &mdash; wins.</div>
+  </section>
+<section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Driver analysis — what moves the stock</h2><div class="hq">The question this dashboard was built around.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">One swing factor dominates: the <b>through-cycle EBITDA margin</b> &mdash; a proxy for &ldquo;is the HBM/DRAM pricing step-change durable?&rdquo; It governs the tornado, the scenarios and the reverse-DCF alike. A diagnostic, not a direction: near-total dependence on a single, genuinely uncertain variable.</span></div>
+    <p class="body"><b>Lens 1 — fair-value sensitivity (computed tornado).</b> Each bar swings one driver P10→P90, others held at mode. The <b>EV/EBITDA multiple</b> is the widest lever, with <b>revenue</b> and the <b>EBITDA margin</b> close behind — all three first-order (memory is a price × volume business, and margin and multiple both key off the cycle); net cash is second-order on a $959bn market cap.</p>
+    <svg id="tornado" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
+    <p class="body" style="margin-top:18px"><b>Lens 2 — what actually moves the price (sourced).</b> Micron trades tick-for-tick with the <b>AI-memory narrative</b>: HBM pricing/allocation headlines, hyperscaler capex guides, and read-throughs from Nvidia and SK hynix. The revealed driver is the market&rsquo;s assessment of <i>how long</i> the HBM shortage and DRAM discipline last.</p>
+    <div class="reactab">
+      <div class="rr"><div class="re">HBM sold out</div><div class="rd">Each confirmation that HBM3E/HBM4 capacity is pre-booked and margin-accretive re-rates the whole complex &mdash; the single most powerful up-driver.</div><div class="rp" style="color:var(--teal-deep)">▲ bull</div></div>
+      <div class="rr"><div class="re">Hyperscaler capex</div><div class="rd">AI-datacenter capex guides from the cloud majors set memory-content expectations; an up-guide is a direct volume + mix tailwind.</div><div class="rp" style="color:var(--teal-deep)">▲ bull</div></div>
+      <div class="rr"><div class="re">Supply adds</div><div class="rd">Samsung/SK hynix HBM &amp; DRAM capacity announcements are the classic memory bear signal &mdash; the market instantly prices the next glut.</div><div class="rp">▼ bear</div></div>
+    </div>
+    <p class="body" style="margin-top:18px"><b>Lens 3 — the structural driver (sourced).</b> Underneath the headlines, the value is set by <b>industry supply discipline</b>. A rational three-firm DRAM oligopoly that adds capacity in line with demand keeps margins structurally higher; a share war collapses them. HBM&rsquo;s technical difficulty (yield, packaging) is currently the discipline&rsquo;s enforcer.</p>
+    <div class="note b"><b>Synthesis — the master gauge is the through-cycle memory margin.</b> The tornado says margin + multiple are the biggest fair-value levers (Lens 1); the tape moves on HBM/AI-demand signals (Lens 2); and the structural driver is oligopoly supply discipline (Lens 3). They converge because <b>all three are the same question</b>: does memory pricing power persist above its historical through-cycle level? Unlike Konecranes&rsquo; order book or Neste&rsquo;s crack spread, Micron&rsquo;s master variable is the <b>durability of the HBM-era margin</b> &mdash; and the reverse-DCF (Module I) shows the market is implying it holds near ~62.5%.
+      <div class="src">Sources: Micron HBM/data-center commentary; AI-capex read-throughs (Nvidia is the fetched demand-factor in Module I); memory-oligopoly structure. Tornado computed from the engine.</div>
+    </div>
+  </section>
+<section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
+      <span class="tagchip a">Computed + your assumptions</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The scenario spread is <b>enormous</b> &mdash; a memory glut (~$280) to an AI-memory secular win (~$1,500, near the $1,492 consensus). At neutral priors the weighted value sits near the price. This is a <b>wide two-sided bet on the cycle</b>, not a tight fair-value call.</span></div>
+    <p class="body">The three fair values are <b>computed</b> &mdash; each is the engine&rsquo;s median run at a paired revenue / margin / multiple setting for that regime. The prior weights and evidence likelihood-ratios are <b>your</b> subjective inputs.</p>
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — memory reverts</div><div class="sd">A classic glut: Samsung/SK hynix add HBM &amp; DRAM supply, pricing rolls, the through-cycle margin falls toward ~44% and the multiple de-rates to ~9× on cyclical fear.</div><div class="sfv" id="sfv-bear">$280</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — super-cycle plateaus</div><div class="sd">HBM keeps the through-cycle margin elevated (~62%) on ~$100bn revenue; the market pays ~15× on peak-ish EBITDA. Roughly today&rsquo;s reality, sustained a while.</div><div class="sfv" id="sfv-base">$830</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — AI-memory secular win</div><div class="sd">HBM scarcity persists, content-per-server compounds, revenue ~$130bn at ~72% margin, and the market re-rates memory to ~18× as cycles visibly shallow. Near consensus.</div><div class="sfv" id="sfv-bull">$1500</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+    <div class="controls" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="ctrl"><label><span class="lab">Prior — Bear <span>assumption</span></span><span class="cval"><span id="v-pb">30</span>%</span></label><input type="range" id="i-pb" min="0" max="100" step="5" value="30"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Base <span>assumption</span></span><span class="cval"><span id="v-pn">45</span>%</span></label><input type="range" id="i-pn" min="0" max="100" step="5" value="45"></div>
+      <div class="ctrl"><label><span class="lab">Prior — Bull <span>assumption</span></span><span class="cval"><span id="v-pu">25</span>%</span></label><input type="range" id="i-pu" min="0" max="100" step="5" value="25"></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px">Toggle evidence as it arrives → <span class="asm">(likelihood ratios are illustrative assumptions)</span></div>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="0.4,1.0,2.0">HBM4 pre-booked &amp; margin-accretive <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.5,1.1,1.7">Hyperscaler AI capex guides up <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="0.6,1.1,1.5">DRAM supply stays disciplined <span class="ar">▲bull</span></div>
+      <div class="ev bearish" data-lr="2.2,1.0,0.4">Competitors flood HBM/DRAM supply <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="2.0,1.0,0.5">DRAM spot pricing rolls over <span class="ar">▼bear</span></div>
+      <div class="ev bearish" data-lr="1.8,1.0,0.6">AI-capex digestion / air-pocket <span class="ar">▼bear</span></div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Posterior weights</div>
+      <div class="wbar" id="wbar"><div class="wp bear" id="wp-b"></div><div class="wp base" id="wp-n"></div><div class="wp bull" id="wp-u"></div></div>
+      <div class="wlab"><span id="wl-b">Bear 30%</span><span id="wl-n">Base 45%</span><span id="wl-u">Bull 25%</span></div>
+    </div>
+    <div class="blend">
+      <span class="bn" id="blend-fv">$830</span>
+      <span class="bl">probability-weighted fair value vs <b>$848.95</b> price · <span id="blend-gap">≈ fair</span>. Anchors computed; weighting is your judgment.</span>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mU" style="border:1.5px solid var(--teal)">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">U</div>
+      <div class="ht"><h2>Perfect-execution bull — the 10-year ceiling</h2><div class="hq">AI-memory secular winner, disciplined oligopoly, full cycle of execution. If everything goes right for 10 years, what is a realistic best-case stock price?</div></div>
+      <span class="tagchip a">Scenario tool · your assumptions</span>
+    </div>
+
+    <div class="verdict bull"><span class="vchip">BULL · CEILING</span><span class="vtext">Under the default perfect-execution path, year-10 fair value lands near <b>$1816</b> — about <b>+114%</b> above today’s <b>$848.95</b>, a price CAGR of <b>7.9%</b> (total-shareholder-return ≈ <b>8.1%</b> incl. dividends). Discounted back at 11%, the PV of that terminal equity plus dividends is ≈ <b>$658</b> per share (-22% vs spot). Consensus PT $1492 sits below this terminal — the street prices a cycle, not a decade of perfect execution.</span></div>
+
+    <p class="body"><b>What this module is — and is not.</b> Modules A–C underwrite a <i>through-cycle base</i>. This one is the opposite exercise: an explicit, end-to-end <b>everything-goes-right</b> path over 10 years — sales compound, margin reaches a defended peak, the market awards a quality multiple, free cash builds or buys back stock. Every driver below is an <b>assumption</b> you can move; the defaults are ambitious but deliberately short of fantasy (no Atlas-Copco multiple, no 20% sales CAGR). Micron's ceiling is the AI-memory secular winner: HBM stays capacity-constrained and margin-accretive, the DRAM/NAND oligopoly holds supply discipline so down-cycles are shallow, memory content per AI system keeps compounding, and Micron sustains a structurally higher through-cycle margin than the 2015–2024 average — while the market still refuses to pay a rich multiple on a memory name, so the re-rate is modest and the compounding does the work.</p>
+
+    <div class="bullpath">
+      <div class="bp-title">◆ Live bull-path calculator — 10-year perfect execution</div>
+      <div class="bp-sub">Fair value each year = EV/EBITA multiple × (sales × EBITA margin) + net cash, ÷ diluted shares. Net cash and share count evolve from free-cash-flow: a slice pays the dividend, a slice buys back stock at that year’s fair value, the rest accrues to the balance sheet.</div>
+
+      <div class="bp-kpis" id="bp-kpis">
+        <div class="k"><div class="lab">Year-10 fair value</div><div class="val" id="bp-term">$1816</div><div class="hint" id="bp-term-h">+114% vs spot $848.95</div></div>
+        <div class="k"><div class="lab">Price CAGR (10y)</div><div class="val" id="bp-cagr">7.9%</div><div class="hint" id="bp-cagr-h">TSR ≈ 8.1% incl. dividends</div></div>
+        <div class="k"><div class="lab">PV @ 11% disc.</div><div class="val" id="bp-pv">$658</div><div class="hint" id="bp-pv-h">Terminal PV $640 + div PV $19</div></div>
+        <div class="k"><div class="lab">Y5 checkpoint</div><div class="val" id="bp-mid">$1252</div><div class="hint" id="bp-mid-h">Sales 161,051→259,374 €m by Y10</div></div>
+      </div>
+
+      <div class="bp-controls">
+        <div class="ctrl">
+          <label><span class="lab">Sales CAGR <span>% · assumption</span></span><span class="cval"><span id="bv-scagr">10.0</span>%</span></label>
+          <input type="range" id="bi-scagr" min="0" max="14" step="0.1" value="10.0">
+          <div class="tri">Perfect-execution revenue compounding over the horizon</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal EBITA/EBITDA margin <span>% · assumption</span></span><span class="cval"><span id="bv-mgn">55.0</span>%</span></label>
+          <input type="range" id="bi-mgn" min="30" max="81" step="0.1" value="55.0">
+          <div class="tri">Today ~62.0%; the terminal through-cycle margin you underwrite</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal multiple <span>× · assumption</span></span><span class="cval"><span id="bv-mlt">11.5</span>×</span></label>
+          <input type="range" id="bi-mlt" min="7" max="21" step="0.1" value="11.5">
+          <div class="tri">Now ~15.0× · the terminal EV/EBITA(DA) the market grants</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Discount rate <span>% · assumption</span></span><span class="cval"><span id="bv-disc">11</span>%</span></label>
+          <input type="range" id="bi-disc" min="5" max="17" step="0.5" value="11">
+          <div class="tri">For PV of terminal equity + dividends only — not a WACC claim</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">FCF / EBITA after tax <span>% · assumption</span></span><span class="cval"><span id="bv-fcf">45</span>%</span></label>
+          <input type="range" id="bi-fcf" min="25" max="95" step="1" value="45">
+          <div class="tri">Cash conversion after tax haircut — capex-heavy names sit lower</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Buyback share of FCF <span>% · assumption</span></span><span class="cval"><span id="bv-bb">30</span>%</span></label>
+          <input type="range" id="bi-bb" min="0" max="50" step="1" value="30">
+          <div class="tri">Executed at that year’s FV; rest of non-dividend FCF → net cash</div>
+        </div>
+      </div>
+
+      <div class="hist-wrap" id="bp-chart-wrap"><svg id="bull-chart" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img" aria-label="Bull-case fair-value path">
+  <line x1="48" y1="154.3" x2="684" y2="154.3" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="684" y="150.3" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot $849</text>
+  <polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="48.0,155.4 111.6,143.2 175.2,132.0 238.8,121.7 302.4,112.0 366.0,102.5 429.6,92.7 493.2,81.8 556.8,68.7 620.4,52.1 684.0,30.0"/>
+  <circle cx="48.0" cy="155.4" r="3.2" fill="var(--teal-deep)"/><circle cx="111.6" cy="143.2" r="3.2" fill="var(--teal-deep)"/><circle cx="175.2" cy="132.0" r="3.2" fill="var(--teal-deep)"/><circle cx="238.8" cy="121.7" r="3.2" fill="var(--teal-deep)"/><circle cx="302.4" cy="112.0" r="3.2" fill="var(--teal-deep)"/><circle cx="366.0" cy="102.5" r="3.2" fill="var(--teal-deep)"/><circle cx="429.6" cy="92.7" r="3.2" fill="var(--teal-deep)"/><circle cx="493.2" cy="81.8" r="3.2" fill="var(--teal-deep)"/><circle cx="556.8" cy="68.7" r="3.2" fill="var(--teal-deep)"/><circle cx="620.4" cy="52.1" r="3.2" fill="var(--teal-deep)"/><circle cx="684.0" cy="30.0" r="3.2" fill="var(--teal-deep)"/>
+  <text x="48.0" y="147.4" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">$841</text><text x="366.0" y="94.5" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">$1252</text><text x="684.0" y="22.0" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">$1816</text>
+  <text x="48.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y0</text><text x="175.2" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y2</text><text x="302.4" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y4</text><text x="429.6" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y6</text><text x="556.8" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y8</text><text x="684.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y10</text>
+</svg></div>
+
+      <div class="tbl-scroll" style="margin-top:14px">
+        <table class="brtab" id="bp-table">
+          <thead><tr>
+            <th>Year</th>
+            <th style="text-align:right">Sales €m</th>
+            <th style="text-align:right">EBITA %</th>
+            <th style="text-align:right">EV/EBITA</th>
+            <th style="text-align:right">Net cash €m</th>
+            <th style="text-align:right">Shares m</th>
+            <th style="text-align:right">Fair value</th>
+          </tr></thead>
+          <tbody id="bp-tbody"><tr class='now'><td>Y0 · now</td><td class='num'>100,000</td><td class='num'>62.0%</td><td class='num'>15.0×</td><td class='num'>20,000</td><td class='num'>1129.4</td><td class='num'><b>$841</b></td></tr><tr><td>Y1</td><td class='num'>110,000</td><td class='num'>61.8%</td><td class='num'>14.9×</td><td class='num'>35,602</td><td class='num'>1121.0</td><td class='num'><b>$936</b></td></tr><tr><td>Y2</td><td class='num'>121,000</td><td class='num'>61.3%</td><td class='num'>14.6×</td><td class='num'>52,617</td><td class='num'>1112.6</td><td class='num'><b>$1023</b></td></tr><tr><td>Y3</td><td class='num'>133,100</td><td class='num'>60.5%</td><td class='num'>14.2×</td><td class='num'>71,094</td><td class='num'>1104.2</td><td class='num'><b>$1103</b></td></tr><tr><td>Y4</td><td class='num'>146,410</td><td class='num'>59.5%</td><td class='num'>13.8×</td><td class='num'>91,099</td><td class='num'>1095.6</td><td class='num'><b>$1179</b></td></tr><tr><td>Y5</td><td class='num'>161,051</td><td class='num'>58.5%</td><td class='num'>13.2×</td><td class='num'>112,721</td><td class='num'>1086.9</td><td class='num'><b>$1252</b></td></tr><tr><td>Y6</td><td class='num'>177,156</td><td class='num'>57.5%</td><td class='num'>12.7×</td><td class='num'>136,085</td><td class='num'>1078.1</td><td class='num'><b>$1329</b></td></tr><tr><td>Y7</td><td class='num'>194,872</td><td class='num'>56.5%</td><td class='num'>12.3×</td><td class='num'>161,359</td><td class='num'>1069.0</td><td class='num'><b>$1413</b></td></tr><tr><td>Y8</td><td class='num'>214,359</td><td class='num'>55.7%</td><td class='num'>11.9×</td><td class='num'>188,774</td><td class='num'>1059.9</td><td class='num'><b>$1515</b></td></tr><tr><td>Y9</td><td class='num'>235,795</td><td class='num'>55.2%</td><td class='num'>11.6×</td><td class='num'>218,643</td><td class='num'>1050.8</td><td class='num'><b>$1645</b></td></tr><tr class='cur'><td>Y10</td><td class='num'>259,374</td><td class='num'>55.0%</td><td class='num'>11.5×</td><td class='num'>251,383</td><td class='num'>1041.7</td><td class='num'><b>$1816</b></td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="kg" style="margin-top:14px" id="bp-endstate">
+        <div class="kgi pos"><div class="k">Y10 EBITA</div><div class="v">$142,656m</div></div>
+        <div class="kgi"><div class="k">Y10 sales</div><div class="v">$259,374m</div></div>
+        <div class="kgi"><div class="k">Shares retired</div><div class="v">87.7m</div></div>
+        <div class="kgi pos"><div class="k">Cum. FCF (10y)</div><div class="v">$385,638m</div></div>
+      </div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin:20px 0 8px">◆ What “everything goes right” means (milestones)</div>
+    <div><div class='mile'><div class='my'>Y2</div><div class='mt'>HBM stays sold out and gross-margin-accretive; the DRAM/NAND cycle stays shallow (no negative-gross-margin quarter); through-cycle EBITDA margin holds above ~55%.</div></div><div class='mile'><div class='my'>Y5</div><div class='mt'>Memory content per AI server keeps rising; revenue clearly above $150bn through-cycle; the market grudgingly re-rates memory toward a low-teens EV/EBITDA as down-cycle amplitude visibly compresses.</div></div><div class='mile'><div class='my'>Y8</div><div class='mt'>Micron is the durable #2/#3 in HBM with leading-edge DRAM; capex intensity eases as the fab base matures, lifting FCF conversion; buybacks shrink the share count materially.</div></div><div class='mile'><div class='my'>Y10</div><div class='mt'>Through-cycle EBITDA margin ~55%, revenue ~$260bn, an ~11–12× multiple the market now accepts for shallower cycles — the default terminal state this calculator prices.</div></div></div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin:20px 0 8px">◆ Kill-switches — the path breaks if…</div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div class='guard'><span class='gdot'></span><div>Memory reverts to type: a classic glut (Samsung/SK hynix add HBM & DRAM supply) collapses pricing and the through-cycle margin back toward the historical 30–45% band.</div></div><div class='guard'><span class='gdot'></span><div>HBM commoditises — three vendors at scale competes the AI-memory premium away faster than content growth adds it.</div></div><div class='guard'><span class='gdot'></span><div>The fab-capex treadmill never eases: sustaining leading-edge DRAM/HBM keeps FCF conversion low, so earnings never fully become owner cash.</div></div><div class='guard'><span class='gdot'></span><div>The market is right to cap the multiple — a high-beta (2.1) name that just 7×'d prices a peak, and a de-rate on the first demand wobble unwinds years of compounding.</div></div></div>
+
+    <div class="note t" style="margin-top:16px"><b>How to use this number.</b> The year-10 fair value is a <i>ceiling under a named path</i>, not a target price and not a probability-weighted expectation. Compare it to Module C’s near-term bull (~scenario card) and to Module A’s P90: if even perfect execution only compounds at high-single-digit CAGR, the asymmetry lives elsewhere; if the ceiling is a multi-bagger with credible milestones, the right tail is economically real. Move the sliders until the path stops feeling honest — that boundary is the point of the tool.
+      <div class="src">Method: revenue compounds at the assumed CAGR; EBITDA margin and EV/EBITDA ease from today to terminal via smoothstep; FCF = EBITDA × (1 − tax) × conversion (deliberately low — memory is fab-capex-heavy); split into dividend / buyback / retained cash; fair value = multiple × EBITDA + net cash, ÷ shares Defaults from stocks/config.py → bull_case. Interactive path recomputed in-browser; Python reference engine in utils/bullcase.py.</div>
+    </div>
+  </section>
+
+<script id="bullcase-js">
+(function(){
+  const D = {"sales0": 100000.0, "mgn0": 62.0, "mlt0": 15.0, "nc0": 20000.0, "shares0": 1129.4, "salesCagr": 10.0, "mgnTerm": 55.0, "mltTerm": 11.5, "tax": 15.0, "fcfOn": 45.0, "payout": 10.0, "buyback": 30.0, "discount": 11.0, "horizon": 10, "spot": 848.95, "cur": "$"};
+  const $ = (id) => document.getElementById(id);
+  function smoothstep(t){ t=Math.max(0,Math.min(1,t)); return t*t*(3-2*t); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function fvps(sales,mgn,mlt,nc,sh){ return sh>0 ? (mlt*(sales*mgn/100)+nc)/sh : 0; }
+  function fmt(cur,x,dp){ return cur + (dp===0?Math.round(x).toLocaleString('en-US'):x.toFixed(dp)); }
+  function pct(x,dp){ return (x*100).toFixed(dp)+'%'; }
+
+  function run(){
+    if(!$('bi-scagr')) return;
+    const sales0=+D.sales0, mgn0=+D.mgn0, mlt0=+D.mlt0, nc0=+D.nc0, sh0=+D.shares0;
+    const scagr=($('bi-scagr').value)/100;
+    const mgnT=+$('bi-mgn').value;
+    const mltT=+$('bi-mlt').value;
+    const disc=($('bi-disc').value)/100;
+    const fcfOn=($('bi-fcf').value)/100;
+    const bb=($('bi-bb').value)/100;
+    const tax=D.tax/100;
+    const H=+D.horizon|0;
+    const spot=+D.spot, cur=D.cur;
+    // Dividend payout fixed from server default (buyback is the free slider)
+    const pay = D.payout/100;
+
+    $('bv-scagr').textContent=(scagr*100).toFixed(1);
+    $('bv-mgn').textContent=mgnT.toFixed(1);
+    $('bv-mlt').textContent=mltT.toFixed(1);
+    $('bv-disc').textContent=(disc*100).toFixed(0);
+    $('bv-fcf').textContent=(fcfOn*100).toFixed(0);
+    $('bv-bb').textContent=(bb*100).toFixed(0);
+
+    let sales=sales0, mgn=mgn0, mlt=mlt0, nc=nc0, sh=sh0;
+    let cumDiv=0, cumDivPv=0, cumFcf=0, cumBb=0;
+    const rows=[];
+    rows.push({y:0,sales,mgn,mlt,nc,sh,fv:fvps(sales,mgn,mlt,nc,sh)});
+    for(let y=1;y<=H;y++){
+      const te=smoothstep(y/H);
+      sales=sales0*Math.pow(1+scagr,y);
+      mgn=lerp(mgn0,mgnT,te);
+      mlt=lerp(mlt0,mltT,te);
+      const ebita=sales*mgn/100;
+      const fcf=ebita*(1-tax)*fcfOn;
+      cumFcf+=fcf;
+      const divT=fcf*pay;
+      const bbM=fcf*bb;
+      const retained=fcf-divT-bbM;
+      const fvPre=fvps(sales,mgn,mlt,nc+retained,sh);
+      const retired=fvPre>0?bbM/fvPre:0;
+      sh=Math.max(sh-retired, sh0*0.5);
+      nc=nc+retained;
+      const fv=fvps(sales,mgn,mlt,nc,sh);
+      cumDiv+=divT;
+      cumDivPv+=divT/Math.pow(1+disc,y);
+      cumBb+=bbM;
+      rows.push({y,sales,mgn,mlt,nc,sh,fv,ebita});
+    }
+    const term=rows[rows.length-1];
+    const mid=rows[Math.floor(H/2)];
+    const priceCagr=Math.pow(term.fv/spot,1/H)-1;
+    const tsrEnd=term.fv+(cumDiv/sh0);
+    const tsrCagr=Math.pow(tsrEnd/spot,1/H)-1;
+    const pvTerm=term.fv/Math.pow(1+disc,H);
+    const pvDiv=cumDivPv/sh0;
+    const pvTot=pvTerm+pvDiv;
+    const up=term.fv/spot-1;
+
+    $('bp-term').textContent=fmt(cur,term.fv,0);
+    $('bp-term-h').textContent=(up>=0?'+':'')+pct(up,0)+' vs spot '+fmt(cur,spot,2);
+    $('bp-cagr').textContent=pct(priceCagr,1);
+    $('bp-cagr-h').textContent='TSR ≈ '+pct(tsrCagr,1)+' incl. dividends';
+    $('bp-pv').textContent=fmt(cur,pvTot,0);
+    $('bp-pv-h').textContent='Terminal PV '+fmt(cur,pvTerm,0)+' + div PV '+fmt(cur,pvDiv,0);
+    $('bp-mid').textContent=fmt(cur,mid.fv,0);
+    $('bp-mid-h').textContent='Y'+mid.y+' on the same path';
+
+    // end-state strip
+    const es=$('bp-endstate');
+    if(es){
+      es.innerHTML=
+        '<div class="kgi pos"><div class="k">Y'+H+' EBITA</div><div class="v">'+fmt(cur,term.ebita|| (term.sales*term.mgn/100),0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Y'+H+' sales</div><div class="v">'+fmt(cur,term.sales,0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Shares retired</div><div class="v">'+(sh0-term.sh).toFixed(1)+'m</div></div>'+
+        '<div class="kgi pos"><div class="k">Cum. FCF ('+H+'y)</div><div class="v">'+fmt(cur,cumFcf,0)+'m</div></div>';
+    }
+
+    // table
+    const tb=$('bp-tbody');
+    if(tb){
+      tb.innerHTML=rows.map(r=>{
+        const lab=r.y===0?'Y0 · now':'Y'+r.y;
+        const curCls=r.y===H?' class="cur"':(r.y===0?' class="now"':'');
+        return '<tr'+curCls+'><td>'+lab+'</td>'+
+          '<td class="num">'+Math.round(r.sales).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.mgn.toFixed(1)+'%</td>'+
+          '<td class="num">'+r.mlt.toFixed(1)+'×</td>'+
+          '<td class="num">'+Math.round(r.nc).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.sh.toFixed(1)+'</td>'+
+          '<td class="num"><b>'+fmt(cur,r.fv,0)+'</b></td></tr>';
+      }).join('');
+    }
+
+    // chart
+    const wrap=$('bp-chart-wrap');
+    if(wrap){
+      const W=700,Hgt=200,pl=48,pr=16,pt=16,pb=36;
+      const fvs=rows.map(r=>r.fv);
+      let lo=Math.min(spot,...fvs)*0.92, hi=Math.max(...fvs)*1.06;
+      if(hi<=lo) hi=lo+1;
+      const X=i=>pl+(W-pl-pr)*(rows[i].y/H);
+      const Y=v=>pt+(Hgt-pt-pb)*(1-(v-lo)/(hi-lo));
+      let pts=rows.map((r,i)=>X(i).toFixed(1)+','+Y(r.fv).toFixed(1)).join(' ');
+      let dots=rows.map((r,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(r.fv).toFixed(1)+'" r="3.2" fill="var(--teal-deep)"/>').join('');
+      let labs='';
+      rows.forEach((r,i)=>{
+        if(r.y===0||r.y===Math.floor(H/2)||r.y===H){
+          labs+='<text x="'+X(i).toFixed(1)+'" y="'+(Y(r.fv)-8).toFixed(1)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">'+fmt(cur,r.fv,0)+'</text>';
+        }
+      });
+      let xt='';
+      rows.forEach((r,i)=>{
+        if(r.y%Math.max(1,Math.floor(H/5))===0||r.y===H){
+          xt+='<text x="'+X(i).toFixed(1)+'" y="'+(Hgt-10)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y'+r.y+'</text>';
+        }
+      });
+      const ys=Y(spot);
+      wrap.innerHTML='<svg id="bull-chart" viewBox="0 0 '+W+' '+Hgt+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img">'
+        +'<line x1="'+pl+'" y1="'+ys.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+ys.toFixed(1)+'" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>'
+        +'<text x="'+(W-pr)+'" y="'+(ys-4).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot '+fmt(cur,spot,0)+'</text>'
+        +'<polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="'+pts+'"/>'
+        +dots+labs+xt+'</svg>';
+    }
+  }
+  ['bi-scagr','bi-mgn','bi-mlt','bi-disc','bi-fcf','bi-bb'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('input', run);
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+</script>
+
+
+<section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A process overlay, not a direction. Every trigger centres on the master variable &mdash; memory pricing / margin durability &mdash; so the thesis fails fast the moment the cycle signals a turn.</span></div>
+    <p class="body">Decision <i>rules</i>, not data &mdash; thresholds set now, while disinterested. Memory rewards those who sell into euphoria and buy into the glut; these triggers are designed to enforce that against your own future emotions.</p>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>DRAM pricing rolls over.</b> Contract/spot DRAM prices fall for <span class="kv">two consecutive quarters</span> &mdash; the leading domino of every memory down-cycle.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>HBM premium compresses.</b> HBM moves from <span class="kv">sold-out to available</span>, or a competitor takes material share at the lead customer &mdash; the secular premium is eroding.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Gross margin gives back the step-change.</b> Company gross margin falls <span class="kv">below ~45% and is still declining</span> &mdash; the through-cycle margin thesis is failing.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Supply discipline breaks.</b> Samsung or SK hynix announce a <span class="kv">large capacity/HBM expansion</span> into softening demand &mdash; the oligopoly is turning into a share war.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Inventory swells.</b> Days-of-inventory <span class="kv">rise sharply for two quarters</span> as bookings slow &mdash; the classic pre-glut warning light.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Valuation overshoots.</b> Price implies <span class="kv">a through-cycle EBITDA margin &gt; ~75%</span> on the reverse-DCF (Module I) &mdash; the market is capitalising the peak as permanent; trim, don&rsquo;t chase.</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today&rsquo;s call &mdash; e.g. &ldquo;through-cycle EBITDA margin ~62% holds on HBM discipline, fair value ~$830, secular-win optionality to ~$1,500&rdquo; &mdash; and the specific DRAM-pricing, HBM-allocation and competitor-capex prints over the next two quarters that would confirm or refute it. If a kill-criterion fires in a cyclical, act first and re-litigate later.</div>
+  </section>
+
+  
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The pay-off distribution is broadly symmetric to price — no institutional edge without additional evidence. Live spot <b>$848.95</b> · MC median <b>$826.63</b> (P10 $560.90, P90 $1169.23) · P(FV &gt; price) <b>46%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-19) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (MU)</div><div class="v">$848.95 <small>as of 2026-07-19</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">$103.38–$1255.00</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">97%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+75.7% <small>PT $1491.95</small></div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">19.2× <small>EPS $44.23</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">11.6× <small>est EPS $73.39</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">5.6× <small>est EPS $150.77</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+105%</div></div>
+    </div>
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">62.45%</div>
+        <div class="l">is the value of <b>Through-cycle EBITDA margin (at mode revenue / multiple / net cash)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>$848.95</b> price. That is <b>+0.7% above</b> the pipeline's base-case mode of <b>62.0%</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+0.0%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.00×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.16</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in $.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+0.0%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-33.9%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-42.7%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-41.0%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-48.1%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1255 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">75.7%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">61.3%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-57.6%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-16.8% / +85.7% / +154.8% / +630.3%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs S&P 500</td><td class="num">3.21</td><td>R² = 0.29. 252-day OLS.</td></tr>
+        <tr><td>Beta vs Nasdaq 100</td><td class="num">2.77</td><td>R² = 0.47. 252-day OLS.</td></tr>
+        <tr><td>Beta vs Nvidia (NVDA)</td><td class="num">0.96</td><td>R² = 0.21. 252-day OLS on daily log-returns.</td></tr>
+      </tbody>
+    </table></div>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs 000660.KS</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+66.2%</div></div><div class="barsrow"><div class="bl">vs WDC</div><div class="bb"><div class="bi" style="left:50%;width:11.1%;background:var(--teal)"></div></div><div class="bv">+11.1%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a Through-cycle EBITDA margin (at mode revenue / multiple / net cash) of <b>62.45%</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (MU, ^GSPC, ^NDX, NVDA) — fetched 2026-07-19. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>43/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Company EBITDA margin (%) through the cycle</div>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>FY2022</td><td class="num">54.90%</td><td>prior up-cycle peak (EBITDA $16.9bn / rev $30.8bn)</td></tr><tr><td>FY2023 trough</td><td class="num">16.00%</td><td>memory glut — GAAP gross margin turned negative</td></tr><tr><td>FY2024</td><td class="num">38.20%</td><td>early recovery (EBITDA $9.6bn / rev $25.1bn)</td></tr><tr><td>FY2025</td><td class="num">49.40%</td><td>up-cycle + first HBM ramp (EBITDA $18.5bn / rev $37.4bn)</td></tr><tr class='cur'><td>TTM (FY2026)</td><td class="num now">75.60%</td><td>AI/HBM super-cycle peak (EBITDA $68.2bn / rev $90.3bn)</td></tr><tr><td>through-cycle avg</td><td class="num">47.00%</td><td>blended mid-cycle normal — estimate</td></tr></tbody>
+    </table></div>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:100.0%"></div>
+      <div class="lb" style="left:100.0%">now · TTM ≈ 75.6% (super-cycle peak)</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1255 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">21%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">32%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">60%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n neg">-174 bp</div>
+        <div class="l"><b>Owner-earnings yield 0.80%</b> ($7639m ÷ $958804m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: trailing free cash flow ≈ $7.6bn — heavily suppressed by ~$16bn/yr AI-era fab & HBM capex (operating cash flow ran ~$51bn TTM); mid-cycle owner earnings on normalised capex would be materially higher. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">3</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi hot"><div class="fk">Quality</div><div class="fv">70</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">100</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">0</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">43</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-174 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-19.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the thirteen reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base case.</div></div>
+    </div>
+    <div class="tbl-scroll"><table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>T · Thesis &amp; macro</td><td><span class="vchip bull">BULL</span></td><td>The most direct AI beneficiary in the book — HBM/DRAM oligopolist — still trading as a hardware cyclical</td></tr>
+        <tr><td>Q · Quality dashboard</td><td><span class="vchip mixed">MIXED</span></td><td>Exceptional TTM returns (~66% ROE, ~76% EBITDA margin) but a negative-margin FY23 trough in the same window</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Net cash ~$19.6bn, 3.4× current ratio, cash-backed earnings — a fortress at the peak</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Counter-cyclical balance-sheet stewardship, but structurally capex-hungry ($8–$16bn/yr)</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip mixed">MIXED</span></td><td>Cheap on forward EPS, full on peak EV/EBITDA — the whole memory group prices the revert</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Strong-buy consensus (+76% mean PT) vs 2.1 beta and a stock already up ~7×</td></tr>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~$830 vs ~$849; roughly fair, enormous cyclical band (P10 ~$560 / P90 ~$1,170)</td></tr>
+        <tr><td>B · Driver analysis</td><td><span class="vchip mixed">MIXED</span></td><td>Whole thesis rides one swing factor — durability of the HBM-era through-cycle margin</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Huge two-sided spread ~$280 (glut) to ~$1,500 (secular win); weighted ≈ fair</td></tr>
+        <tr><td>U · 10y upside</td><td><span class="vchip bull">BULL</span></td><td>Perfect-execution Y10 FV ≈ $1816 (7.9% price CAGR; PV ≈ $658)</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; every trigger centres on memory pricing / margin durability</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip mixed">MIXED</span></td><td>Kelly f* +0%, asymmetry 1.00×, market implies +0.7% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 43/100 · OE-yield spread -174 bp real</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:23.1%"></div><div class="tp mixed" style="width:76.9%"></div><div class="tp bear" style="width:0.0%"></div></div>
+      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">10 Mixed</span><span class="tr">0 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED — the AI-memory bet, fairly priced</span>
+      <div class="ov-text">A genuinely strong <b>thesis</b> (T · direct AI beneficiary, D · fortress balance sheet) wrapped around a <b>fairly-priced, hyper-cyclical</b> valuation. Read the <b>thesis &amp; cycle first</b> (T · Q · D · E · G · F), then stress-test with the through-cycle engine (A–C): the base case (~$830) sits right around the ~$849 price, but the scenario band is vast (~$280 glut to ~$1,500 secular win). The whole call reduces to <b>one variable</b> — the durability of the HBM-era through-cycle margin, which the reverse-DCF (Module I) says the market is pricing near ~62.5%. Size it as the <b>wide, two-sided cycle bet it is</b>, with the Module-H triggers pre-committed; the perfect-execution ceiling (Module U) frames the upside if the oligopoly and HBM discipline hold.</div>
+    </div>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-19 19:03</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-19)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/MU?range=5y&interval=1d</td><td>Micron 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile; Q: price-vs-EPS overlay</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^GSPC?range=5y&interval=1d</td><td>S&P 500 — US market benchmark for beta</td><td class="mods">I: beta vs S&P 500</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^NDX?range=5y&interval=1d</td><td>Nasdaq 100 — tech-heavy benchmark for beta</td><td class="mods">I: beta vs Nasdaq 100</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/NVDA?range=5y&interval=1d</td><td>Nvidia — AI-capex bellwether / HBM demand factor</td><td class="mods">I: beta vs Nvidia (AI-demand read for memory)</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/000660.KS?range=2y&interval=1d</td><td>SK hynix (KRX) — HBM / DRAM arch-rival</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/WDC?range=2y&interval=1d</td><td>Western Digital — NAND / storage peer</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table></div>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Micron FY2025 annual results (fiscal year ended 28 Aug 2025)</td><td>Revenue $37.4bn (+49% YoY), GAAP gross margin ~39.8%, operating income $9.8bn, EBITDA $18.5bn, net income $8.5bn, diluted EPS $7.59; operating cash flow $17.5bn, capex $15.9bn, FCF $1.7bn; total assets $82.8bn, equity $54.2bn, total debt $15.3bn, cash & short-term investments $10.3bn; HBM revenue ramping into an AI-driven demand step-up</td><td class="mods">T thesis, Q quality, A engine, D forensics, E capital record</td></tr><tr><td>Yahoo Finance fundamentals feed — Micron trailing-twelve-month (build time, FY2026 in progress)</td><td>TTM revenue ≈ $90.3bn, EBITDA ≈ $68.2bn (~75.6% margin), gross margin ~72.6%, net margin ~55.9%, diluted EPS TTM $44.23, ROE ~66.6%, ROA ~34.9%; operating cash flow ≈ $51.4bn, FCF ≈ $7.6bn; total cash $26.0bn vs total debt $6.4bn (net cash ≈ +$19.6bn); current ratio 3.4×; beta 2.14; market cap ≈ $959bn; enterprise value ≈ $939bn; EV/EBITDA ≈ 13.8×; forward diluted EPS ≈ $150.8</td><td class="mods">Q quality, A engine, D forensics, I asymmetry</td></tr><tr><td>Micron annual history FY2022–FY2024 (Yahoo fundamentals-timeseries, fiscal years)</td><td>FY2022 revenue $30.8bn / EPS $7.75; FY2023 revenue $15.5bn / EPS −$5.34 (the memory-glut trough, gross margin negative); FY2024 revenue $25.1bn / EPS $0.70 (early recovery) — the cycle the engine spans; balance-sheet, cash-flow and margin line items per year</td><td class="mods">Q quality, C scenarios, J base rates</td></tr><tr><td>Micron investor materials — HBM & data-center commentary</td><td>HBM positioned as capacity-sold-out and gross-margin-accretive; DRAM ~70%+ of revenue, NAND the balance; data-center the fastest-growing end market on AI training/inference memory content growth; leading-edge DRAM (1-gamma) and HBM roadmap (HBM3E → HBM4) as the differentiation</td><td class="mods">T thesis, B driver analysis</td></tr><tr><td>Sell-side consensus (Yahoo financialData, 42 analysts, build time)</td><td>Mean price target ≈ $1,492 (high $2,200 / low $361), aggregate rating strong-buy; forward P/E ≈ 5.6× on forward EPS ≈ $150.8 — the market pricing a cyclical peak that reverts, not a durable plateau</td><td class="mods">F positioning, C scenarios</td></tr><tr><td>Memory-oligopoly structure (industry reference)</td><td>DRAM is a three-player oligopoly (Samsung, SK hynix, Micron); NAND more fragmented; consolidated, capital-disciplined supply is the structural case for shallower-than-historical down-cycles — the swing assumption behind the through-cycle margin</td><td class="mods">T thesis, G peers, H kill-criteria</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths. Each driver is drawn from a triangular distribution: through-cycle EBITDA margin (bounds 44–80%, your mode), EV/EBITDA multiple (bounds 8.5–20×, your mode), revenue Tri($72, $100, $138 bn), net cash Tri($8, $20, $34 bn). Fair value = multiple × (revenue × EBITDA margin) + net cash, ÷ 1,129.4m shares. Dependence: a one-factor copula (loadings — margin 0.80, revenue 0.75, multiple 0.55, net cash 0.25, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the glut probability). Correlation 0 and tail 0 reproduce the independent model. Tornado, scenario anchors and the Bayesian posterior are all computed live and mirror the Python engine in <code>stocks/config_micron.py</code>.</p>
+      <h4>The three labels, precisely</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: fetched from a citable source (Micron FY releases, the Yahoo fundamentals feed, sell-side consensus). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation, forensic ratios, Micron&rsquo;s own multiples). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set (through-cycle margin, central multiple, correlation, tail, scenario priors, evidence weights, kill thresholds).</p>
+      <h4>Still excluded — post-Modules-I&amp;J audit</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>HBM / segment-level EBIT</b> — Micron discloses revenue by technology (DRAM vs NAND) and business unit, and gives HBM run-rate commentary, but not a standalone HBM or data-center <i>margin</i>; the engine therefore values the whole company on a through-cycle EBITDA multiple rather than splitting out an HBM leg on its own multiple — a deliberate simplification, not a hidden number. <b>Beneish M-score</b> — needs eight two-year ratios not cleanly disclosed across a loss year; a half-estimated score is worse than none. <b>Options-implied skew, precise borrow cost, and daily insider-flow</b> — not reliably fetchable from a public API. <b>An exact forward multiple</b> — the forward EPS is a consensus estimate, shown for context, not asserted as fact. Everything else previously "cut" (factor &amp; NVDA-demand betas, own-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
+      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures are fetched at build time; annual figures are Micron&rsquo;s reported FY2022–FY2025, and the FY2026 super-cycle figures are the trailing-twelve-month values from the Yahoo fundamentals feed as of build — verify against Micron&rsquo;s SEC filings before acting.</p>
+    </div>
+  </footer>
+</div>
+<script>
+  const PRICE=848.95, SHARES=1129.4, N=20000;
+  const MARG={lo:44,hi:80}, MULT={lo:8.5,hi:20.0}, SALES={lo:72000,md:100000,hi:138000}, NC={lo:8000,md:20000,hi:34000};
+  const RHO={mgn:0.80,sales:0.75,mlt:0.55,nc:0.25};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+
+  function simulate(midMgn,midMlt,corr,pStress,paths){
+    const n=paths||N;const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const mgn=draw(RHO.mgn,MARG.lo,midMgn,MARG.hi);
+      const sal=draw(RHO.sales,SALES.lo,SALES.md,SALES.hi);
+      const mlt=draw(RHO.mlt,MULT.lo,midMlt,MULT.hi);
+      const nc=draw(RHO.nc,NC.lo,NC.md,NC.hi);
+      fv[i]=(mlt*(sal*mgn/100)+nc)/SHARES;
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=450;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMAX=2000,BINS=40;
+  function xOf(v){return HX0+(Math.min(Math.max(v,0),VMAX)/VMAX)*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=VMAX/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor(fv[i]/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=(b+0.5)*bw,x=xOf(b*bw),x2=xOf((b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=0;v<=2000;v+=400){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median $'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price $848.95</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(o){
+    const midMgn=+document.getElementById('i-mgn').value, midMlt=+document.getElementById('i-mlt').value;
+    const mgn=o.mgn!==undefined?o.mgn:midMgn;
+    const mlt=o.mlt!==undefined?o.mlt:midMlt;
+    const sal=o.sal!==undefined?o.sal:SALES.md;
+    const nc=o.nc!==undefined?o.nc:NC.md;
+    return (mlt*(sal*mgn/100)+nc)/SHARES;
+  }
+  function drawTornado(){
+    const rows=[
+      {n:'EBITDA margin',lo:fvAt({mgn:44}),hi:fvAt({mgn:80})},
+      {n:'EV/EBITDA multiple',lo:fvAt({mlt:8.5}),hi:fvAt({mlt:20})},
+      {n:'Revenue',lo:fvAt({sal:72000}),hi:fvAt({sal:138000})},
+      {n:'Net cash',lo:fvAt({nc:8000}),hi:fvAt({nc:34000})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=150,X1=688,W=X1-X0,base=allMin-40,span=(allMax+40)-base;
+    const sx=v=>X0+((v-base)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';});
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price $848.95</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const midMgn=+document.getElementById('i-mgn').value, midMlt=+document.getElementById('i-mlt').value;
+    const corr=(+document.getElementById('i-corr').value)/100, tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-mgn').textContent=midMgn.toFixed(0);
+    document.getElementById('v-mlt').textContent=midMlt.toFixed(1);
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+    const ind=simulate(midMgn,midMlt,0,0);
+    const cor=simulate(midMgn,midMlt,corr,tail);
+    document.getElementById('oi-med').textContent='$'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='$'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='$'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='$'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='$'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='$'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+    drawHist(cor.fv,cor.p50,ind.p10);
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> glut chance, the median holds near <b>$'+cor.p50.toFixed(0)+'</b> (≈ the independent $'+ind.p50.toFixed(0)+'), but the 80% band widens by ~<span class="down">$'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under $450) rises from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at $848.95) is '+Math.round(cor.under*100)+'%.';
+    drawTornado();
+  }
+
+  function simScen(rLo,rMd,rHi,mLo,mMd,mHi,kLo,kMd,kHi,paths){
+    const n=paths||10000;const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn(); if(Math.random()<0.06) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=0.6*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const rev=draw(RHO.sales,rLo,rMd,rHi);
+      const mgn=draw(RHO.mgn,mLo,mMd,mHi);
+      const mlt=draw(RHO.mlt,kLo,kMd,kHi);
+      const nc=draw(RHO.nc,NC.lo,NC.md,NC.hi);
+      fv[i]=(mlt*(rev*mgn/100)+nc)/SHARES;
+    }
+    fv.sort();return fv[Math.floor(0.5*n)];
+  }
+  let SFV={bear:280,base:830,bull:1500};
+  function computeScenarioAnchors(){
+    SFV.bear=simScen(60000,78000,95000, 34,44,54, 7.0,9.0,11.0);
+    SFV.base=simScen(85000,100000,118000, 52,62,70, 12.5,15.0,17.0);
+    SFV.bull=simScen(110000,130000,150000, 64,72,80, 15.5,18.0,20.0);
+    document.getElementById('sfv-bear').textContent='$'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='$'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='$'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='$'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/28,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:'+color+'"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('Semis median (broad)','fwd P/E · approx',25,'~25×','var(--faint)'),
+    peerBar('Western Digital','fwd P/E · approx',11,'~11×','var(--teal)'),
+    peerBar('SK hynix','fwd P/E · approx',7,'~7×','var(--teal-deep)'),
+    peerBar('Micron','fwd P/E 5.6× · computed',5.6,'~5.6×','var(--coral)'),
+  ].join('');
+
+  ['i-mgn','i-mlt','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>{const h=a.getAttribute('href');if(h&&h.charAt(0)==='#')map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}
+      catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    let best=null,bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting)visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
+</script>
+</body>
+</html>

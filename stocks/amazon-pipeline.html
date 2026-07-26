@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amazon — Institutional Analytics Layer (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:820px}
+  .legend{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .strictbar{margin-top:12px;font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;line-height:1.5}
+  .strictbar b{color:var(--ink)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  .scoretab{width:100%;border-collapse:collapse;font-size:13px}
+  .scoretab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:8px;border-bottom:1px solid var(--line-strong)}
+  .scoretab td{padding:9px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  .hl{font-family:var(--mono);font-weight:600;font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:5px;color:var(--teal-deep);white-space:nowrap}
+  .hl.neg{color:var(--coral-deep)} .hl.warn{color:var(--amber-deep)} .hl.blue{color:var(--blue-deep)}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard.bear{border-top:3px solid var(--coral)} .scard.base{border-top:3px solid var(--amber)} .scard.bull{border-top:3px solid var(--teal)}
+  .scard .sn{font-family:var(--mono);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .scard .sd{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:8px}
+  .scard .sfv{font-family:var(--disp);font-size:22px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:10px;color:var(--faint)}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .ev{font-size:12px;padding:7px 11px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);cursor:pointer;user-select:none}
+  .ev.on{background:var(--blue-wash);border-color:var(--blue)}
+  .ev .ar{font-family:var(--mono);font-size:10px;margin-left:6px}
+  .wbar{display:flex;height:18px;border-radius:9px;overflow:hidden;margin:10px 0 6px;border:1px solid var(--line)}
+  .wbar .wp{height:100%}
+  .wlabs{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .blend{margin-top:12px;font-size:13.5px}
+  .blend .bn{font-family:var(--disp);font-size:26px;font-weight:600;color:var(--blue-deep)}
+  .kc{display:grid;gap:10px}
+  .kci{display:flex;gap:10px;padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;font-size:12.5px;line-height:1.45}
+  .kx{width:14px;height:14px;border:2px solid var(--coral);border-radius:3px;flex:0 0 auto;margin-top:2px}
+  .kv{font-family:var(--mono);font-weight:600;color:var(--coral-deep)}
+  .ri{padding:10px 0;border-bottom:1px dashed var(--line)}
+  .rk{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--teal-deep);margin-bottom:4px}
+  .rd{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .scgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+  @media(max-width:640px){.scgrid{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--surface-2)}
+  .sc .scl{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px}
+  .sc .scv{font-family:var(--mono);font-size:18px;font-weight:600}
+  .sc .scv .un{font-size:12px;color:var(--faint);font-weight:400}
+  .sc .scband{display:inline-block;font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:6px;margin-bottom:6px}
+  .sc .scband.good{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scband.bad{background:var(--coral-wash);color:var(--coral-deep)}
+  .sc .scd{font-size:11.5px;color:var(--muted);line-height:1.4}
+  .tg{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;background:var(--surface);border:1px solid var(--line);color:var(--faint)}
+  .tg.s{color:var(--teal-deep);border-color:var(--teal)}
+  .tg.c{color:var(--blue-deep);border-color:var(--blue)}
+  .br{display:grid;grid-template-columns:140px 1fr 50px;gap:8px;align-items:center;margin:6px 0;font-size:12px}
+  .brl{color:var(--muted)} .brl small{display:block;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .brt{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .brf{height:100%;border-radius:6px}
+  .brv{font-family:var(--mono);font-weight:600;text-align:right}
+  footer{margin:24px 0 40px;font-size:12px;color:var(--muted)}
+  footer h4{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:16px 0 8px}
+  footer .cut{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;line-height:1.5}
+  footer .disc{margin-top:14px;font-size:11px;color:var(--faint)}
+  .audit{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px}
+  .audit h3{font-family:var(--disp);font-size:18px;margin-bottom:8px}
+  .audit .lead{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-deep);margin:16px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12px}
+  .audit th{text-align:left;font-family:var(--mono);font-size:10px;color:var(--faint);padding:6px;border-bottom:1px solid var(--line-strong)}
+  .audit td{padding:6px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .audit td.mono{font-family:var(--mono);font-size:10.5px;word-break:break-all}
+  .audit td.mods{font-family:var(--mono);font-size:10px;color:var(--muted)}
+  .fetchbox{font-size:12px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:8px;padding:10px 12px;margin:10px 0;line-height:1.45}
+</style>
+
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+
+<style id="ux-fixes">
+  /* ===== Shared UX / mobile fixes (all reports) ===== */
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+  }
+
+  /* Sticky stepper: contain horizontal scroll; never pan the page */
+  .stepper{
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid transparent;
+  }
+  .stepper a{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper a:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+  }
+
+  /* Anchor offset under sticky stepper (modules + audit) */
+  .mod,.audit,#mAudit{scroll-margin-top:76px}
+
+  /* Flex children must be allowed to shrink or long text overflows */
+  .mod-head .ht{min-width:0;flex:1 1 auto}
+  .verdict .vtext{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;word-break:break-word}
+  .cmprow{gap:10px}
+  .cmprow .ck{min-width:0;overflow-wrap:anywhere}
+  .cmprow .cv{flex:0 0 auto;max-width:48%;text-align:right;overflow-wrap:anywhere}
+  .ri .rd,.kci,.note,.reading,.synth,.overall .ov-text,.blend .bl,
+  .rev .rv .l,.rev .rv .m,.sc .scd,.lens .lb,p.body,.body{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .hl{white-space:normal;overflow-wrap:break-word}
+  .verdict .vtext{overflow-wrap:break-word;word-break:normal}
+
+  /* Tag chips: wrap under title on narrow screens instead of crushing h2 */
+  @media (max-width:560px){
+    .mod-head{flex-wrap:wrap;gap:10px 12px}
+    .mod-head .tagchip,.mod-head > .tagchip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:center;line-height:1.25}
+    .verdict{align-items:flex-start}
+    .verdict .vchip{margin-top:1px}
+    .keystat .ks{min-width:0;flex:1 1 calc(50% - 8px)}
+  }
+
+  /* Horizontal table scroll without page-level horizontal scroll */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    max-width:100%;
+    margin:0 0 4px;
+    padding-bottom:2px;
+  }
+  .tbl-scroll > table{margin-top:0}
+  th,td{overflow-wrap:anywhere}
+  td.num,td.mono{overflow-wrap:normal;word-break:normal}
+
+  /* Peer / bar rows: collapse fixed label columns on small phones */
+  @media (max-width:480px){
+    .br{grid-template-columns:minmax(0,1fr) 48px !important;gap:6px 8px}
+    .br .brt{grid-column:1 / -1;order:3;height:14px}
+    .br .brl{font-size:12px}
+    .br .brv{font-size:11px}
+    .barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}
+    .barsrow .bb{grid-column:1 / -1;order:3}
+    .barsrow .bl{font-size:10px}
+    .reactab .rr{grid-template-columns:1fr 56px !important;gap:6px 8px}
+    .reactab .rd{grid-column:1 / -1;order:3}
+    .ri{flex-direction:column;gap:4px}
+    .ri .rk{width:auto !important}
+  }
+
+  /* Module I/J grids: tighter on phones */
+  @media (max-width:480px){
+    .kg{grid-template-columns:1fr 1fr}
+    .kelly{grid-template-columns:1fr !important}
+    .fac{grid-template-columns:1fr 1fr !important}
+  }
+  @media (max-width:360px){
+    .kg{grid-template-columns:1fr}
+    .fac{grid-template-columns:1fr !important}
+    .kelly{grid-template-columns:1fr !important}
+  }
+
+  /* Scenario cards: kill forced min-heights that leave huge empty gaps on mobile */
+  @media (max-width:560px){
+    .scard .sd{min-height:0 !important}
+  }
+
+  /* Range inputs: larger touch targets on touch devices */
+  @media (pointer:coarse){
+    input[type=range]{height:8px}
+    input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+    input[type=range]::-moz-range-thumb{width:22px;height:22px}
+    .ev{padding:10px 14px;min-height:40px}
+    .stepper a{padding:9px 12px}
+  }
+
+  /* SVG charts scale */
+  .qcard svg,.mod svg:not([width]){max-width:100%;height:auto}
+  #hist,#tornado{max-width:100%}
+
+  /* Long mono audit URLs / tokens */
+  .audit table td.mono,.src{overflow-wrap:anywhere;word-break:break-word}
+
+  /* cbar labels (Module J) */
+  .cbar{margin-bottom:18px;overflow:visible}
+  .cbar .lb{max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+
+  .cut,.notes,.disc{overflow-wrap:anywhere}
+
+  /* Keep page width stable without breaking position:sticky
+     (overflow-x on body/wrap makes sticky fail in Chrome/Safari).
+     Wide tables are handled by .tbl-scroll wrappers. */
+  img,svg,video,canvas{max-width:100%}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Institutional analytics layer · strict-data build · Amazon.com · NASDAQ: AMZN · built 2026-07-19</div>
+  <h1>Amazon — the analyst's instrument panel
+    <span class="sub">Two-block sum-of-the-parts: AWS (growth / AI infra) priced apart from the retail + ads machine. Every live price and risk metric is fetched; every segment number traces to an 8-K or Yahoo fundamentals timeseries.</span>
+  </h1>
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced</span>
+    <span class="lg computed"><span class="d"></span>Computed</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-19 19:03</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="strictbar"><b>What this build adds.</b> Two institutional modules: <b>I — Price-asymmetry layer</b> (reverse-DCF on the AWS multiple, Kelly f*, payoff-asymmetry ratio, VaR/CVaR, realised vol / beta vs S&amp;P 500 &amp; Nasdaq 100 &amp; rates, momentum, own-history percentile, MSFT/GOOGL 12m relative — all computed live from the Yahoo Finance v8 chart API) and <b>J — Base rates &amp; factor composite</b> (reference-class distribution of AWS growth through the cycle, empirical return base-rates from 5y prices, V/Q/M/L factor composite, owner-earnings yield vs real 10y — which for Amazon in mid-capex-cycle is deliberately ugly). The single question every module keys on: does the ~$200bn/yr AI build earn its cost of capital — i.e. is the AWS re-acceleration (+28% Q1'26) durable enough to justify the multiple the market is paying for it?</div>
+
+  <nav class="stepper">
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Tornado</a>
+    <a href="#mC"><span class="n">C</span>Scenarios</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <!-- A -->
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Two-block SOTP engine — AWS priced apart from retail + ads</h2><div class="hq">Hyperscaler economics on one multiple; the rest of Amazon on another.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Mode fair value ≈ <b>$224</b> vs live spot <b>$247.23</b> (18 Jul 2026). The tape is paying ~10% above the pipeline base case — reverse-DCF implies an AWS EV/EBIT multiple of ~<b>32.4×</b> vs the $28 mode. Quality of the franchise is not the debate; whether AI capex converts to durable AWS growth is.</span></div>
+    <p class="body">20,000 paths. Amazon discloses three segments (North America, International, AWS) but advertising operating income is embedded and never broken out — so the engine is deliberately a <b>two-block</b> sum-of-the-parts, not three:</p>
+    <div style="font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:10px;padding:13px 15px;line-height:1.7;margin-bottom:12px">
+      AWS value&nbsp;&nbsp;&nbsp;&nbsp;= AWS FY26e revenue ($bn) × op margin (%) × EV/EBIT multiple<br>
+      Non-AWS value = (NA + Intl) op income ($bn) × earnings multiple &nbsp;<span style="color:var(--faint)">// ads inside</span><br>
+      FV / share&nbsp;&nbsp;&nbsp;= (AWS + non-AWS + net cash ~$12bn) × 1,000 ÷ 10,837m shares
+    </div>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> AWS revenue mid, AWS multiple, correlation and tail risk are judgment. Segment history and net cash are sourced.</p>
+
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed: net cash ~$12bn (cash+ST inv ~$143bn − debt ~$131bn, Q1'26 basis), 10,837m diluted shares, price $247.23 (live, 2026-07-19). Marginals from FY2025 8-K + Q1'26 release.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">AWS FY26e revenue $bn <span>assumption</span></span><span class="cval">$<span id="v-awsrev">161</span>bn</span></label>
+          <input type="range" id="i-awsrev" min="150" max="172" step="1" value="161">
+          <div class="tri">FY25 $128.7bn · Q1'26 run-rate $150bn at +28%</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">AWS op margin % <span>assumption</span></span><span class="cval"><span id="v-awsmgn">35</span>%</span></label>
+          <input type="range" id="i-awsmgn" min="30" max="39" step="0.5" value="35">
+          <div class="tri">FY25 35.4% · Q1'26 37.7% · lo = depreciation-wave stress</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">AWS EV/EBIT multiple <span>assumption</span></span><span class="cval"><span id="v-awsmlt">28</span>×</span></label>
+          <input type="range" id="i-awsmlt" min="18" max="38" step="0.5" value="28">
+          <div class="tri">Master valuation driver · reverse-DCF target</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Non-AWS op income $bn <span>assumption</span></span><span class="cval">$<span id="v-retoi">42</span>bn</span></label>
+          <input type="range" id="i-retoi" min="34" max="50" step="1" value="42">
+          <div class="tri">FY25 $34.3bn · ads (+24%) lifting mix</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">55</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="55">
+          <div class="tri">0% = independent · 100% = full common-factor</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Regime-stress probability <span>assumption</span></span><span class="cval"><span id="v-tail">6</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="20" step="1" value="6">
+          <div class="tri">AI-demand air-pocket / capex write-down tail</div>
+        </div>
+      </div>
+
+      <div class="cmp" style="margin-top:16px">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent (corr=0)</div>
+          <div class="cmprow"><span class="ck">Median</span><span class="cv" id="oi-med">—</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="oi-p10">—</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="oi-p90">—</span></div>
+          <div class="cmprow"><span class="ck">P(FV &lt; $160)</span><span class="cv" id="oi-tail">—</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + stress</div>
+          <div class="cmprow"><span class="ck">Median</span><span class="cv" id="co-med">—</span></div>
+          <div class="cmprow"><span class="ck">P10 (downside)</span><span class="cv neg" id="co-p10">—</span></div>
+          <div class="cmprow"><span class="ck">P90 (upside)</span><span class="cv pos" id="co-p90">—</span></div>
+          <div class="cmprow"><span class="ck">P(FV &lt; $160)</span><span class="cv" id="co-tail">—</span></div>
+        </div>
+      </div>
+
+      <div class="hist-wrap" style="margin-top:16px">
+        <div class="hist-leg">
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; $247.23</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; $247.23</span>
+          <span><span class="sw" style="background:var(--ink)"></span>price $247.23</span>
+        </div>
+        <svg id="hist" viewBox="0 0 700 220" role="img" aria-label="Fair-value distribution histogram" style="width:100%;height:auto"></svg>
+      </div>
+      <div class="reading" id="reading">—</div>
+    </div>
+    <div class="note c"><b>Why this matters.</b> Correlation barely moves the median but fattens the left tail — AWS revenue, margin and multiple all load on the same AI-demand factor. A single "capex doesn't convert" shock hits three drivers at once. The deep-loss threshold ($160, ≈−35% from spot) is a modelling choice, not a stop-loss.</div>
+    <div class="src">Sources: Amazon Q4/FY2025 8-K; Q1'26 release (29 Apr 2026); Yahoo v8 AMZN spot 2026-07-18; diluted shares FY2025.</div>
+  </section>
+
+  <!-- B -->
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Tornado — which drivers actually move fair value</h2><div class="hq">One-at-a-time swings across each driver's full range, others at mode.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The <b>AWS EV/EBIT multiple</b> is the dominant swing factor, then AWS revenue and non-AWS operating income. AWS margin matters, but less than the multiple the market pays for those earnings — re-rating risk is as large as operating risk.</span></div>
+    <svg id="tornado" viewBox="0 0 700 220" role="img" aria-label="Tornado sensitivity chart" style="width:100%;height:auto"></svg>
+    <div class="note t"><b>Read:</b> if the market de-rates AWS from 28× toward 18× (hyperscaler trough multiples), fair value compresses far more than if AWS margin slips a few points. That is why reverse-DCF targets <code>awsmlt</code>, not growth alone.</div>
+  </section>
+
+  <!-- C -->
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenarios + Bayesian blend</h2><div class="hq">Three anchors from the engine; priors and evidence are yours.</div></div>
+      <span class="tagchip a">Your judgment · computed anchors</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base anchor (~$224) sits below spot; bull needs durable AWS mid-30s growth <i>and</i> a multiple that holds. Bear is a real AI-demand air-pocket / depreciation-wave path, not a fantasy.</span></div>
+    <div class="scen">
+      <div class="scard bear"><div class="sn">Bear — AI pause</div><div class="sd">AWS growth reverts to mid-teens; margin compresses on depreciation; multiple to ~18×.</div><div class="sfv" id="sfv-bear">$120</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — mode holds</div><div class="sd">AWS ~$161bn FY26e, 35% margin, 28×; non-AWS OI $42bn at 20×.</div><div class="sfv" id="sfv-base">$224</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard bull"><div class="sn">Bull — AI lands</div><div class="sd">AWS top of range, margin holds near Q1'26 peak, multiple re-rates toward 38×.</div><div class="sfv" id="sfv-bull">$356</div><div class="sfvl">engine median · computed</div></div>
+    </div>
+    <p class="body">Toggle evidence chips (likelihood ratios) and drag prior weights. The blend is probability-weighted fair value — anchors are computed; weights are judgment.</p>
+    <div class="evid" id="evid">
+      <div class="ev" data-lr="1.6,1.0,0.6">Azure/GCP keep growing faster than AWS <span class="ar">▼bull</span></div>
+      <div class="ev" data-lr="0.5,1.0,1.8">AWS holds ≥ +25% growth for 2+ quarters <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="1.8,1.0,0.5">TTM FCF stays negative through 2026 <span class="ar">▼bull</span></div>
+      <div class="ev" data-lr="0.6,1.0,1.5">Ads TTM clears $80bn with rising retail margins <span class="ar">▲bull</span></div>
+      <div class="ev" data-lr="1.7,1.0,0.6">OpenAI / Anthropic concentration risk materialises <span class="ar">▼bull</span></div>
+      <div class="ev" data-lr="0.5,1.0,1.7">Trainium / custom silicon wins share vs Nvidia-only peers <span class="ar">▲bull</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px">
+      <div><label class="lab" style="font-size:12px">Bear prior <span id="v-pb">30</span></label><input type="range" id="i-pb" min="0" max="100" value="30"></div>
+      <div><label class="lab" style="font-size:12px">Base prior <span id="v-pn">45</span></label><input type="range" id="i-pn" min="0" max="100" value="45"></div>
+      <div><label class="lab" style="font-size:12px">Bull prior <span id="v-pu">25</span></label><input type="range" id="i-pu" min="0" max="100" value="25"></div>
+    </div>
+    <div class="wbar"><div class="wp" id="wp-b" style="width:30%;background:var(--coral)"></div><div class="wp" id="wp-n" style="width:45%;background:var(--amber)"></div><div class="wp" id="wp-u" style="width:25%;background:var(--teal)"></div></div>
+    <div class="wlabs"><span id="wl-b">Bear 30%</span><span id="wl-n">Base 45%</span><span id="wl-u">Bull 25%</span></div>
+    <div class="blend">Probability-weighted fair value <span class="bn" id="blend-fv">—</span>
+      <span class="bl" style="display:block;margin-top:4px;font-size:12.5px;color:var(--muted)">vs <b>$247.23</b> · <span id="blend-gap">—</span></span>
+    </div>
+  </section>
+
+  <!-- D -->
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">From Yahoo fundamentals-timeseries + FY2025 / Q1'26 releases — not estimates.</div></div>
+      <span class="tagchip s">Sourced · fetched</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Balance sheet is investment-grade fortress territory: equity $411bn, D/E low, operating cash $140bn+. The scar is free cash flow — crushed by the AI build, not by operations.</span></div>
+    <div class="scgrid">
+      <div class="sc"><div class="scl"><span>ROE (FY2025)</span><span class="tg s">sourced</span></div><div class="scv">18.9<span class="un">%</span></div><div class="scband good">Strong</div><div class="scd">Net income $77.7bn ÷ equity $411.1bn. High-teens on a mega-cap is elite; Q1'26 TTM net income $90.8bn is flattered by Anthropic mark-ups.</div></div>
+      <div class="sc"><div class="scl"><span>Operating margin (FY25 / Q1'26)</span><span class="tg s">sourced</span></div><div class="scv">11.2<span class="un">%</span> → 13.1%</div><div class="scband good">Expanding</div><div class="scd">FY25 op income $80.0bn on $716.9bn sales; Q1'26 record 13.1% group margin. AWS 35.4% → 37.7% is the engine.</div></div>
+      <div class="sc"><div class="scl"><span>Operating cash flow</span><span class="tg s">sourced</span></div><div class="scv">$139.5<span class="un">bn</span></div><div class="scband good">Powerhouse</div><div class="scd">FY2025 OCF; trailing to Mar'26 $148.5bn (Yahoo). Cash generation is not the constraint — reinvestment is.</div></div>
+      <div class="sc"><div class="scl"><span>Free cash flow (honest)</span><span class="tg s">sourced</span></div><div class="scv hl neg">−$2.5<span class="un">bn TTM</span></div><div class="scband bad">Capex wave</div><div class="scd">Yahoo trailingFreeCashFlow as of 2026-03-31. FY2025 annual FCF was still +$7.7bn; Q1 alone spent $43.2bn capex toward a ~$200bn year plan.</div></div>
+      <div class="sc"><div class="scl"><span>Leverage D/E</span><span class="tg c">computed</span></div><div class="scv">0.37</div><div class="scband good">Conservative</div><div class="scd">Total debt $153.0bn ÷ equity $411.1bn (FY2025 Yahoo). Net cash positive on cash+ST investments vs debt (Simply Wall St Q1'26).</div></div>
+      <div class="sc"><div class="scl"><span>Current ratio</span><span class="tg c">computed</span></div><div class="scv">1.05</div><div class="scband mid">Tight but normal</div><div class="scd">Current assets $229.1bn ÷ current liabilities $218.0bn. Working-capital intensity of retail + growth AP; not a liquidity red flag at this cash-flow scale.</div></div>
+      <div class="sc"><div class="scl"><span>Sloan accruals (FY25)</span><span class="tg c">computed</span></div><div class="scv">−7.6<span class="un">%</span></div><div class="scband good">Cash &gt; earnings</div><div class="scd">(NI $77.7bn − OCF $139.5bn) ÷ assets $818bn = negative: earnings understate cash. Healthy sign; opposite of aggressive accrual accounting.</div></div>
+      <div class="sc"><div class="scl"><span>Anthropic EPS caveat</span><span class="tg a">flag</span></div><div class="scv">$16.8<span class="un">bn pre-tax</span></div><div class="scband mid">Watch</div><div class="scd">Q1'26 EPS $2.78 includes mark-up gains on the Anthropic stake. TTM EPS $8.36 is flattered; strip gains before comparing P/E to MSFT/GOOGL.</div></div>
+    </div>
+    <div class="src">Sources: Yahoo fundamentals-timeseries AMZN (fetched 2026-07-18); Amazon Q4/FY2025 8-K; Q1'26 earnings release; Simply Wall St Q1'26 balance-sheet snapshot.</div>
+  </section>
+
+  <!-- E -->
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital record — the $200bn question</h2><div class="hq">Allocation history is excellent; the live experiment is whether AI capex earns its keep.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A decade of disciplined reinvestment built AWS and ads. The 2026 plan (~$200bn capex) is a step-function bet on AI infrastructure. Returns are unproven at this scale; the balance sheet can fund it.</span></div>
+    <div class="ri"><div class="rk">Capex trajectory</div><div class="rd">FY2023 $52.7bn → FY2024 $83.0bn → FY2025 $131.8bn → <b>FY2026 plan ~$200bn</b> (Q1 alone $43.2bn). Sourced from Yahoo annualCapitalExpenditure and the Q1'26 call.</div></div>
+    <div class="ri"><div class="rk">Where the money goes</div><div class="rd">AWS capacity (Trainium / Inferentia silicon, data centers), fulfillment automation, Project Kuiper satellites. Management frames it as multi-year; depreciation will lag spend by 1–3 years — the Module A margin "lo" band.</div></div>
+    <div class="ri"><div class="rk">Shareholder returns</div><div class="rd">No dividend. Diluted shares ~10.84bn; modest dilution for stock-based comp. Buybacks are secondary to reinvestment. Capital return is via long-term EPS compounding, not yield.</div></div>
+    <div class="ri"><div class="rk">Strategic commitments</div><div class="rd">OpenAI expanded AWS commitment by $100bn over eight years (on top of a prior $38bn); Amazon plans to invest $50bn in OpenAI. AWS backlog $364bn <i>ex</i> that incremental OpenAI piece (Q1'26). Concentration risk and demand visibility both rise.</div></div>
+    <div class="note a"><b>Owner-earnings honesty.</b> Module J uses trailing FCF (−$2.5bn), not operating cash. That makes OE yield negative vs the real 10y — by design. If you believe ≥80% of capex is growth (not maintenance), economic earnings are far higher; that is an assumption this pipeline refuses to assert as fact.</div>
+  </section>
+
+  <!-- F -->
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning &amp; market structure</h2><div class="hq">Consensus, ownership, and what the tape already embeds.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Street is structurally bullish (Strong Buy, avg PT $313 ≈ +27% vs spot). That is a crowded long in mega-cap growth — supportive until a miss, then air is thin. No controlling shareholder; free float is the market.</span></div>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Live spot</td><td class="num now">$247.23</td><td>Yahoo v8, 2026-07-18; 52w $196–$278.56</td></tr>
+        <tr><td>Consensus PT</td><td class="num">$313.00</td><td>Investing.com, 62 analysts (high $370 / low $207), Strong Buy</td></tr>
+        <tr><td>PT gap vs spot</td><td class="num">+26.6%</td><td>Computed; street still sees upside the pipeline base case does not fully share</td></tr>
+        <tr><td>Trailing P/E</td><td class="num">29.6×</td><td>$247.23 ÷ $8.36 TTM EPS (Anthropic-flattered)</td></tr>
+        <tr><td>Market cap</td><td class="num">$2.68tn</td><td>$247.23 × 10,837m shares</td></tr>
+        <tr><td>Next catalyst</td><td class="num">Q2'26 earnings</td><td>Expected late Jul 2026; AWS growth + capex guide are the only numbers that move the tape</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- G -->
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer multiples — hyperscaler context</h2><div class="hq">AMZN computed; MSFT/GOOGL live prices fetched; multiples from public trackers at config write.</div></div>
+      <span class="tagchip c">Mixed sourced / computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">On trailing P/E Amazon looks rich vs MSFT and in-line/high vs GOOGL — but TTM EPS includes Anthropic gains, and Amazon reinvests a far larger share of cash into growth capex. Relative value is not a clean screen; growth durability is.</span></div>
+    <div id="peerbars"></div>
+    <p class="body" style="font-size:13px;margin-top:12px">Q1'26 cloud growth scoreboard (CNBC round-up, sourced): <b>AWS +28%</b> vs Azure +40% vs Google Cloud +63%. Amazon is re-accelerating but still not the growth leader. The SOTP pays a cloud multiple only on the AWS block (~$56bn mode EBIT), not on the whole company — which is why group P/E alone misleads.</p>
+    <div class="src">Sources: Yahoo v8 MSFT/GOOGL prices 2026-07-18; stockanalysis/Macrotrends peer multiples early Jul 2026; CNBC hyperscaler round-up 29 Apr 2026.</div>
+  </section>
+
+  <!-- H -->
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — set while disinterested.</div></div>
+      <span class="tagchip a">Your pre-commitments</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Several live risks — FCF negative, hyperscaler growth gap, customer concentration — are within a few quarters' reach. Process is the edge.</span></div>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>AWS growth stalls.</b> Two consecutive quarters of AWS revenue growth <span class="kv">&lt; +18% YoY</span> after the Q1'26 +28% print — the re-acceleration thesis fails.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Margin depreciation wave.</b> AWS operating margin prints <span class="kv">&lt; 30%</span> for two quarters without a clear volume offset — capex is destroying, not building, unit economics.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Capex without backlog.</b> FY capex guide stays ≥ $180bn while AWS backlog (ex-OpenAI) <span class="kv">declines YoY</span> — spend is ahead of contracted demand.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Share loss accelerates.</b> AWS growth trails Azure <i>and</i> GCP by <span class="kv">&gt; 15 pp</span> for three consecutive quarters — structural share loss, not a cycle.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Customer concentration.</b> Material impairment or restructuring of the OpenAI / Anthropic commercial relationship that cuts disclosed backlog by <span class="kv">&gt; 15%</span>.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Valuation exit.</b> Price implies AWS EV/EBIT <span class="kv">&gt; ~38×</span> at mode revenue/margin (top of engine range) — trim into strength regardless of narrative.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Balance-sheet break.</b> Net leverage rises such that net cash turns to net debt <span class="kv">&gt; $50bn</span> while FCF stays negative — the fortress assumption fails.</div></div>
+    </div>
+    <div class="note c"><b>Decision-journal prompt:</b> "FY26e AWS settles ~$161bn at ~35% margin; fair value ~$224 at 28×; spot $247 prices ~32×." Revisit on each print. If a kill fires, act without re-litigating.</div>
+  </section>
+
+  <!-- placeholders for inject -->
+
+  <!-- SCORECARD -->
+
+  
+  <section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">The composite metrics flag a negative pay-off asymmetry — expected loss dominates expected gain, and the market is already pricing above-base assumptions. Live spot <b>$247.23</b> · MC median <b>$222.68</b> (P10 $183.25, P90 $264.04) · P(FV &gt; price) <b>22%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-19) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (AMZN)</div><div class="v">$247.23 <small>as of 2026-07-19</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">$196.00–$278.56</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">96%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+26.6% <small>PT $313.00</small></div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">29.6× <small>EPS $8.36</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">28.5× <small>est EPS $8.68</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">24.9× <small>est EPS $9.91</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+14%</div></div>
+    </div>
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">32.50×</div>
+        <div class="l">is the value of <b>AWS EV/EBIT multiple (at mode AWS revenue/margin and non-AWS block)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>$247.23</b> price. That is <b>+16.1% above</b> the pipeline's base-case mode of <b>28.0×</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-130.5%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.14×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.51</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in $.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-9.7%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-25.9%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-30.7%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-29.8%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-33.7%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1255 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">31.1%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">31.1%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-55.8%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">+0.5% / -1.0% / +4.5% / +10.8%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs S&P 500</td><td class="num">1.44</td><td>R² = 0.34. 252-day OLS.</td></tr>
+        <tr><td>Beta vs Nasdaq 100</td><td class="num">0.91</td><td>R² = 0.30. 252-day OLS.</td></tr>
+        <tr><td>Beta vs US 10y yield (^TNX)</td><td class="num">-0.10</td><td>R² = 0.00. 252-day OLS on daily log-returns.</td></tr>
+      </tbody>
+    </table></div>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs MSFT</div><div class="bb"><div class="bi" style="left:50%;width:32.3%;background:var(--teal)"></div></div><div class="bv">+32.3%</div></div><div class="barsrow"><div class="bl">vs GOOGL</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-79.3%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a AWS EV/EBIT multiple (at mode AWS revenue/margin and non-AWS block) of <b>32.50×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (AMZN, ^GSPC, ^NDX, ^TNX) — fetched 2026-07-19. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>44/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 63<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — AWS revenue growth (% YoY) through the cycle</div>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>2019</td><td class="num">36.50%</td><td>cloud land-grab era</td></tr><tr><td>2020</td><td class="num">29.50%</td><td>Covid acceleration</td></tr><tr><td>2021</td><td class="num">37.10%</td><td>peak of the last cycle</td></tr><tr><td>2022</td><td class="num">28.80%</td><td>optimization cycle begins</td></tr><tr><td>2023</td><td class="num">13.30%</td><td>cloud-optimization trough</td></tr><tr><td>2024</td><td class="num">18.50%</td><td>recovery / early AI demand</td></tr><tr><td>2025</td><td class="num">19.60%</td><td>FY2025 reported — sourced</td></tr><tr><td>Q4'25</td><td class="num">23.60%</td><td>acceleration quarter — sourced</td></tr><tr class='cur'><td>Q1'26</td><td class="num now">28.40%</td><td>15-quarter high, $150bn run-rate — sourced</td></tr></tbody>
+    </table></div>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:63.4%"></div>
+      <div class="lb" style="left:63.4%">now · Q1'26 = +28.4% (fastest in 15 quarters)</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1255 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">19%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">26%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">49%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n neg">-263 bp</div>
+        <div class="l"><b>Owner-earnings yield -0.09%</b> ($-2472m ÷ $2679232m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: Yahoo trailingFreeCashFlow −$2,472m as of 2026-03-31 (AI-capex wave; FY2025 annual FCF was +$7.7bn) — sourced. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">4</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi hot"><div class="fk">Quality</div><div class="fv">85</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi"><div class="fk">Momentum</div><div class="fv">58</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">31</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">44</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-263 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-19.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
+      <div class="ht"><h2>Scorecard — the ten reads</h2><div class="hq">Struck at mode calibration (AWS $161bn / 35% / 28×, non-AWS OI $42bn).</div></div>
+    </div>
+    <div class="tbl-scroll"><table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Mode ~$224 vs $247 spot — modest premium; reverse-DCF ~32× AWS</td></tr>
+        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>AWS multiple dominates; re-rating risk ≈ operating risk</td></tr>
+        <tr><td>C · Scenarios</td><td><span class="vchip mixed">MIXED</span></td><td>Base below price; bull needs durable growth + multiple hold</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Fortress BS, expanding margins, cash-rich ops; FCF is capex, not quality</td></tr>
+        <tr><td>E · Capital</td><td><span class="vchip mixed">MIXED</span></td><td>$200bn AI plan unproven at scale; can fund it</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Street Strong Buy / +27% PT; crowded mega-cap long</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip mixed">MIXED</span></td><td>Growth still trails Azure/GCP; group P/E distorted by gains + reinvestment</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Live near-term risks (growth, FCF, concentration)</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bear">BEAR</span></td><td>Kelly f* -131%, asymmetry 0.14×, market implies +16.1% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 44/100 · OE-yield spread -263 bp real</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:10.0%"></div><div class="tp mixed" style="width:80.0%"></div><div class="tp bear" style="width:10.0%"></div></div>
+      <div class="tlab"><span class="tb">1 Bull</span><span class="tm">8 Mixed</span><span class="tr">1 Bear</span></div>
+    </div>
+    <div class="overall">
+      <span class="ov-chip">NET: MIXED</span>
+      <div class="ov-text"><b>A wonderful business at a full-to-slightly-rich price.</b> The one clear <b>bull</b> is forensic quality (D): cash generation, margins, and the balance sheet are underwritable today. Central fair value (~$224) sits below the $247 tape, so Modules A/C lean cautious: the market is already paying for AWS mid-30s growth to hold and for a ~32× EV/EBIT on that block. The tornado (B) is unambiguous — the <i>multiple</i> on AWS earnings matters as much as the earnings themselves. Capital allocation (E) is the live experiment: ~$200bn of AI capex only works if Q1'26's +28% AWS growth is a regime, not a spike. <b>Posture: own the quality if you already do; add on weakness toward ~$220–230 (mode region) or on evidence the reverse-DCF multiple compresses without growth breaking; do not chase into 52-week highs on narrative alone.</b></div>
+    </div>
+  </section>
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-19 19:03</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-19)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/AMZN?range=5y&interval=1d</td><td>Amazon 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^GSPC?range=5y&interval=1d</td><td>S&P 500 index — broad-market benchmark</td><td class="mods">I: beta vs S&P 500</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^NDX?range=5y&interval=1d</td><td>Nasdaq 100 — mega-cap growth benchmark</td><td class="mods">I: beta vs Nasdaq 100</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=5y&interval=1d</td><td>US 10-year Treasury yield — rate-duration macro factor + real-rate proxy</td><td class="mods">I: beta vs rates · J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/MSFT?range=2y&interval=1d</td><td>Microsoft — hyperscaler peer (Azure)</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/GOOGL?range=2y&interval=1d</td><td>Alphabet — hyperscaler peer (Google Cloud)</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table></div>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Amazon Q4/FY2025 earnings release (8-K Ex-99.1, 5 Feb 2026)</td><td>FY25 net sales $716.9bn (+12%); segment sales NA $426.3bn / Intl $161.9bn / AWS $128.7bn (+20%); segment operating income NA $29.6bn / Intl $4.7bn / AWS $45.6bn; total operating income $80.0bn; net income $77.7bn, diluted EPS $7.17; TTM operating CF $139.5bn, capex $128.3bn, FCF $11.2bn (−71%); Q4 special charges ~$2.4bn (Italy tax, severance, store impairments); Q4 AWS +24% at 35.0% margin; ads Q4 $21.3bn (+22%)</td><td class="mods">A engine, D forensics, E capital record</td></tr><tr><td>Amazon Q1 2026 earnings release + call (29 Apr 2026)</td><td>Revenue $181.5bn (+17%); AWS $37.6bn (+28%, 15-quarter high, op income $14.2bn / 37.7% margin, $150bn run-rate); NA $104.1bn (+12%), Intl $39.8bn; operating income $23.9bn (record 13.1% margin); EPS $2.78 incl. $16.8bn pre-tax Anthropic investment gains; TTM FCF ~$1.2bn; Q1 capex $43.2bn, FY26 plan ~$200bn; AWS backlog $364bn ex the $100bn OpenAI expansion; ads $17.2bn (+24%, TTM >$70bn)</td><td class="mods">A engine, B driver analysis, C scenarios, H kill-criteria</td></tr><tr><td>Amazon FY2025 Form 10-K balance sheet (via S&P aggregators)</td><td>Total assets ~$818bn, stockholders' equity $411.1bn, cash & equivalents $86.8bn, long-term debt $65.6bn (D/E 0.16); current assets $229.1bn; ROE 18.9%, ROA 9.5%; shares out 10.73bn (+1.3% YoY)</td><td class="mods">D forensics</td></tr><tr><td>CNBC hyperscaler round-up (29 Apr 2026)</td><td>Q1'26 cloud growth: AWS +28% vs Azure +40% vs Google Cloud +63%; OpenAI expanded its $38bn AWS commitment by $100bn over eight years; Amazon plans to invest $50bn in OpenAI</td><td class="mods">C scenarios, G peers, H kill-criteria</td></tr><tr><td>Investing.com — AMZN consensus (early Jul 2026)</td><td>62-analyst average PT $312.99 (high $370 / low $207), Strong Buy (63 buy / 4 hold / 0 sell); ~+29% vs spot</td><td class="mods">F positioning</td></tr><tr><td>stockanalysis.com / Macrotrends / fullratio — peer multiples (2–4 Jul 2026)</td><td>MSFT trailing P/E 23.2× (fwd ~20–21×, EV/EBITDA 16.0×, price ~$390); GOOGL trailing P/E 27.5×; AMZN trailing P/E computed 29.1× on $8.36 TTM EPS (flattered by the $16.8bn Anthropic mark-up)</td><td class="mods">G peers</td></tr><tr><td>Simply Wall St — Amazon health snapshot (Q1'26 basis)</td><td>Equity $441.9bn, total debt $130.6bn (D/E 29.6%), cash + ST investments $143.1bn; net interest income (coverage n.m.); ~$200bn 2026 capex committed to AI infrastructure incl. Trainium silicon and Leo satellites</td><td class="mods">D forensics, E capital record</td></tr><tr><td>Yahoo Finance fundamentals-timeseries (AMZN, fetched 2026-07-18)</td><td>FY2025: revenue $716.9bn, op income $80.0bn, net income $77.7bn, diluted EPS $7.17, OCF $139.5bn, capex $131.8bn, FCF $7.7bn; total assets $818.0bn, equity $411.1bn, total debt $153.0bn, cash $86.8bn. Trailing to 2026-03-31: revenue $742.8bn, op income $85.4bn, net income $90.8bn, diluted EPS $8.36, OCF $148.5bn, capex $151.0bn, FCF −$2.5bn</td><td class="mods">D forensics, J owner-earnings, A engine cross-check</td></tr><tr><td>Yahoo Finance v8 chart API (AMZN, 2026-07-18)</td><td>Spot $247.23; 52-week range $196.00–$278.56; peers MSFT ~$393.82, GOOGL ~$346.77</td><td class="mods">I asymmetry, F positioning, G peers</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>How the engine computes (Module A)</h4>
+      <p>20,000 paths. Fair value per share = (AWS revenue × margin% × AWS EV/EBIT multiple + non-AWS operating income × earnings multiple + net cash $12bn) × 1,000 ÷ 10,837m shares. Five triangular marginals: AWS revenue $150–172bn (default mid $161bn); AWS margin 30–39% (mid 35%); AWS multiple 18–38× (mid 28×); non-AWS OI $34–50bn (mid $42bn); non-AWS multiple 14–26× (mid 20×). One-factor copula loadings: awsrev 0.75, awsmgn 0.55, awsmlt 0.70, retoi 0.65, retmlt 0.55, scaled by the correlation knob; regime-stress mixture on the tail knob. Advertising is inside the non-AWS block because Amazon does not disclose ads operating income.</p>
+      <h4>The three labels</h4>
+      <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: 8-K / 10-K / Yahoo fundamentals / consensus trackers. <span style="color:var(--blue-deep)"><b>Computed</b></span>: engine outputs, ratios, reverse-DCF, Kelly. <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: mid-points, correlation, tail, scenario priors, kill thresholds.</p>
+      <h4>Still excluded</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Beneish M-score</b> — needs eight two-year ratios at a granularity Amazon does not break out per segment; a half-estimated score is worse than none. <b>Advertising segment operating income</b> — embedded in the North America / International segments and never disclosed, which is why the engine values a single non-AWS block instead of ads separately — a modelling simplification, not a hidden number. <b>Options skew, stock-borrow cost, and daily insider-transaction net flow</b> — fetchable for a US mega-cap from paid terminals but not from the Yahoo v8 chart endpoint this toolkit standardises on; they would slot in without framework changes. <b>A clean ex-AI-gains TTM EPS</b> — the $16.8bn Q1'26 Anthropic mark-up sits inside reported EPS; stripping it requires a tax-rate assumption this build does not assert. Everything else previously flagged as "cut" (factor betas vs S&amp;P 500 / Nasdaq 100 / rates, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
+      <p class="disc">For analysis and education only — not investment advice. Live spot &amp; factor exposures fetched at build; segment figures from FY2025 / Q1'26 releases; verify primary filings before acting.</p>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const PRICE=247.23, SHARES=10837.0, NETCASH=12.0, N=20000;
+  // Driver fixed ranges (non-slider ends); mids from sliders
+  const AWSREV={lo:150,hi:172}, AWSMGN={lo:30,hi:39}, AWSMLT={lo:18,hi:38};
+  const RETOI={lo:34,hi:50}, RETMLT={lo:14,md:20,hi:26};
+  const RHO={awsrev:0.75,awsmgn:0.55,awsmlt:0.70,retoi:0.65,retmlt:0.55};
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+
+  function simulate(awsrev_md, awsmgn_md, awsmlt_md, retoi_md, corr, pStress, paths){
+    const n=paths||N;
+    const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn();
+      if(pStress>0 && Math.random()<pStress) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=corr*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const awsrev=draw(RHO.awsrev,AWSREV.lo,awsrev_md,AWSREV.hi);
+      const awsmgn=draw(RHO.awsmgn,AWSMGN.lo,awsmgn_md,AWSMGN.hi);
+      const awsmlt=draw(RHO.awsmlt,AWSMLT.lo,awsmlt_md,AWSMLT.hi);
+      const retoi=draw(RHO.retoi,RETOI.lo,retoi_md,RETOI.hi);
+      const retmlt=draw(RHO.retmlt,RETMLT.lo,RETMLT.md,RETMLT.hi);
+      const aws_ebit=awsrev*awsmgn/100;
+      fv[i]=(aws_ebit*awsmlt + retoi*retmlt + NETCASH)*1000/SHARES;
+    }
+    fv.sort();
+    const q=x=>fv[Math.min(n-1,Math.floor(x*n))];
+    let under=0,deep=0;const thr=160;
+    for(let i=0;i<n;i++){if(fv[i]>PRICE)under++;if(fv[i]<thr)deep++;}
+    return {fv,p10:q(.10),p50:q(.50),p90:q(.90),under:under/n,deep:deep/n};
+  }
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMIN=80,VMAX=420,BINS=40;
+  function xOf(v){return HX0+((Math.min(Math.max(v,VMIN),VMAX)-VMIN)/(VMAX-VMIN))*(HX1-HX0);}
+  function drawHist(fv,median,indP10){
+    const bw=(VMAX-VMIN)/BINS,counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor((fv[i]-VMIN)/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts);let s='';
+    for(let b=0;b<BINS;b++){const vc=VMIN+(b+0.5)*bw,x=xOf(VMIN+b*bw),x2=xOf(VMIN+(b+1)*bw),w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0,y=HY1-h;const fill=vc<PRICE?'var(--coral)':'var(--teal)',op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';}
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=100;v<=400;v+=50){const x=xOf(v);s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+v+'</text>';}
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median $'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(2)+'</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function mids(){
+    return {
+      awsrev:+document.getElementById('i-awsrev').value,
+      awsmgn:+document.getElementById('i-awsmgn').value,
+      awsmlt:+document.getElementById('i-awsmlt').value,
+      retoi:+document.getElementById('i-retoi').value
+    };
+  }
+  function fvAt(over){
+    const m=mids();
+    const awsrev=over.awsrev!==undefined?over.awsrev:m.awsrev;
+    const awsmgn=over.awsmgn!==undefined?over.awsmgn:m.awsmgn;
+    const awsmlt=over.awsmlt!==undefined?over.awsmlt:m.awsmlt;
+    const retoi=over.retoi!==undefined?over.retoi:m.retoi;
+    const retmlt=over.retmlt!==undefined?over.retmlt:RETMLT.md;
+    return (awsrev*awsmgn/100*awsmlt + retoi*retmlt + NETCASH)*1000/SHARES;
+  }
+  function drawTornado(){
+    const rows=[
+      {n:'AWS EV/EBIT multiple',lo:fvAt({awsmlt:AWSMLT.lo}),hi:fvAt({awsmlt:AWSMLT.hi})},
+      {n:'AWS revenue',lo:fvAt({awsrev:AWSREV.lo}),hi:fvAt({awsrev:AWSREV.hi})},
+      {n:'Non-AWS op income',lo:fvAt({retoi:RETOI.lo}),hi:fvAt({retoi:RETOI.hi})},
+      {n:'AWS margin',lo:fvAt({awsmgn:AWSMGN.lo}),hi:fvAt({awsmgn:AWSMGN.hi})},
+      {n:'Non-AWS multiple',lo:fvAt({retmlt:RETMLT.lo}),hi:fvAt({retmlt:RETMLT.hi})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)),allMax=Math.max(...rows.map(r=>r.max));
+    const X0=170,X1=688,W=X1-X0,base0=allMin-5,span=(allMax+5)-base0;
+    const sx=v=>X0+((v-base0)/span)*W;
+    const rowH=38,top=10;let s='';
+    rows.forEach((r,i)=>{const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">$'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';
+    });
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price $'+PRICE.toFixed(2)+'</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const m=mids();
+    const corr=(+document.getElementById('i-corr').value)/100;
+    const tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-awsrev').textContent=m.awsrev;
+    document.getElementById('v-awsmgn').textContent=m.awsmgn;
+    document.getElementById('v-awsmlt').textContent=m.awsmlt;
+    document.getElementById('v-retoi').textContent=m.retoi;
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+
+    const ind=simulate(m.awsrev,m.awsmgn,m.awsmlt,m.retoi,0,0);
+    const cor=simulate(m.awsrev,m.awsmgn,m.awsmlt,m.retoi,corr,tail);
+    document.getElementById('oi-med').textContent='$'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='$'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='$'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='$'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='$'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='$'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+    drawHist(cor.fv,cor.p50,ind.p10);
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML='With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> stress chance, the median holds near <b>$'+cor.p50.toFixed(0)+'</b> (≈ independent $'+ind.p50.toFixed(0)+') — the 80% band widens by about <span class="down">$'+widen.toFixed(0)+'</span> and P(deep loss &lt; $160) rises from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at $'+PRICE.toFixed(2)+') is '+Math.round(cor.under*100)+'%.';
+    drawTornado();
+  }
+
+  let SFV={bear:120,base:224,bull:356};
+  function computeScenarioAnchors(){
+    SFV.bear=simulate(150,30,18,34,0.55,0.10,8000).p50;
+    SFV.base=simulate(161,35,28,42,0.55,0.06,8000).p50;
+    SFV.bull=simulate(172,39,38,50,0.55,0.04,8000).p50;
+    document.getElementById('sfv-bear').textContent='$'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='$'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='$'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{const lr=el.getAttribute('data-lr').split(',').map(Number);wb*=lr[0];wn*=lr[1];wu*=lr[2];});
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='$'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<1.5?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/40,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+')"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('Amazon — trailing P/E','$247.23 ÷ $8.36 TTM · computed',29.6,'29.6×','var(--coral)'),
+    peerBar('Microsoft — trailing P/E','public trackers · early Jul 2026',23.2,'23.2×','var(--teal-deep)'),
+    peerBar('Alphabet — trailing P/E','public trackers · early Jul 2026',27.5,'27.5×','var(--blue)'),
+  ].join('');
+
+  ['i-awsrev','i-awsmgn','i-awsmlt','i-retoi','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  update(); computeScenarioAnchors();
+
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={};links.forEach(a=>{const h=a.getAttribute('href');if(h&&h.charAt(0)==='#')map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  /* Horizontal-only: never call scrollIntoView (it scrolls the page and fights sticky nav). */
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}
+      catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    /* Prefer the section whose top is nearest the activation band under the sticky nav. */
+    let best=null,bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting)visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  /* Keep the active chip centered when the user taps a stepper link. */
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
+</script>
+</body>
+</html>

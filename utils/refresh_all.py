@@ -17,9 +17,11 @@ PY   = sys.executable
 
 STEPS = [
     ("inject.py",    ["all"], "Re-rendering Modules I & J with fresh Yahoo v8 data"),
+    ("bullcase.py",  ["all"], "Perfect-execution 10y bull path (Module U, where configured)"),
     ("tallies.py",   [],       "Syncing scorecard tally bars"),
     ("finalize.py",  [],       "Stamping build timestamp + refreshing footer notes"),
     ("audit.py",     [],       "Regenerating § Audit data-sources appendix"),
+    ("export_universe.py", [], "Export metrics CSV + central universe dashboard"),
 ]
 
 

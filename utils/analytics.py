@@ -5,7 +5,7 @@ per-stock values. Every downstream module in ``utils`` uses only the functions
 here plus the STOCKS registry.
 """
 from __future__ import annotations
-import os, sys, json, math, urllib.request, random, datetime
+import os, sys, json, math, time, urllib.request, random, datetime
 from typing import Callable, Iterable
 
 # Make the sibling stocks/ package importable no matter where this is invoked from
@@ -24,20 +24,48 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 # -------------------- Yahoo v8 chart fetch --------------------
 
+# Cached payloads older than this are re-fetched, so a plain `refresh_all` run
+# actually refreshes prices instead of silently re-serving last week's cache
+# (override with STOCK_CACHE_MAX_AGE_H; --clear-cache still forces a full wipe).
+CACHE_MAX_AGE_H = float(os.environ.get("STOCK_CACHE_MAX_AGE_H", "24"))
+
+
+def _valid_chart(data: dict) -> bool:
+    try:
+        res = data["chart"]["result"][0]
+        return bool(res["timestamp"]) and bool(res["indicators"]["quote"][0]["close"])
+    except (KeyError, IndexError, TypeError):
+        return False
+
+
 def fetch_chart(symbol: str, rng: str = "5y") -> dict:
-    """Fetch OHLC from Yahoo v8 chart API and cache on disk."""
+    """Fetch OHLC from Yahoo v8 chart API and cache on disk (24h TTL).
+
+    A stale-but-valid cache is used as a fallback if the refetch fails, so an
+    offline run degrades gracefully instead of crashing mid-build."""
     fname = os.path.join(CACHE, f"{symbol.replace('^', '_')}_{rng}.json")
-    if os.path.exists(fname) and os.path.getsize(fname) > 1000:
+    cached_ok = os.path.exists(fname) and os.path.getsize(fname) > 1000
+    if cached_ok and (time.time() - os.path.getmtime(fname)) < CACHE_MAX_AGE_H * 3600:
         with open(fname, "r", encoding="utf-8") as f:
             return json.load(f)
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range={rng}&interval=1d"
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=25) as r:
-        raw = r.read().decode("utf-8")
-    data = json.loads(raw)
-    with open(fname, "w", encoding="utf-8") as f:
-        f.write(raw)
-    return data
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=25) as r:
+            raw = r.read().decode("utf-8")
+        data = json.loads(raw)
+        if not _valid_chart(data):
+            raise ValueError(f"Yahoo returned no usable series for {symbol}")
+        with open(fname, "w", encoding="utf-8") as f:
+            f.write(raw)
+        return data
+    except Exception as e:
+        if cached_ok:
+            print(f"[warn] {symbol}: refetch failed ({e}); using cached copy from "
+                  f"{datetime.date.fromtimestamp(os.path.getmtime(fname))}")
+            with open(fname, "r", encoding="utf-8") as f:
+                return json.load(f)
+        raise
 
 
 def series(chart_json: dict):
@@ -45,7 +73,7 @@ def series(chart_json: dict):
     ts = res["timestamp"]
     q = res["indicators"]["quote"][0]
     close = q["close"]
-    adj = res["indicators"].get("adjclose", [{}])[0].get("adjclose")
+    adj = (res["indicators"].get("adjclose") or [{}])[0].get("adjclose")
     px = adj if adj else close
     t2, p2 = [], []
     for a, b in zip(ts, px):
@@ -192,7 +220,7 @@ def asymmetry_and_kelly(fv: list[float], price: float) -> dict:
 
 # -------------------- Per-stock helpers driven by STOCKS registry --------------------
 
-def run_mc(name: str, price: float, corr: float = 0.60, tail: float = 0.06) -> list[float]:
+def run_mc(name: str, corr: float = 0.60, tail: float = 0.06) -> list[float]:
     """Runs the stock's declared engine over its declared driver ranges."""
     cfg = STOCKS[name]
     return mc_engine(cfg["drivers"], cfg["engine"], corr=corr, tail=tail)
@@ -200,8 +228,9 @@ def run_mc(name: str, price: float, corr: float = 0.60, tail: float = 0.06) -> l
 
 def reverse_dcf(name: str, price: float, steps: int = 80) -> dict:
     """Grid-solve the stock's `reverse_dcf_target` driver for the value that
-    reconciles the median engine output to the current price. Other drivers
-    are held at their mode."""
+    reconciles the engine output — every other driver held at its mode — to
+    the current price. `saturated` flags a solve that pinned to the modelled
+    range boundary, i.e. the true implied value lies beyond the grid."""
     cfg = STOCKS[name]
     tgt = cfg["reverse_dcf_target"]
     driver = cfg["drivers"][tgt]
@@ -214,7 +243,10 @@ def reverse_dcf(name: str, price: float, steps: int = 80) -> dict:
         d = dict(mode_draw); d[tgt] = x
         f = engine(d)
         if best is None or abs(f - price) < abs(best[1] - price):
-            best = (x, f)
+            best = (x, f, i)
+    saturated = None
+    if best[2] in (0, steps) and price > 0 and abs(best[1] - price) / price > 0.005:
+        saturated = "hi" if best[2] == steps else "lo"
     return {
         "driver": cfg["reverse_dcf_label"],
         "unit":   cfg["reverse_dcf_unit"],
@@ -223,6 +255,7 @@ def reverse_dcf(name: str, price: float, steps: int = 80) -> dict:
         "at_mode": best[1],
         "mode_value": driver["md"],
         "range": (lo, hi),
+        "saturated": saturated,
     }
 
 
@@ -234,7 +267,7 @@ def _print_summary(name: str) -> None:
     chart = fetch_chart(cfg["ticker"], "5y")
     _, px = series(chart)
     spot = chart["chart"]["result"][0]["meta"].get("regularMarketPrice") or px[-1]
-    fv = run_mc(name, spot)
+    fv = run_mc(name)
     ak = asymmetry_and_kelly(fv, spot)
     rd = reverse_dcf(name, spot)
     print(f"--- {name.upper()}  ({cfg['ticker']}) ---")

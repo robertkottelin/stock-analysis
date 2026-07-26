@@ -35,6 +35,8 @@ FORMULAS = [
      "Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer."),
     ("Reverse-DCF (Module I)",
      "Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode."),
+    ("Forward P/E (Module I)",
+     "Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m."),
     ("Payoff-asymmetry ratio (Module I)",
      "(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour."),
     ("Win/loss ratio b (Module I)",
@@ -99,26 +101,26 @@ def render_appendix(name: str) -> str:
       <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>{BUILD_DT}</b>.</div>
 
       <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time {BUILD_DATE})</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
         <tbody>{endpoints_rows}</tbody>
-      </table>
+      </table></div>
       <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
 
       <h4>◆ Primary-source citations (module-level facts)</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
         <tbody>{primary_rows}</tbody>
-      </table>
+      </table></div>
 
       <h4>◆ Data providers &amp; the audit rule</h4>
       {DATA_PROVIDER_NOTES}
 
       <h4>◆ Every metric computed here — formulas</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
         <tbody>{formulas_rows}</tbody>
-      </table>
+      </table></div>
 
       <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
       <div class="refs"><ul>{refs}</ul></div>

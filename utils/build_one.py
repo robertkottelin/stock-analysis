@@ -17,7 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
-import inject, tallies, finalize, audit, verify           # noqa: E402
+import inject, tallies, finalize, audit, verify, bullcase, export_universe  # noqa: E402
 from analytics import STOCKS                                # noqa: E402
 from paths import html_path                                 # noqa: E402
 
@@ -28,12 +28,16 @@ def build(name: str, skip_verify: bool = False) -> int:
         print(f"Unknown target: {name}. Known: {list(STOCKS)}")
         return 1
     print("=" * 74)
-    print(f"  Building '{name}' ({STOCKS[name]['ticker']}) — I&J · tallies · finalize · audit")
+    print(f"  Building '{name}' ({STOCKS[name]['ticker']}) — I&J · bull · tallies · finalize · audit · universe")
     print("=" * 74)
     print(inject.inject(name))
+    if "bull_case" in STOCKS[name]:
+        print(bullcase.inject(name))
     print(tallies.update_one(name))
     print(finalize.patch(name))
     print(audit.patch(name))
+    # Full-universe metrics export (so the dashboard stays current even on single builds)
+    print(export_universe.export())
     if not skip_verify:
         ok, stats = verify.check(html_path(STOCKS[name]))
         print(f"verify: {'OK' if ok else 'FAIL'}  {stats}")

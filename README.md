@@ -12,32 +12,42 @@ there).
 ├── refresh_all.py                       # one-command entry point at root
 ├── README.md
 ├── cache/                                # Yahoo JSON cache (auto-created, shared)
+├── data/                                 # common tabular repository (generated)
+│   ├── metrics_latest.csv                # screening row per name (Kelly, CVaR, …)
+│   └── universe.csv                      # registry snapshot
+├── dashboard/                            # central navigation UI (generated)
+│   ├── index.html                        # open this first
+│   └── universe.json
 ├── stocks/                               # stock-specific data + reports
 │   ├── config.py                         # per-stock config (drivers, endpoints, sources, tally, ...)
-│   ├── config_spacex.py                  # SpaceX config (wired into config.py)
-│   ├── config_amazon.py                  # Amazon config (wired into config.py)
-│   ├── config_tesla.py                   # Tesla config (wired into config.py)
-│   ├── config_terveystalo.py             # Terveystalo config (wired into config.py)
-│   ├── konecranes-pipeline.html          # the report files
-│   ├── neste-analytics-pipeline.html
-│   ├── sampo-pipeline.html
-│   ├── mandatum-pipeline.html
-│   ├── orion-pipeline.html
-│   ├── kesko-pipeline.html
-│   ├── spacex-analytics-pipeline.html
-│   ├── tesla-pipeline.html
-│   └── terveystalo-pipeline.html
-└── utils/                                # reusable framework (no per-stock strings)
-    ├── paths.py                          # path helpers
-    ├── analytics.py                      # fetch + MC + metrics library
-    ├── inject.py                         # renders Modules I & J
-    ├── tallies.py                        # syncs the scorecard tally bars
-    ├── finalize.py                       # build timestamp + footer patches
-    ├── audit.py                          # § Audit data-sources appendix
-    ├── verify.py                         # HTML parse + integrity check
-    ├── build_one.py                      # build a SINGLE stock end-to-end
-    └── refresh_all.py                    # orchestrator (delegated to by ../refresh_all.py)
+│   ├── config_*.py                       # large-name configs wired into config.py
+│   └── *-pipeline.html                   # per-name reports
+└── utils/                                # reusable framework
+    ├── analytics.py · inject.py · bullcase.py · export_universe.py · …
+    ├── build_one.py · refresh_all.py · verify.py
+    ├── universe_screener.py · screener_server.py # Universe screener — Nordics + S&P 500 (see below)
+    └── paths.py
 ```
+
+### Central dashboard
+
+After any full build:
+
+```powershell
+python refresh_all.py
+# then open:
+#   dashboard/index.html
+```
+
+Or export metrics only (re-runs Yahoo + MC for every name):
+
+```powershell
+python utils/export_universe.py
+```
+
+The dashboard lists every registered stock, screens on Kelly / CVaR / composite /
+OE spread / Module-I verdict, and links into each HTML report. Tabular twin:
+`data/metrics_latest.csv`.
 
 Everything is **path-relative**. No absolute paths appear in any script. You
 can copy the whole tree into another environment and it just works.
@@ -58,8 +68,11 @@ Options:
 - `--clear-cache` — wipe `cache/` first (force a fresh Yahoo fetch)
 - `--skip-verify` — skip the final HTML parse check
 
-The full pipeline runs in ~5–7 seconds. Every builder is idempotent — safe to
-re-run any time (e.g. weekly).
+Cached Yahoo payloads expire automatically after 24 h (override with the
+`STOCK_CACHE_MAX_AGE_H` env var), so a plain run always refreshes prices at
+most a day old; if a refetch fails, the last good cache is used with a
+warning. On a warm cache the full pipeline runs in ~5–7 seconds. Every
+builder is idempotent — safe to re-run any time (e.g. weekly).
 
 ### Building a single stock
 
@@ -86,6 +99,67 @@ python utils/build_one.py spacex --skip-verify
 | amazon       | AMZN      | AWS + non-AWS two-block SOTP                                |
 | tesla        | TSLA      | Four-leg SOTP (auto core / energy / robotaxi / Optimus) + bull-case overlay. Config in `stocks/config_tesla.py`. |
 | **terveystalo** | **TTALO.HE** | **Two-leg EV/EBIT SOTP (Healthcare Services core + Portfolio Businesses incl. Sweden).** The live 2026 demand downturn (Q1'26 revenue −11%, FY2026 adjusted-EBIT guidance cut to €135–165m) and the €574m Silmäasema eye-care acquisition are carried as explicit drivers / scenarios / kill-criteria. Config in `stocks/config_terveystalo.py`. |
+| **micron** | **MU** | **Through-cycle EBITDA × EV/EBITDA + net cash memory-semiconductor engine (DRAM + NAND).** The AI/HBM super-cycle (TTM revenue ~$90bn, ~76% EBITDA margin) and the FY2023 memory-glut trough (negative gross margin) are both carried explicitly; the reverse-DCF solves for the through-cycle EBITDA margin the market implies. Config in `stocks/config_micron.py`; the data-heavy report is emitted by `stocks/_micron_build.py`. |
+| **investor** | **INVE-B.ST** | **Adjusted-NAV × (1 − holdco discount) industrial holding-company engine** (Listed Companies + Patricia Industries + EQT − net debt). Wallenberg permanent-capital vehicle; portfolio look-through of every material holding with live fundamentals. Config in `stocks/config_investor.py`; data-heavy report emitted by `stocks/_investor_build.py`. |
+| **inission** | **INISS-B.ST** | **Single-leg sales × EBITA-margin × EV/EBITA − net debt EMS industrial engine** (Inission EMS + Inission Power OEM). Nordic electronics manufacturing roll-up; Q1'26 demand surge and medium-term &gt;9% EBITA margin target carried as explicit drivers. Config in `stocks/config_inission.py`. |
+| **te** | **TEL** | **Single-leg sales × EBIT-margin × EV/EBIT − net debt quality industrial compounder** (Transportation + Industrial connectors/sensors). **10-year horizon** first-principles build: electrification, automation, AI power content; Module U perfect-execution path is first-class. Config in `stocks/config_te.py`. |
+
+## Universe screener — Nordics + S&P 500
+
+A second, independent dashboard that goes wider instead of deeper: every listed
+equity on Nasdaq Helsinki + Stockholm (incl. First North) plus the current S&P
+500, fetched live, scored on fundamentals and ranked, to surface candidates for
+the per-stock pipeline above. It does not touch the 10-name registry or
+`refresh_all.py`.
+
+```powershell
+python utils/universe_screener.py          # fetch + score ~1,800 names (~2-3min cold, ~10-40s warm cache)
+python utils/screener_server.py            # serve dashboard/screener.html with a live Refresh button
+```
+
+Or open `dashboard/screener.html` directly (works via `file://`, using whatever
+`dashboard/screener_data.js` was last generated; the in-page **Refresh live
+data** button additionally needs `screener_server.py` running so it can spawn
+the fetch and stream progress back to the page).
+
+What it does:
+- **Universe** — enumerates every `EQUITY` Yahoo lists under exchange codes
+  `HEL`/`STO` via the screener API (paginated, with a market-cap-banded
+  fallback sweep if deep pagination is clipped), plus the current S&P 500
+  constituent list (Wikipedia's maintained constituents table — Yahoo's
+  screener has no index-membership filter; `--skip-sp500` fetches Nordics
+  only). The constituent list itself is cached a week; fundamentals for every
+  US name still come from the same Yahoo `quoteSummary` API as everything
+  else, so the sector/industry taxonomy stays consistent across the whole
+  universe.
+- **Fundamentals** — per symbol, Yahoo's `quoteSummary` API (price,
+  assetProfile, summaryDetail, defaultKeyStatistics, financialData), fetched
+  concurrently, cached 24h (`cache/screener/`, `SCREENER_CACHE_MAX_AGE_H`
+  overrides, stale-on-failure fallback — same convention as the chart cache).
+  All monetary figures are converted to EUR at the latest spot FX. Multiples
+  computed by Yahoo from a listing-currency price over a different reporting
+  currency (e.g. a SEK-listed, USD-reporting name) are rescaled so they're
+  comparable across the universe.
+- **Scoring** — `fund_score` (0–100, percentile composite: Quality 35% /
+  Growth 20% / Balance sheet 15% / Valuation 30%, computed once against the
+  full combined Nordics + S&P 500 pool) and `ai_score` (0–100, an explicit,
+  inspectable heuristic: industry base-rate + labor-intensity + gross-margin
+  operating leverage — not fetched data). `overall` = 0.65×fund + 0.35×AI.
+  Dual-listed share classes are flagged and de-duplicated (most-traded line
+  kept primary — this also catches cross-region duplicates like GOOGL/GOOG).
+- **Dashboard** (`dashboard/screener.html` + `screener_app.js`) — a
+  fundamentals-×-AI-leverage quadrant scatter (bubble = market cap, colour by
+  exchange or sector group) plus a table over every fetched field: full-text
+  search, exchange/sector filters, click-to-sort on any visible column,
+  toggleable column groups, and — for every visible column — its own min/max
+  (or "contains") filter right in the header, so any fetched metric is both
+  sortable and filterable. Per-row expand for the business summary and AI-fit
+  rationale, plus a shortlist CSV export of whatever's currently filtered.
+- **Outputs** — `dashboard/screener_data.json` / `.js` (dashboard payload),
+  `data/screener_latest.csv` (flat twin for spreadsheets/LLM use).
+
+This is a screen, not a verdict: use it to shortlist names, then bring the
+interesting ones into `stocks/config.py` for the full Monte-Carlo pipeline.
 
 ## Adding a new stock
 
@@ -122,11 +196,29 @@ No framework code changes.
 | `utils/build_one.py`     | Same builders, scoped to a single stock name                      |
 | `utils/analytics.py`     | Core library: Yahoo v8 fetch, correlated MC, asymmetry, Kelly, VaR, reverse-DCF |
 | `utils/inject.py`        | Renders Modules I & J and updates the stepper nav + scorecard rows |
-| `utils/tallies.py`       | Refreshes the coloured Bull / Mixed / Bear tally bar               |
+| `utils/bullcase.py`      | Perfect-execution 10y bull path (Module U) — config-driven ceiling price / CAGR / PV |
+| `utils/export_universe.py` | Builds `data/metrics_latest.csv` + `dashboard/index.html` (central screen) |
+| `utils/tallies.py`       | Refreshes the coloured Bull / Mixed / Bear tally bar (counts the live verdict chips in each page's own scorecard; config tally is only a fallback) |
 | `utils/finalize.py`      | Stamps build date, adds the "Built …" pill, refreshes footer notes |
 | `utils/audit.py`         | Regenerates the § Audit data-sources & methodology appendix        |
 | `utils/verify.py`        | HTML parse-tree check + integrity of injected sections             |
 | `utils/paths.py`         | Shared path helpers                                               |
+| `utils/universe_screener.py` | Fetches + scores every Helsinki/Stockholm equity plus the S&P 500 → `dashboard/screener_data.*`, `data/screener_latest.csv` (see § Universe screener) |
+| `utils/screener_server.py` | Local static+API server for `dashboard/screener.html`'s live Refresh button |
+
+### Perfect-execution bull path (Module U)
+
+Optional per-stock block `bull_case` in config. When present, `utils/bullcase.py`
+(and `build_one` / `refresh_all`) injects **Module U**: a year-by-year path that
+answers *if everything goes right for N years, what is a realistic best-case
+price?* Defaults cover sales CAGR, terminal margin & multiple, FCF conversion,
+dividends, buybacks, and a discount rate for PV. The HTML module includes live
+sliders so assumptions can be stress-tested in the browser.
+
+```powershell
+python utils/bullcase.py konecranes           # compute + inject
+python utils/bullcase.py konecranes --print   # numbers only
+```
 
 ## Data flow
 

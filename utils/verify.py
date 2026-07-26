@@ -1,6 +1,6 @@
 """HTML parse + integrity check for every stock report."""
 from __future__ import annotations
-import os, sys
+import os, re, sys
 from html.parser import HTMLParser
 from paths import STOCKS_DIR
 
@@ -46,7 +46,9 @@ def check(path: str) -> tuple[bool, dict]:
         'unclosed': len(p.stack),
         'sections_open':  html.count('<section'),
         'sections_close': html.count('</section>'),
-        'script_open':  html.count('<script>'),
+        # count any <script …> opening tag, not only the bare attribute-less
+        # form — Module U legitimately injects <script id="bullcase-js">
+        'script_open':  len(re.findall(r'<script[\s>]', html)),
         'script_close': html.count('</script>'),
         'mI': '<section class="mod" id="mI">' in html,
         'mJ': '<section class="mod" id="mJ">' in html,

@@ -91,6 +91,7 @@ TESLA_CONFIG: dict[str, Any] = {
     "shares_m":       _SHARES_M,
     "consensus_pt":   415.00,          # blend of S&P/MarketBeat/TipRanks/Benzinga (range $395-424)
     "eps_ttm":        1.09,            # FY2025 $1.08 - Q1'25 $0.12 + Q1'26 $0.13 -> ~371x P/E at spot
+    "eps_fwd_12m":    2.13, "eps_fwd_24m": 2.55,   # consensus curr./next-FY EPS (Yahoo, build-time)
 
     # ---- Module A engine ----
     "engine": _make_tesla_engine(),
@@ -247,7 +248,8 @@ TESLA_CONFIG: dict[str, Any] = {
         'backfills. Balance-sheet facts are from the FY2025 / Q1\'26 releases; nothing is asserted from memory.</div>'
     ),
     # 14 graded reads counted in the tally (A-H + K,L,M,N + injected I,J); Module O
-    # is a bull-case OVERLAY shown in the scorecard but not counted in the net.
-    # At the live spot the run prints I=BEAR, J=BEAR, so bears = G, K, I, J = 4.
-    "tally": {"bull": 0, "mixed": 10, "bear": 4},
+    # is a bull-case OVERLAY shown in the scorecard but not counted in the net —
+    # tallies.py recognises the "Bull case overlay" label and skips that row.
+    # tallies.py counts the live chips on the page; this is only the fallback.
+    "tally": {"bull": 0, "mixed": 11, "bear": 3},
 }

@@ -21,9 +21,10 @@ CSS_ADDITIONS = """
   /* Additions for Modules I (asymmetry) and J (base rates) */
   .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
   @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
-  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  @media(max-width:360px){.kg{grid-template-columns:1fr}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;min-width:0}
   .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
-  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink);overflow-wrap:anywhere}
   .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
   .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
   .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
@@ -31,39 +32,43 @@ CSS_ADDITIONS = """
   .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
   .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
   .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
-  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
-  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .rev .rv .l{font-size:13px;color:var(--ink);min-width:0;overflow-wrap:anywhere} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted);overflow-wrap:anywhere}
   .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
   @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
-  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  @media(max-width:480px){.kelly{grid-template-columns:1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px;min-width:0}
   .kbox.hot{border:1.5px solid var(--coral)}
   .kbox.good{border:1.5px solid var(--teal)}
   .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
   .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
-  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4;overflow-wrap:anywhere}
   .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
   .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
   .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
-  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
-  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top;overflow-wrap:anywhere}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500;white-space:nowrap}
   .brtab td.cur{background:var(--teal-wash)}
   .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
-  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;margin-bottom:18px;border:1px solid var(--line)}
   .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
   .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
-  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
   .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
   @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
-  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  @media(max-width:360px){.fac{grid-template-columns:1fr}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px;min-width:0}
   .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
   .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
   .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
-  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
-  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
-  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35;overflow-wrap:anywhere}
+  .barsrow{display:grid;grid-template-columns:minmax(0,120px) 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  @media(max-width:480px){.barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}.barsrow .bb{grid-column:1/-1;order:3}}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px;min-width:0;overflow-wrap:anywhere}
   .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
   .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
   .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;max-width:100%;margin:0 0 4px;padding-bottom:2px}
 </style>
 """
 
@@ -176,7 +181,7 @@ def gather(name: str) -> dict:
         except Exception:
             peer_rel[p] = None
 
-    fv = run_mc(name, spot)
+    fv = run_mc(name)
     ak = asymmetry_and_kelly(fv, spot)
     rd = reverse_dcf(name, spot)
 
@@ -185,6 +190,16 @@ def gather(name: str) -> dict:
         rdcf_gap = -rdcf_gap
 
     pt_gap = (cfg["consensus_pt"] / spot) - 1
+
+    # Forward P/E — live spot ÷ sourced consensus forward EPS (current & next
+    # fiscal year, ~12m and ~24m). Same sourced-EPS / computed-multiple pattern
+    # as pe_ttm above; a non-positive estimate (loss year) leaves P/E "n/m".
+    eps_f12 = cfg.get("eps_fwd_12m")
+    eps_f24 = cfg.get("eps_fwd_24m")
+    pe_fwd_12m = (spot / eps_f12) if (eps_f12 and eps_f12 > 0) else None
+    pe_fwd_24m = (spot / eps_f24) if (eps_f24 and eps_f24 > 0) else None
+    eps_fwd_growth = ((eps_f24 / eps_f12 - 1)
+                      if (eps_f12 and eps_f24 and eps_f12 > 0 and eps_f24 > 0) else None)
 
     quarterly_returns = [px[i]/px[i-63] - 1 for i in range(63, len(px))]
     frac_q_down = sum(1 for r in quarterly_returns if r < -0.10) / len(quarterly_returns) if quarterly_returns else None
@@ -226,6 +241,8 @@ def gather(name: str) -> dict:
         "reverse_dcf": rd, "rdcf_gap": rdcf_gap,
         "pt_gap": pt_gap, "consensus_pt": cfg["consensus_pt"],
         "eps_ttm": cfg["eps_ttm"], "pe_ttm": (spot/cfg["eps_ttm"]) if cfg["eps_ttm"] else None,
+        "eps_fwd_12m": eps_f12, "eps_fwd_24m": eps_f24,
+        "pe_fwd_12m": pe_fwd_12m, "pe_fwd_24m": pe_fwd_24m, "eps_fwd_growth": eps_fwd_growth,
         "frac_q_down_10": frac_q_down, "frac_y_down": frac_y_down, "frac_y_gt15": frac_y_gt15,
         "oe_m": oe, "mcap_m": mcap, "oe_yield": oe_yield,
         "real_rate_pct": real_rate_pct, "real_spread_bp": real_spread_bp,
@@ -250,6 +267,14 @@ def render_module_I(m: dict) -> str:
     asym_show = f"{m['asymmetry']:.2f}×" if m["asymmetry"] is not None else "n/a"
     b_show = f"{m['b_ratio']:.2f}" if m['b_ratio'] is not None else "n/a"
     rdcf_gap_show = f"{m['rdcf_gap']*100:+.1f}%" if m['rdcf_gap'] is not None else "n/a"
+    # A solve pinned to the modelled range boundary means the true implied
+    # value lies beyond the grid — say so instead of reporting it as exact.
+    rdcf_sat = rdcf.get("saturated")
+    imp_prefix = {"hi": "≥ ", "lo": "≤ "}.get(rdcf_sat, "")
+    if rdcf_sat and m['rdcf_gap'] is not None:
+        rdcf_gap_show = ("at least " if rdcf_sat == "hi" else "at most ") + rdcf_gap_show
+    sat_note = (" The solve pinned to the edge of the modelled driver range — the market is "
+                "implying a value beyond it." if rdcf_sat else "")
 
     peer_rows = ""
     for p, rel in (m["peer_rel"] or {}).items():
@@ -274,6 +299,35 @@ def render_module_I(m: dict) -> str:
     # Note text about the reverse-DCF driver
     macro_source_note = f", {m['macro_ticker']}" if m.get('macro_ticker') else ""
 
+    # ---- Forward-P/E block (trailing vs ~12m/~24m consensus-EPS forward) ----
+    def _pe_tile(label, pe, sub, cls=""):
+        # A non-positive P/E (loss-making TTM or forward estimate) is not
+        # meaningful — show n/m rather than a negative multiple.
+        val = f"{pe:.1f}×" if (pe is not None and pe > 0) else "n/m"
+        return (f'<div class="kgi{cls}"><div class="k">{label}</div>'
+                f'<div class="v">{val} <small>{sub}</small></div></div>')
+
+    pe_ttm, pe_f12, pe_f24 = m.get("pe_ttm"), m.get("pe_fwd_12m"), m.get("pe_fwd_24m")
+    eps_f12, eps_f24, epsg = m.get("eps_fwd_12m"), m.get("eps_fwd_24m"), m.get("eps_fwd_growth")
+    # A forward P/E below trailing = earnings expected to grow into the price (pos).
+    f24_cls = (" pos" if pe_f24 < pe_ttm else " neg") if (pe_f24 is not None and pe_ttm and pe_ttm > 0) else ""
+    g_cls = (" pos" if epsg > 0 else " neg") if epsg is not None else ""
+    ttm_sub = f"EPS {cur}{m['eps_ttm']:.2f}" if m.get("eps_ttm") else "no TTM EPS"
+    f12_sub = f"est EPS {cur}{eps_f12:.2f}" if eps_f12 is not None else "no estimate"
+    f24_sub = f"est EPS {cur}{eps_f24:.2f}" if eps_f24 is not None else "no estimate"
+    g_show = f"{epsg*100:+.0f}%" if epsg is not None else "n/a"
+    if eps_f12 is None and eps_f24 is None:
+        pe_block = ""   # no forward estimates configured for this name
+    else:
+        pe_block = f"""
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      {_pe_tile("Trailing P/E (TTM)", pe_ttm, ttm_sub)}
+      {_pe_tile("Forward P/E · ~12m (curr. FY)", pe_f12, f12_sub)}
+      {_pe_tile("Forward P/E · ~24m (next FY)", pe_f24, f24_sub, f24_cls)}
+      <div class="kgi{g_cls}"><div class="k">Est. EPS growth · 12→24m</div><div class="v">{g_show}</div></div>
+    </div>"""
+
     return f"""
   <section class="mod" id="mI">
     <div class="mod-head"><div class="mod-no">I</div>
@@ -290,12 +344,12 @@ def render_module_I(m: dict) -> str:
       <div class="kgi{' pos' if (m['price_pct'] or 0) < 0.4 else (' neg' if (m['price_pct'] or 0) > 0.85 else '')}"><div class="k">Price percentile · own 5y</div><div class="v">{m['price_pct']*100:.0f}%</div></div>
       <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">{m['pt_gap']*100:+.1f}% <small>PT {cur}{m['consensus_pt']:.2f}</small></div></div>
     </div>
-
+{pe_block}
     <div class="rev">
       <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
       <div class="rv">
-        <div class="n {rdcf_dir_class}">{rdcf['implied']:.2f}{rdcf['unit']}</div>
-        <div class="l">is the value of <b>{rdcf['driver']}</b> that reconciles the median MC fair value to today's <b>{cur}{m['spot']:.2f}</b> price. That is <b>{rdcf_gap_show} {rdcf_direction}</b> the pipeline's base-case mode of <b>{rdcf['mode_value']}{rdcf['unit']}</b>.</div>
+        <div class="n {rdcf_dir_class}">{imp_prefix}{rdcf['implied']:.2f}{rdcf['unit']}</div>
+        <div class="l">is the value of <b>{rdcf['driver']}</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>{cur}{m['spot']:.2f}</b> price. That is <b>{rdcf_gap_show} {rdcf_direction}</b> the pipeline's base-case mode of <b>{rdcf['mode_value']}{rdcf['unit']}</b>.{sat_note}</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
     </div>
@@ -317,7 +371,7 @@ def render_module_I(m: dict) -> str:
     </div>
 
     <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history ({m['n_days']} sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.{" <b>Note:</b> the listing history is shorter than the metric windows — cells report n/a rather than a backfilled guess, and fill in automatically on future re-runs as the tape accrues." if m['n_days'] < 260 else ""}</p>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
         <tr><td>Realised volatility 1y (ann.)</td><td class="num">{_fmt_pct(m['vol_1y'])}</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
@@ -328,11 +382,11 @@ def render_module_I(m: dict) -> str:
         <tr><td>Beta vs {m['bench2_label']}</td><td class="num">{_fmt_num(m['beta_stoxx'], 2)}</td><td>R² = {_fmt_num(m['r2_stoxx'], 2)}. 252-day OLS.</td></tr>
         {macro_row}
       </tbody>
-    </table>
+    </table></div>
 
     { ('<p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div>' + peer_rows + '</div>') if peer_rows else '' }
 
-    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a {rdcf['driver']} of <b>{rdcf['implied']:.2f}{rdcf['unit']}</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a {rdcf['driver']} of <b>{imp_prefix}{rdcf['implied']:.2f}{rdcf['unit']}</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
       <div class="src">Sources: Yahoo Finance v8 chart API ({m['ticker']}, {m['bench1_ticker']}, {m['bench2_ticker']}{macro_source_note}) — fetched {m['build_date']}. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
     </div>
   </section>
@@ -375,10 +429,10 @@ def render_module_J(m: dict) -> str:
     <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
 
     <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — {br['variable']} through the cycle</div>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
       <tbody>{rows}</tbody>
-    </table>
+    </table></div>
     <div class="cbar" style="margin-top:14px">
       <div class="fl" style="left:0;right:0"></div>
       <div class="mk" style="left:{pos*100:.1f}%"></div>
@@ -467,6 +521,8 @@ def inject(name: str) -> str:
     v_j = "bull" if m["composite"] > 0.65 else ("bear" if m["composite"] < 0.40 else "mixed")
     v_j_txt = v_j.upper()
     rdcf_gap_show = f"{m['rdcf_gap']*100:+.1f}%" if m['rdcf_gap'] is not None else "n/a"
+    if m["reverse_dcf"].get("saturated") and m['rdcf_gap'] is not None:
+        rdcf_gap_show = ("≥ " if m["reverse_dcf"]["saturated"] == "hi" else "≤ ") + rdcf_gap_show
     kelly_show = f"{m['kelly']*100:+.0f}%" if m['kelly'] is not None else "n/a"
     row_i = f'<tr><td>I · Asymmetry</td><td><span class="vchip {v_i}">{v_i_txt}</span></td><td>Kelly f* {kelly_show}, asymmetry {m["asymmetry"]:.2f}×, market implies {rdcf_gap_show} vs pipeline mode</td></tr>'
     row_j = f'<tr><td>J · Base rates</td><td><span class="vchip {v_j}">{v_j_txt}</span></td><td>Composite {m["composite"]*100:.0f}/100 · OE-yield spread {m["real_spread_bp"]:+.0f} bp real</td></tr>'
@@ -481,6 +537,23 @@ def inject(name: str) -> str:
     else:
         html = re.sub(r'<tr><td>I · Asymmetry</td>.*?</tr>', row_i, html, count=1, flags=re.S)
         html = re.sub(r'<tr><td>J · Base rates</td>.*?</tr>', row_j, html, count=1, flags=re.S)
+
+    # ---- Live-price sync for the authored Module A JS engine ----
+    # The interactive engine (const PRICE), its chart annotations and its
+    # legend/subtitle labels must show the same live spot Modules I & J use;
+    # authored narrative prose keeps its stated as-of framing untouched.
+    spot_show = f"{m['spot']:.2f}"
+    esc_cur = re.escape(m.get("cur", "€"))
+    NUM = r'[0-9]+(?:[.,][0-9]+)*'
+    html = re.sub(r'(const PRICE\s*=\s*)' + NUM, lambda mo: mo.group(1) + spot_show, html)
+    html = re.sub(r'(>price ' + esc_cur + r')' + NUM + r'(</text>)',
+                  lambda mo: mo.group(1) + spot_show + mo.group(2), html)
+    html = re.sub(r'(</span>price ' + esc_cur + r')' + NUM + r'(</span>)',
+                  lambda mo: mo.group(1) + spot_show + mo.group(2), html)
+    html = re.sub(r'(worth &gt; ' + esc_cur + r')' + NUM + r'(</span>)',
+                  lambda mo: mo.group(1) + spot_show + mo.group(2), html)
+    html = re.sub(r'(, price ' + esc_cur + r')' + NUM + r'( \([^)]*20\d\d[^)]*\))?',
+                  lambda mo: mo.group(1) + spot_show + f" (live, {m['build_date']})", html)
 
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Wave Portfolio — 10-Year Simple Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:800px}
+  .keystat{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .ks{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;min-width:92px}
+  .ks .kl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .ks .kv{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:2px}
+  .ks .kv small{font-size:11px;color:var(--muted);font-weight:400}
+  .legend{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .hero{margin-top:18px;background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--blue);border-radius:var(--radius);padding:clamp(16px,3vw,24px)}
+  .hero .htag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:8px}
+  .hero h3{font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.15}
+  .hero h3 b{color:var(--blue-deep)}
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:680px){.lenses{grid-template-columns:1fr}}
+  .lens{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .lens .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .lens .lh{font-family:var(--disp);font-weight:600;font-size:14px;margin-bottom:5px}
+  .lens.empir .lh{color:var(--coral-deep)} .lens.comp .lh{color:var(--blue-deep)} .lens.owner .lh{color:var(--teal-deep)}
+  .lens .lb{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .synth{margin-top:14px;background:var(--blue-wash);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55}
+  .synth b{color:var(--blue-deep)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .reactab .rr{display:grid;grid-template-columns:118px 1fr 86px;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:560px){.reactab .rr{grid-template-columns:80px 1fr 64px}}
+  .reactab .re{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  .reactab .rd{font-size:12px;color:var(--muted);line-height:1.4}
+  .reactab .rp{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;color:var(--coral-deep)}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:58px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:16px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)} .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:185px 1fr 66px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:120px 1fr 52px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:116px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:86px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+
+  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){.qgrid{grid-template-columns:1fr}}
+  .qcard{border:1px solid var(--line);border-radius:12px;padding:14px 15px 15px;background:var(--surface-2)}
+  .qtt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.01em}
+  .qsub{font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.35}
+  .qcard svg{display:block}
+  .qread{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .qread b{color:var(--ink)}
+</style>
+<style>
+  .bucket{border:1.5px solid var(--line);border-radius:14px;padding:clamp(14px,2.5vw,20px);background:var(--surface);margin:14px 0}
+  .bucket.core{border-color:var(--teal)}
+  .bucket.wave{border-color:var(--blue)}
+  .bucket.opt{border-color:var(--amber)}
+  .bucket .bt{font-family:var(--disp);font-weight:600;font-size:18px;margin-bottom:4px}
+  .bucket .bs{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+  .bucket .bw{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:12px}
+  .alloc{display:flex;height:22px;border-radius:8px;overflow:hidden;margin:12px 0 6px;border:1px solid var(--line)}
+  .alloc div{height:100%}
+  .a-core{background:var(--teal);width:40%}
+  .a-p1{background:var(--coral);width:25%}
+  .a-p2{background:var(--blue);width:20%}
+  .a-p3{background:var(--amber);width:15%}
+  .alab{display:flex;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px}
+  .alab b{color:var(--ink)}
+  table.pt{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+  table.pt th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);text-align:left;padding:8px 8px;border-bottom:1px solid var(--line-strong)}
+  table.pt td{padding:9px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  table.pt td.num{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+  table.pt tr:last-child td{border-bottom:none}
+  .hold{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--teal-deep);white-space:nowrap}
+  .hold.med{color:var(--blue-deep)}
+  .hold.short{color:var(--coral-deep)}
+  .hold.long{color:var(--amber-deep)}
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:700px){.rules{grid-template-columns:1fr}}
+  .rule{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .rule h4{font-family:var(--disp);font-size:14px;margin-bottom:6px}
+  .rule p{font-size:12.5px;color:var(--muted);line-height:1.45;margin:0}
+  .timeline{margin:16px 0;padding-left:16px;border-left:2px solid var(--line-strong)}
+  .tl{margin:0 0 14px;position:relative}
+  .tl::before{content:"";position:absolute;left:-21px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid #fff}
+  .tl .y{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--teal-deep)}
+  .tl .t{font-family:var(--disp);font-weight:600;font-size:14px;margin:2px 0}
+  .tl .b{font-size:12.5px;color:var(--muted);line-height:1.45}
+  .callout{border-left:3px solid var(--blue);background:var(--blue-wash);border-radius:0 10px 10px 0;padding:14px 16px;margin:14px 0;font-size:13.5px;line-height:1.55}
+  .callout.teal{border-left-color:var(--teal);background:var(--teal-wash)}
+  .callout.amber{border-left-color:var(--amber);background:var(--amber-wash)}
+  .callout.coral{border-left-color:var(--coral);background:var(--coral-wash)}
+  h2.sec{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);margin:26px 0 10px;scroll-margin-top:12px}
+  p.lead{font-size:15px;line-height:1.6;margin-bottom:12px}
+  p.body{font-size:14px;line-height:1.55;margin-bottom:12px}
+  .footer-note{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.55}
+  .simple-box{background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--ink);border-radius:14px;padding:clamp(16px,3vw,22px);margin:18px 0}
+  .simple-box h3{font-family:var(--disp);font-size:17px;margin-bottom:10px}
+  .simple-box ol{margin:0 0 0 18px;font-size:14px;line-height:1.65}
+  .simple-box li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Portfolio design · AI waves · 10-year · streamlined · built 2026-07-20</div>
+  <h1>AI wave portfolio
+    <span class="sub">A simple book built to ride <b>all four profit phases</b> over ~10 years — maximum economic exposure with as few names as possible, clear hold periods, and rules for when to rotate.</span>
+  </h1>
+
+  <div class="keystat">
+    <div class="ks"><div class="kl">Names</div><div class="kv">10</div></div>
+    <div class="ks"><div class="kl">Horizon</div><div class="kv">10<small> years</small></div></div>
+    <div class="ks"><div class="kl">Core hold</div><div class="kv">40<small>%</small></div></div>
+    <div class="ks"><div class="kl">Review</div><div class="kv">2×<small> / year</small></div></div>
+    <div class="ks"><div class="kl">Style</div><div class="kv">Phase<small> rotate</small></div></div>
+  </div>
+
+  <div class="simple-box">
+    <h3>The whole strategy in five lines</h3>
+    <ol>
+      <li><b>Always own the platforms</b> that convert AI into cash (cloud + distribution) — never fully exit.</li>
+      <li><b>Overweight picks &amp; shovels while scarce</b> (chips, memory, networking, power gear) — <b>trim hard</b> when growth decelerates.</li>
+      <li><b>Build power + cloud utilisation</b> as the multi-year backlog (Phase 2).</li>
+      <li><b>Add workflow software only after paid AI attach is proven</b> (Phase 3) — do not overpay early.</li>
+      <li><b>Rebalance twice a year</b> on rules below; ignore weekly narrative.</li>
+    </ol>
+  </div>
+
+  <h2 class="sec">1 · Target book (day one, mid-2026)</h2>
+  <p class="lead">Ten names. Four buckets. One allocation bar. This is the starting mix for <b>late Phase 1 / early Phase 2</b>.</p>
+
+  <div class="alloc">
+    <div class="a-core" title="Core platforms 40%"></div>
+    <div class="a-p1" title="Wave A tools 25%"></div>
+    <div class="a-p2" title="Wave B power 20%"></div>
+    <div class="a-p3" title="Wave C apps 15%"></div>
+  </div>
+  <div class="alab">
+    <span><b style="color:var(--teal-deep)">40% Core</b> platforms (hold decade)</span>
+    <span><b style="color:var(--coral-deep)">25% Wave A</b> tools (2–4y)</span>
+    <span><b style="color:var(--blue-deep)">20% Wave B</b> power/grid (4–8y)</span>
+    <span><b style="color:var(--amber-deep)">15% Wave C</b> apps (5–10y, scale in later)</span>
+  </div>
+
+  <!-- CORE -->
+  <div class="bucket core">
+    <div class="bs">Bucket 1 · Core · 40% · never fully exit</div>
+    <div class="bt">Platforms — own the customer and the cloud</div>
+    <div class="bw">These names straddle Phase 2 and Phase 3/4. They fund the buildout <i>and</i> monetise intelligence through software, ads, and cloud contracts. Maximum long-run profit capture lives here even if tool multiples die.</div>
+    <div class="tbl-scroll"><table class="pt">
+      <thead><tr><th>Weight</th><th>Name</th><th>Hold</th><th>Why</th><th>Exit / trim rule</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">18%</td>
+          <td><b>Microsoft</b> <span style="color:var(--faint)">MSFT</span></td>
+          <td><span class="hold long">10 years · core</span></td>
+          <td>Azure capacity + Office/GitHub/Security distribution. Best single name for P2→P3→P4.</td>
+          <td>Trim only if Azure growth collapses for 4+ quarters <i>and</i> Copilot attach stalls. Never zero.</td>
+        </tr>
+        <tr>
+          <td class="num">12%</td>
+          <td><b>Alphabet</b> <span style="color:var(--faint)">GOOGL</span></td>
+          <td><span class="hold long">10 years · core</span></td>
+          <td>TPU economics + Search/YouTube/Cloud. Cheap relative AI optionality vs peers.</td>
+          <td>Trim if search franchise breaks (share loss + ads ROI failure) for a full year. Floor 6%.</td>
+        </tr>
+        <tr>
+          <td class="num">10%</td>
+          <td><b>Amazon</b> <span style="color:var(--faint)">AMZN</span></td>
+          <td><span class="hold long">10 years · core</span></td>
+          <td>AWS + ads + retail agents. Capex trough years are entry, not exit.</td>
+          <td>Trim if AWS decelerates hard while capex stays elevated 6+ quarters with no utilisation recovery. Floor 5%.</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- WAVE A -->
+  <div class="bucket wave">
+    <div class="bs">Bucket 2 · Wave A · 25% · ride scarcity, then rotate</div>
+    <div class="bt">Picks &amp; shovels — chips, memory, network</div>
+    <div class="bw">Phase 1 residual. Highest near-term profit torque. <b>Not</b> a forever book — sell into deceleration so capital funds Phase 2–3.</div>
+    <div class="tbl-scroll"><table class="pt">
+      <thead><tr><th>Weight</th><th>Name</th><th>Hold</th><th>Why</th><th>Exit / trim rule</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">10%</td>
+          <td><b>NVIDIA</b> <span style="color:var(--faint)">NVDA</span></td>
+          <td><span class="hold short">Hold 1–3 years · active</span></td>
+          <td>Still owns training/inference stack and networking. Largest Phase 1 P&amp;L pool.</td>
+          <td><b>Trim ⅓</b> on first clear YoY data-centre growth deceleration; <b>cut to 0–3%</b> if gross margin structurally compresses or hyperscaler capex guides down mid-teens+ for two seasons.</td>
+        </tr>
+        <tr>
+          <td class="num">7%</td>
+          <td><b>TSMC</b> <span style="color:var(--faint)">TSM</span></td>
+          <td><span class="hold med">Hold 3–5 years</span></td>
+          <td>Bottleneck foundry + packaging. Broader AI silicon exposure without single-customer CUDA risk.</td>
+          <td>Trim if CoWoS/advanced packaging under-utilises 2+ quarters or geopolitics forces derating you can’t hold. Prefer hold through NVDA inventory wobbles.</td>
+        </tr>
+        <tr>
+          <td class="num">5%</td>
+          <td><b>Micron</b> <span style="color:var(--faint)">MU</span></td>
+          <td><span class="hold short">Hold 2–4 years · cycle</span></td>
+          <td>HBM scarcity is a pure Phase 1 cash machine; classic memory cyclicality.</td>
+          <td>Treat as cycle: <b>trim into HBM ASP peaks / capacity announcements</b>; rebuy on industry undersupply signals. Do not average down forever.</td>
+        </tr>
+        <tr>
+          <td class="num">3%</td>
+          <td><b>Arista</b> <span style="color:var(--faint)">ANET</span></td>
+          <td><span class="hold med">Hold 2–5 years</span></td>
+          <td>AI Ethernet fabric; cluster scale keeps networking first-class.</td>
+          <td>Trim if AI-related growth gaps twice in a row or Ethernet share story reverses. Smaller size = less monitoring burden.</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- WAVE B -->
+  <div class="bucket wave" style="border-color:var(--blue)">
+    <div class="bs">Bucket 3 · Wave B · 20% · build now, hold longer</div>
+    <div class="bt">Power &amp; grid — Phase 2 multi-year backlog</div>
+    <div class="bw">Atoms with lead times. This is where capital from Wave A trims should <b>land first</b> (2026–29).</div>
+    <div class="tbl-scroll"><table class="pt">
+      <thead><tr><th>Weight</th><th>Name</th><th>Hold</th><th>Why</th><th>Exit / trim rule</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">8%</td>
+          <td><b>Constellation</b> <span style="color:var(--faint)">CEG</span></td>
+          <td><span class="hold med">Hold 5–8 years</span></td>
+          <td>Nuclear + data-centre load; multi-year contracted demand story.</td>
+          <td>Trim if load contracts cancel or policy kills nuclear economics. Add when Wave A is sold.</td>
+        </tr>
+        <tr>
+          <td class="num">7%</td>
+          <td><b>Vertiv</b> <span style="color:var(--faint)">VRT</span></td>
+          <td><span class="hold med">Hold 4–7 years</span></td>
+          <td>Thermal + modular power inside the DC — scarcity of deployment, not of GPUs.</td>
+          <td>Trim after backlog peaks and growth normalises to high-single digits. Watch inventory/channel.</td>
+        </tr>
+        <tr>
+          <td class="num">5%</td>
+          <td><b>GE Vernova</b> <span style="color:var(--faint)">GEV</span></td>
+          <td><span class="hold long">Hold 6–10 years</span></td>
+          <td>Turbines/grid equipment — slow-burn Phase 2; hard to replicate capacity.</td>
+          <td>Hold through cycles unless order book collapses. Longer duration than semis.</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <!-- WAVE C -->
+  <div class="bucket opt">
+    <div class="bs">Bucket 4 · Wave C · 15% · start small, scale 2028+</div>
+    <div class="bt">Application cash flows — only with proof</div>
+    <div class="bw">Phase 3 is where long-run surplus may sit, but <b>paying for it too early destroys returns</b>. Start modest; increase when AI is a paid SKU with NRR, not a keynote.</div>
+    <div class="tbl-scroll"><table class="pt">
+      <thead><tr><th>Weight</th><th>Name</th><th>Hold</th><th>Why</th><th>Exit / trim rule</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="num">8%</td>
+          <td><b>ServiceNow</b> <span style="color:var(--faint)">NOW</span></td>
+          <td><span class="hold long">Hold 7–10 years · scale in</span></td>
+          <td>Workflow system of record — agents sit on tickets/ops, not a chat tab.</td>
+          <td>Add on weakness if AI ARR grows and cRPO solid. Exit if AI is free bundle that compresses seats.</td>
+        </tr>
+        <tr>
+          <td class="num">7%</td>
+          <td><b>CrowdStrike</b> <span style="color:var(--faint)">CRWD</span></td>
+          <td><span class="hold long">Hold 6–10 years · scale in</span></td>
+          <td>Security is forced spend as AI attack surface grows; platform attach.</td>
+          <td>Trim on sustained growth/margin war. Prefer over “AI chatbot” software.</td>
+        </tr>
+      </tbody>
+    </table></div>
+    <p class="body" style="margin-top:10px;font-size:13px;color:var(--muted)"><b>Optional later adds (from cash after Wave A trims, not from day one):</b> Salesforce (CRM), Palantir (only if valuation cools and commercial growth holds), Adobe (if Firefly monetisation proves). Do <b>not</b> expand Wave C above 25% of the book before 2028 without proof.</p>
+  </div>
+
+  <div class="callout teal">
+    <b>What this 10-name set covers.</b> Training/inference silicon (NVDA), foundry/packaging (TSM), HBM (MU), cluster network (ANET), DC power gear (VRT), generation (CEG), grid equipment (GEV), cloud platforms (MSFT/AMZN/GOOGL), workflow apps (NOW), security apps (CRWD). That is the full stack from atoms to agents without a 40-stock zoo.
+  </div>
+
+  <h2 class="sec">2 · How long to hold each stock — summary</h2>
+  <div class="tbl-scroll"><table class="pt">
+    <thead><tr><th>Name</th><th>Default hold</th><th>Primary wave</th><th>One-line “why this long”</th></tr></thead>
+    <tbody>
+      <tr><td><b>MSFT</b></td><td class="num hold long">~10y</td><td>P2→P4</td><td>Distribution + cloud; profits compound after tools peak</td></tr>
+      <tr><td><b>GOOGL</b></td><td class="num hold long">~10y</td><td>P2→P4</td><td>Ads + TPU + query surface; long surplus capture</td></tr>
+      <tr><td><b>AMZN</b></td><td class="num hold long">~10y</td><td>P2→P4</td><td>AWS + ads; buy capex troughs, hold FCF recovery</td></tr>
+      <tr><td><b>NVDA</b></td><td class="num hold short">1–3y active</td><td>P1</td><td>Scarcity rent is finite; rotate when second derivative flips</td></tr>
+      <tr><td><b>TSM</b></td><td class="num hold med">3–5y</td><td>P1–P2</td><td>Bottleneck longer than any single GPU generation</td></tr>
+      <tr><td><b>MU</b></td><td class="num hold short">2–4y cycle</td><td>P1</td><td>HBM boom/bust; trade the cycle, don’t marry it</td></tr>
+      <tr><td><b>ANET</b></td><td class="num hold med">2–5y</td><td>P1–P2</td><td>Cluster networking co-moves with buildout, then normalises</td></tr>
+      <tr><td><b>CEG</b></td><td class="num hold med">5–8y</td><td>P2</td><td>Power contracts and nuclear timelines are multi-year</td></tr>
+      <tr><td><b>VRT</b></td><td class="num hold med">4–7y</td><td>P1–P2</td><td>Deployment backlog outlasts chip inventory cycles</td></tr>
+      <tr><td><b>GEV</b></td><td class="num hold long">6–10y</td><td>P2</td><td>Grid/turbine capacity is slow; longest industrial hold</td></tr>
+      <tr><td><b>NOW</b></td><td class="num hold long">7–10y</td><td>P3</td><td>Workflow SoR; scale weight as AI attach proves</td></tr>
+      <tr><td><b>CRWD</b></td><td class="num hold long">6–10y</td><td>P3</td><td>Security platform; AI expands budget, not a fad feature</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="sec">3 · 10-year rotation calendar</h2>
+  <p class="body">You do not need monthly trading. You need <b>two reviews per year</b> and pre-committed moves.</p>
+
+  <div class="timeline">
+    <div class="tl">
+      <div class="y">Now → 2027 · Phase 1 residual</div>
+      <div class="t">Run Wave A hot; Core permanent; Wave B building; Wave C small</div>
+      <div class="b">Target: Core 40% · A 25% · B 20% · C 15%. Harvest NVDA/MU strength into CEG/VRT/GEV if tools run ahead of fundamentals.</div>
+    </div>
+    <div class="tl">
+      <div class="y">2027 → 2029 · Phase 2 dominance</div>
+      <div class="t">Sell most of Wave A; Wave B becomes the growth engine; Core still largest</div>
+      <div class="b">Target shift: Core 45% · A 8–12% · B 28–32% · C 15–18%. Keep a token NVDA/TSM stub only if still scarce. Cloud FCF recovery is the Core thesis test.</div>
+    </div>
+    <div class="tl">
+      <div class="y">2029 → 2032 · Phase 3 scale-in</div>
+      <div class="t">Grow Wave C with proof; hold Core; Wave B matures</div>
+      <div class="b">Target shift: Core 45% · A 0–5% · B 20% · C 30%. Add CRM/vertical only if NRR + paid AI SKUs clear. Cut Wave B names that have re-rated to terminal growth.</div>
+    </div>
+    <div class="tl">
+      <div class="y">2032 → 2035 · Phase 4 posture</div>
+      <div class="t">Almost all capital in Core + proven apps; tools only if structural oligopoly remains</div>
+      <div class="b">Target: Core 55%+ · C 30% · B 10% · A 0–5%. Book should look like a quality compounder portfolio that <i>uses</i> AI, not an “AI theme” basket.</div>
+    </div>
+  </div>
+
+  <h2 class="sec">4 · Simple operating rules (print this)</h2>
+  <div class="rules">
+    <div class="rule">
+      <h4>1 · Review twice a year</h4>
+      <p>After hyperscaler capex season and after semi results cluster. No more than two discretionary trades outside reviews unless a kill rule fires.</p>
+    </div>
+    <div class="rule">
+      <h4>2 · Second derivative rule (Wave A)</h4>
+      <p>If NVDA or hyperscaler AI capex growth <b>decelerates</b> YoY, trim Wave A the same quarter — don’t wait for the narrative to die.</p>
+    </div>
+    <div class="rule">
+      <h4>3 · Proceeds waterfall</h4>
+      <p>Wave A sales → first into Wave B (power) underweight, then Core dips, then Wave C. Never recycle tool profits into more speculative AI apps.</p>
+    </div>
+    <div class="rule">
+      <h4>4 · Wave C proof gate</h4>
+      <p>Do not raise C above 20% until at least one of NOW/CRWD (or adds) shows <b>disclosed AI attach + stable/rising NRR</b> for two consecutive reports.</p>
+    </div>
+    <div class="rule">
+      <h4>5 · Position caps</h4>
+      <p>No single name &gt; 20% (MSFT exception to 22% after run-up). Wave A total never &gt; 30% after 2027.</p>
+    </div>
+    <div class="rule">
+      <h4>6 · Kill switches (exit line)</h4>
+      <p>Hyperscaler capex −15%+ YoY two seasons → cut Wave A to ≤10%. Tool GMs collapse structurally → exit NVDA/MU stubs. Core cloud growth &lt; mid-single digits for a year → reassess entire thesis weight in equities.</p>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <b>Maximum profit ≠ maximum concentration in the hottest name.</b> The path that historically fails is riding Phase 1 winners into Phase 2 with full size. This book forces rotation: tools pay for power; power and platforms fund applications; applications and platforms own the end-state surplus.
+  </div>
+
+  <h2 class="sec">5 · What we deliberately left out (and why)</h2>
+  <p class="body">Simplicity is the point. Omitted on purpose:</p>
+  <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.55;color:var(--muted)">
+    <li><b>Pure model labs / AI IPO wrappers</b> — binary, no hold rule you can execute calmly.</li>
+    <li><b>SMCI-type ODMs</b> — inventory and margin traps; exposure via NVDA/TSM is enough.</li>
+    <li><b>Every utility / every semi</b> — CEG + GEV + VRT covers power stack; NVDA/TSM/MU/ANET covers silicon stack.</li>
+    <li><b>Meta as core</b> — optional satellite later; ads thesis already partly in GOOGL; reduces overlap.</li>
+    <li><b>Leverage / options overlays</b> — destroy the “simple 10-year” mandate.</li>
+  </ul>
+
+  <h2 class="sec">6 · One-page target path</h2>
+  <div class="tbl-scroll"><table class="pt">
+    <thead><tr><th>Era</th><th>Core</th><th>Wave A tools</th><th>Wave B power</th><th>Wave C apps</th></tr></thead>
+    <tbody>
+      <tr><td><b>2026–27</b></td><td class="num">40%</td><td class="num">25%</td><td class="num">20%</td><td class="num">15%</td></tr>
+      <tr><td><b>2028–29</b></td><td class="num">45%</td><td class="num">10%</td><td class="num">30%</td><td class="num">15%</td></tr>
+      <tr><td><b>2030–32</b></td><td class="num">45%</td><td class="num">5%</td><td class="num">20%</td><td class="num">30%</td></tr>
+      <tr><td><b>2033–35</b></td><td class="num">55%</td><td class="num">0–5%</td><td class="num">10%</td><td class="num">30–35%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="callout coral">
+    <b>Honest constraint.</b> No portfolio “gets all of the exposure and maximum possible profits” without risk of large drawdowns. This design maximises <i>phase coverage</i> and <i>forced profit-taking from scarcity into duration</i>. It will lag a pure NVDA rocket in a blow-off year — and is built to still be solvent and compounding when that rocket inventory-corrects.
+  </div>
+
+  <div class="footer-note">
+    <b>Not investment advice.</b> Framework for structuring a 10-year AI-phase portfolio; weights and names are illustrative starting points, not optimised mean-variance output. Align with your risk tolerance, tax situation, and mandate. Companion: <code>stocks/ai-supercycle-report.html</code> (phases, company map, bubble analysis).<br><br>
+    File: <code>stocks/ai-wave-portfolio.html</code> · built 2026-07-20
+  </div>
+
+</div>
+</body>
+</html>

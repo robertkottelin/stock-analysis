@@ -282,11 +282,134 @@
   .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
   .audit .refs cite{font-style:italic;color:var(--ink)}
 </style>
+
+<style id="ux-fixes">
+  /* ===== Shared UX / mobile fixes (all reports) ===== */
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+  }
+
+  /* Sticky stepper: contain horizontal scroll; never pan the page */
+  .stepper{
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid transparent;
+  }
+  .stepper a{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper a:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+  }
+
+  /* Anchor offset under sticky stepper (modules + audit) */
+  .mod,.audit,#mAudit{scroll-margin-top:76px}
+
+  /* Flex children must be allowed to shrink or long text overflows */
+  .mod-head .ht{min-width:0;flex:1 1 auto}
+  .verdict .vtext{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;word-break:break-word}
+  .cmprow{gap:10px}
+  .cmprow .ck{min-width:0;overflow-wrap:anywhere}
+  .cmprow .cv{flex:0 0 auto;max-width:48%;text-align:right;overflow-wrap:anywhere}
+  .ri .rd,.kci,.note,.reading,.synth,.overall .ov-text,.blend .bl,
+  .rev .rv .l,.rev .rv .m,.sc .scd,.lens .lb,p.body,.body{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .hl{white-space:normal;overflow-wrap:break-word}
+  .verdict .vtext{overflow-wrap:break-word;word-break:normal}
+
+  /* Tag chips: wrap under title on narrow screens instead of crushing h2 */
+  @media (max-width:560px){
+    .mod-head{flex-wrap:wrap;gap:10px 12px}
+    .mod-head .tagchip,.mod-head > .tagchip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:center;line-height:1.25}
+    .verdict{align-items:flex-start}
+    .verdict .vchip{margin-top:1px}
+    .keystat .ks{min-width:0;flex:1 1 calc(50% - 8px)}
+  }
+
+  /* Horizontal table scroll without page-level horizontal scroll */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    max-width:100%;
+    margin:0 0 4px;
+    padding-bottom:2px;
+  }
+  .tbl-scroll > table{margin-top:0}
+  th,td{overflow-wrap:anywhere}
+  td.num,td.mono{overflow-wrap:normal;word-break:normal}
+
+  /* Peer / bar rows: collapse fixed label columns on small phones */
+  @media (max-width:480px){
+    .br{grid-template-columns:minmax(0,1fr) 48px !important;gap:6px 8px}
+    .br .brt{grid-column:1 / -1;order:3;height:14px}
+    .br .brl{font-size:12px}
+    .br .brv{font-size:11px}
+    .barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}
+    .barsrow .bb{grid-column:1 / -1;order:3}
+    .barsrow .bl{font-size:10px}
+    .reactab .rr{grid-template-columns:1fr 56px !important;gap:6px 8px}
+    .reactab .rd{grid-column:1 / -1;order:3}
+    .ri{flex-direction:column;gap:4px}
+    .ri .rk{width:auto !important}
+  }
+
+  /* Module I/J grids: tighter on phones */
+  @media (max-width:480px){
+    .kg{grid-template-columns:1fr 1fr}
+    .kelly{grid-template-columns:1fr !important}
+    .fac{grid-template-columns:1fr 1fr !important}
+  }
+  @media (max-width:360px){
+    .kg{grid-template-columns:1fr}
+    .fac{grid-template-columns:1fr !important}
+    .kelly{grid-template-columns:1fr !important}
+  }
+
+  /* Scenario cards: kill forced min-heights that leave huge empty gaps on mobile */
+  @media (max-width:560px){
+    .scard .sd{min-height:0 !important}
+  }
+
+  /* Range inputs: larger touch targets on touch devices */
+  @media (pointer:coarse){
+    input[type=range]{height:8px}
+    input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+    input[type=range]::-moz-range-thumb{width:22px;height:22px}
+    .ev{padding:10px 14px;min-height:40px}
+    .stepper a{padding:9px 12px}
+  }
+
+  /* SVG charts scale */
+  .qcard svg,.mod svg:not([width]){max-width:100%;height:auto}
+  #hist,#tornado{max-width:100%}
+
+  /* Long mono audit URLs / tokens */
+  .audit table td.mono,.src{overflow-wrap:anywhere;word-break:break-word}
+
+  /* cbar labels (Module J) */
+  .cbar{margin-bottom:18px;overflow:visible}
+  .cbar .lb{max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+
+  .cut,.notes,.disc{overflow-wrap:anywhere}
+
+  /* Keep page width stable without breaking position:sticky
+     (overflow-x on body/wrap makes sticky fail in Chrome/Safari).
+     Wide tables are handled by .tbl-scroll wrappers. */
+  img,svg,video,canvas{max-width:100%}
+</style>
+
 </head>
 <body>
 <div class="wrap">
 
-  <div class="eyebrow">Institutional analytics layer · strict-data build · Orion Corporation · HEL: ORNBV · built 2026-07-17</div>
+  <div class="eyebrow">Institutional analytics layer · strict-data build · Orion Corporation · HEL: ORNBV · built 2026-07-19</div>
   <h1>Orion — the analyst's instrument panel
     <span class="sub">Same hard rule as the rest of this series: every number here is either <b>sourced</b> (fetched from a citable source), <b>computed</b> (calculated by this tool from sourced inputs), or an explicit <b>assumption</b> you set yourself. Nothing is asserted from memory, and nothing that could only be filled with a guess is included.</span>
   </h1>
@@ -298,7 +421,7 @@
   <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
     <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
       <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
-      <b style="color:var(--ink);font-weight:600">Built 2026-07-17 10:37</b>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-19 19:03</b>
     </span>
     <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
       Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
@@ -314,7 +437,8 @@
     <a href="#mF"><span class="n">F</span>Positioning</a>
     <a href="#mG"><span class="n">G</span>Peers</a>
     <a href="#mH"><span class="n">H</span>Kill-criteria</a>
-    <a href="#mP"><span class="n">P</span>Q2 playbook</a>
+    <a href="#mP"><span class="n">P</span>H1 print</a>
+    <a href="#mN"><span class="n">N</span>Nubeqa path</a>
     <a href="#mQ"><span class="n">Q</span>Quality</a>
     <a href="#mI"><span class="n">I</span>Asymmetry</a>
     <a href="#mJ"><span class="n">J</span>Base rates</a>
@@ -328,18 +452,18 @@
       <div class="ht"><h2>Sum-of-the-parts engine — the royalty stream priced apart from the base</h2><div class="hq">Two multiples, not one: Nubeqa® doesn't trade like the generics book, so it isn't valued like it either.</div></div>
       <span class="tagchip c">Computed</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Base-case median ≈ <b>€66</b> vs the €66.95 price (17 Jul 2026, pre-H1-release) — ~54% of paths land below price and the reverse-DCF premium to mode has compressed to +3.5%. The two-week ≈7% drift into today's print has closed most of the June gap: price now sits essentially <b>at</b> the model's base case.</span></div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">Post-print re-mark: base-case median ≈ <b>€69</b> at Nubeqa® €980m mode vs live spot <b>€77.40</b> (18 Jul) — price has run ~12% through the H1 beat. Reverse-DCF now needs ~€1.14bn Nubeqa® at mode multiples (or ~€1.0bn at an 8× re-rate). Quality thesis intact; valuation edge gone on the day.</span></div>
     <p class="body">20,000 paths. Orion reports a <b>single IFRS 8 segment</b> — the financial statements give net sales by business division but not divisional EBIT — so this engine can't do a normal EV/EBIT sum-of-the-parts. Instead it splits Orion into two euro-denominated sales streams, each carrying its <b>own</b> multiple: the Nubeqa®/Innovative Medicines royalty-and-product-sales stream (<code>nub</code> × <code>nmlt</code>) — high growth, high incremental margin, patent-protected into the late 2030s — and the rest of the group, Branded Products + Generics &amp; Consumer Health + Animal Health + Fermion combined (<code>base</code> × <code>bmlt</code>), which is mature, diversified and priced far closer to a plain generics/specialty multiple. A small pipeline-optionality term (<code>pipe</code>) sits on top for ODM-212, opevesostat and levosimendan; net debt (€131.0m, Q1'26 interim report) comes off before dividing by 140.69m shares.</p>
-    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The Nubeqa® run-rate mid-point, the correlation between drivers, and the tail/regime-shock probability are <b>your</b> calls, not data. The other two ranges (rest-of-Orion sales, both multiples, pipeline value) stay fixed at the ranges below unless you edit the source; the output is computed from whatever you set.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The Nubeqa® run-rate mid-point, the correlation between drivers, and the tail/regime-shock probability are <b>your</b> calls, not data. Post H1'26 the mid defaults to <b>€980m</b> (H1 €381.8m ÷ ~39% FY phasing). The other ranges stay fixed unless you edit the source.</p>
 
     <div class="mc-wrap">
       <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
-      <div class="mc-sub">Fixed inputs (sourced): net debt €131.0m (Q1'26), 140.69m shares, price €66.95 (17 Jul 2026, pre-H1-release). Marginal ranges calibrated to the FY2025 financial statement release, the Q1'26 interim report, and sell-side Nubeqa® consensus.</div>
+      <div class="mc-sub">Fixed inputs (sourced): net debt €131.0m (Q1'26), 140.69m shares, price €77.40 (live, 2026-07-19). Marginals re-marked to H1'26 Nubeqa® print + FY guidance raise.</div>
       <div class="controls">
         <div class="ctrl">
-          <label><span class="lab">Nubeqa® run-rate €m/yr <span>assumption</span></span><span class="cval">€<span id="v-mid">900</span>m</span></label>
-          <input type="range" id="i-mid" min="700" max="1050" step="10" value="900">
-          <div class="tri">FY2025 actual €610m · sell-side consensus ≈+50% YoY ≈ €915m</div>
+          <label><span class="lab">Nubeqa® run-rate €m/yr <span>assumption</span></span><span class="cval">€<span id="v-mid">980</span>m</span></label>
+          <input type="range" id="i-mid" min="850" max="1200" step="10" value="980">
+          <div class="tri">FY2025 €610m · H1'26 €382m · H1-implied FY26e ≈ €980m · company &gt;€1bn ambition</div>
         </div>
         <div class="ctrl">
           <label><span class="lab">Driver correlation <span>assumption</span></span><span class="cval"><span id="v-corr">55</span>%</span></label>
@@ -372,13 +496,13 @@
 
       <div class="hist-wrap">
         <div class="hist-leg">
-          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €66.95</span>
-          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €66.95</span>
-          <span><span class="sw" style="background:var(--ink)"></span>price €66.95</span>
+          <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €77.40</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €77.40</span>
+          <span><span class="sw" style="background:var(--ink)"></span>price €77.40</span>
           <span><span class="sw" style="background:var(--amber)"></span>median</span>
           <span><span class="sw" style="background:var(--faint)"></span>independent P10</span>
         </div>
-        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
       </div>
       <div class="reading" id="reading"></div>
     </div>
@@ -393,7 +517,7 @@
     </div>
     <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The two Nubeqa®-complex drivers (its multiple, then its own run-rate) dominate the answer; the "rest of Orion" — generics, consumer health, animal health, Fermion — barely moves fair value at all, on either its sales or its multiple. That is the computed answer to "which drivers actually predict this stock": proprietary/patented, by a wide margin.</span></div>
     <p class="body">Each bar swings one driver from its low to its high (others held at mode) and shows the fair-value range. Computed from the same marginals as the engine — this is the direct, quantitative answer to the question this build set out to research.</p>
-    <svg id="tornado" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="tornado" viewBox="0 0 700 260" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
     <div class="note t"><b>Read:</b> ranked by swing, it's the <b>Nubeqa® multiple</b> (€22 swing) fractionally ahead of the <b>Nubeqa® run-rate itself</b> (€17), then the <b>rest-of-Orion multiple</b> (€13), with the <b>pipeline optionality</b> (€4) and the <b>rest-of-Orion sales figure</b> (€3) barely moving the needle. Two things follow. First, re-rating risk is as large as fundamental risk here — what multiple the market keeps paying for the royalty stream matters as much as how fast the royalty stream itself grows. Second, the generics/consumer-health/animal-health base is low-swing on <i>both</i> its sales <i>and</i> its multiple — it is the floor under the valuation, not the story, precisely because it is the least uncertain part of the business. Net sales of proprietary, patent-protected products (Nubeqa®) are the dominant predictor; net sales of generics are close to irrelevant at the margin; R&amp;D pipeline optionality is real but, in today's euros, still small.</div>
   </section>
 
@@ -403,12 +527,12 @@
       <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
       <span class="tagchip a">Computed + your assumptions</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At neutral priors the probability-weighted value ≈ <b>€66</b> — now ≈ fair against the €66.95 pre-release price. The bull anchor (≈€69) clears price for the first time since spring; the bear anchor (≈€63) sits ~5% below. Today's H1 print (Module P) is exactly the evidence these priors are waiting for.</span></div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">At neutral priors the probability-weighted value ≈ <b>€69–72</b> after re-marking Nubeqa® to ~€980m — still <b>below</b> the €77.40 post-print price. The bull anchor needs both a higher run-rate <i>and</i> a multiple re-rate to clear spot. The H1 print confirmed the fundamental bull case; the tape has already paid for it.</span></div>
     <p class="body">The three fair values below are <b>computed</b> — each is the engine's median run at a different Nubeqa® run-rate (the dominant driver, per Module B). The prior weights and the evidence likelihood-ratios are <b>your</b> subjective inputs; the panel just does the Bayesian arithmetic and the probability-weighted blend.</p>
 
     <div class="scen">
       <div class="scard bear"><div class="sn">Bear — growth normalises hard</div><div class="sd">Run-rate drifts to ~€750m/yr — tariff/FX drag plus a sharp deceleration off the 2025 blow-out pace.</div><div class="sfv" id="sfv-bear">€63</div><div class="sfvl">engine median · computed</div></div>
-      <div class="scard base"><div class="sn">Base — consensus holds</div><div class="sd">≈€900m/yr, roughly the sell-side's ~+50% YoY consensus cited on the Q1'26 call.</div><div class="sfv" id="sfv-base">€66</div><div class="sfvl">engine median · computed</div></div>
+      <div class="scard base"><div class="sn">Base — H1-implied run-rate</div><div class="sd">≈€980m/yr — H1'26 €381.8m ÷ ~39% FY phasing (2025 H1/FY ≈38%).</div><div class="sfv" id="sfv-base">€69</div><div class="sfvl">engine median · computed</div></div>
       <div class="scard bull"><div class="sn">Bull — Jefferies-style upgrade</div><div class="sd">≈€1,050m/yr — further label expansion (ARASTEP/DASL-HiCaP) and peak-sales upgrades keep flowing through, as they did Jan'22→Jan'26.</div><div class="sfv" id="sfv-bull">€69</div><div class="sfvl">engine median · computed</div></div>
     </div>
 
@@ -436,7 +560,7 @@
 
     <div class="blend">
       <span class="bn" id="blend-fv">€66</span>
-      <span class="bl">probability-weighted fair value vs <b>€66.95</b> price · <span id="blend-gap">≈ fair vs price</span>. The anchors are computed; the weighting is your judgment.</span>
+      <span class="bl">probability-weighted fair value vs <b>€77.40</b> price · <span id="blend-gap">below price</span>. The anchors are computed; the weighting is your judgment.</span>
     </div>
   </section>
 
@@ -487,8 +611,8 @@
       <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">No anchor holder, a hard vote-concentration cap, and a stock already up sharply.</div></div>
       <span class="tagchip s">Sourced</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">No single strategic anchor (unlike Neste's 44.2% state stake) and a structural cap that stops any one holder dominating votes — a genuinely dispersed register. Vara consensus PT (€75.13, upd. 17 Jul 2026) now sits +12% above the €66.95 pre-release spot — the June gap was thin, but the July pullback re-opened it. Jefferies' January valuation Hold still stands, and 1 of 8 analysts is outright negative.</span></div>
-    <table style="margin-bottom:6px">
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">No single strategic anchor and a structural vote-cap — genuinely dispersed register. Post-print spot €77.40 now sits <b>above</b> the pre-release Vara PT (€75.13); street targets will lag the re-rate. Jefferies' January Hold ("Nubeqa upside priced in") is the live debate again.</span></div>
+    <div class="tbl-scroll"><table style="margin-bottom:6px">
       <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
         <tr><td>Largest holder class</td><td class="num">Nominee ≈38%</td><td>Nominee-registered (mostly foreign institutional) holdings own roughly 38% of shares but only ≈10% of votes — B-shares carry one vote each and nominee holdings skew heavily B-share.</td></tr>
@@ -496,11 +620,11 @@
         <tr><td>Vote-concentration cap</td><td class="num">Max 5%</td><td>Company-stated rule: no single shareholder can cast more than 1/20 (5%) of the aggregate votes represented at a General Meeting, regardless of A-share holdings. This structurally rules out any one holder — foreign or domestic — controlling the vote.</td></tr>
         <tr><td>Management ownership</td><td class="num">0.63% shares / 1.72% votes</td><td>Company-reported, 31 Dec 2025. Modest but not trivial alignment; nowhere near founder-control levels.</td></tr>
         <tr><td>BlackRock flagging activity</td><td class="num">31 filings, 2025</td><td>A high count of threshold-crossing notifications in a single year reads as passive-style index rebalancing around a fast-rising share price, not an activist building a stake.</td></tr>
-        <tr><td>Consensus PT vs spot</td><td class="num">+12.2%</td><td>€75.13 Vara consensus (8 analysts, upd. 17 Jul 2026) vs €66.95 pre-release spot; 6 positive / 1 neutral / 1 negative — the two-week pullback into the H1 print re-opened a real gap.</td></tr>
+        <tr><td>Consensus PT vs spot</td><td class="num">−2.9%</td><td>€75.13 Vara consensus (8 analysts, pre-revision) vs €77.40 post-print spot — PT now <i>below</i> price until the street re-marks after H1.</td></tr>
         <tr><td>Sell-side direction</td><td class="num">▼ Jefferies cut</td><td>Jefferies moved to Hold from Buy (30 Jan 2026) explicitly because Nubeqa® upside looked priced in — even while raising its own Nubeqa peak-sales estimate to €4.6bn. A valuation call, not a fundamentals call.</td></tr>
         <tr><td>1-year price move</td><td class="num">≈+50%</td><td>Off the 52-week low of €56.50 toward the high of €75.30; Simply Wall St separately shows ORNBV beat the Finnish market's own strong +30.5% and the Finnish pharma industry's +6.7% over the trailing year. The structural risk is a re-rating give-back on any Nubeqa disappointment, not a liquidity squeeze.</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <div class="note c"><b>Cut, not faked:</b> short interest, options positioning and precise borrow cost are the standard crowdedness reads — but none is reliably fetchable for a dual-class Nasdaq Helsinki name from a public API. Rather than print placeholders, those rows are removed.
       <div class="src">Sources: Orion Corporation investor-relations pages (share capital &amp; voting rights, management ownership, major-shareholder flagging list) via orion.fi; Vara Research consensus via Orion IR (upd. 17 Jul 2026); Investing.com consensus &amp; rating (28 Jun 2026); Jefferies note via Investing.com (30 Jan 2026); Simply Wall St (trailing-year relative return).</div>
     </div>
@@ -513,7 +637,7 @@
       <span class="tagchip a">Computed + sourced</span>
     </div>
     <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">At ~13.9× trailing EV/EBITDA, Orion trades at a slim premium to Recordati (~13.3–13.7×) — the July pullback took most of the premium out. Genmab is excluded from the numeric comparison: public data providers disagree with each other by up to 40% on its current multiple, and asserting one as fact would be worse than not asserting it at all.</span></div>
-    <p class="body" style="font-size:13px">Orion's multiple is <b>computed</b>: EV ≈ €9,550.2m (spot €66.95 × 140.69m shares + €131.0m net debt, Q1'26) ÷ FY2025 EBITDA €688.3m ≈ <b>13.9×</b>. Still above the ~13.2× of the 31-Dec-2025 close on the same EBITDA base, but the July drift into the H1 print has unwound most of this year's re-rating. Recordati's figure is <b>sourced</b> from two independent aggregators that converge; Genmab's is deliberately omitted.</p>
+    <p class="body" style="font-size:13px">Orion's multiple is <b>computed</b>: EV ≈ €11,020m (spot €77.40 × 140.69m shares + €131.0m net debt, Q1'26) ÷ FY2025 EBITDA €688.3m ≈ <b>16.0×</b> — back to a clear premium vs Recordati ~13–14× and at the Module H trim-trigger zone (~16× on trailing). On forward OP mid-guidance (€700m) the multiple is lower; the trailing read is the honest "priced for growth" flag. Recordati sourced; Genmab omitted.</p>
     <div class="bars" id="peerbars"></div>
     <div class="note t"><b>Read:</b> a ~14.5× multiple on a business growing operating profit at +51.6% is not obviously expensive in growth-adjusted terms, but it does mean the market has already re-rated the stock beyond where it sat even three months ago — consistent with Jefferies' "priced in" call in Module F. Recordati, a diversified specialty-pharma peer without a single royalty-concentration story, trading only modestly below Orion (~13.3–13.7× vs ~14.5×) suggests the sector broadly isn't cheap right now, not that Orion specifically is an outlier. Genmab would be the more direct structural comparable (royalty-heavy oncology economics) but its multiple isn't reliably knowable from public trackers at time of write.
       <div class="src">Sources: Orion multiple computed from Orion's own FY2025 release (EBITDA, net debt) and live spot; Recordati — Fiscal.ai (13.27× FY2025) and Investing.com Pro (EV €11.94bn ÷ EBITDA €871.7m = 13.7×); Genmab excluded — Fiscal.ai / StockAnalysis.com / Yahoo Finance disagreed materially (≈11×–16×) at time of write.</div>
@@ -536,63 +660,145 @@
       <div class="kci"><div class="kx"></div><div><b>The multiple re-rates further without a fundamental trigger.</b> EV/EBITDA (Module G) climbs <span class="kv">materially above ~16×</span> on unchanged FY2026 guidance — the Jefferies "priced in" thesis would be playing out in real time; trim into strength regardless of narrative.</div></div>
       <div class="kci"><div class="kx"></div><div><b>Patent cliff moves up.</b> Currently a 2027–2030 EU / 2038–2042 US question (Module H sources) — not urgent today, but any adverse patent-litigation ruling that pulls the US date meaningfully closer would change the whole thesis horizon.</div></div>
     </div>
-    <div class="note c"><b>Decision-journal prompt (falsifiable, dated):</b> log today's prediction — e.g. "Nubeqa®-booked run-rate settles ~€900m in 2026, fair value ~€66" — and the specific Q2–Q4 2026 prints and any tariff/patent news that would confirm or refute it. Revisit on each print; if a kill-criterion fires, act without re-litigating. The process is the edge.</div>
+    <div class="note c"><b>Decision-journal (17 Jul 2026 print):</b> predicted Q2 Nubeqa® ≥ €230m for STRONG; actual <b>€236.8m</b> (+~76% YoY), guidance raised, OP €176.6m — score <b>+5 / BUY-ADD</b> under pre-committed playbook. Tape closed €77.40 vs €70 day-one ceiling → <b>do not chase</b>; edge is verification of H2 delivery and 2027+ path (Module N), not entry at this price. Next falsifiers: Q3 (22 Oct) maintenance-quarter Nubeqa®, US tariff impact, 2027 contract/volume growth without further tier steps.</div>
   </section>
 
   
-  <!-- P — Q2'26 RELEASE PLAYBOOK -->
+  <!-- P — Q2/H1'26 POST-PRINT SCORECARD -->
   <section class="mod" id="mP">
     <div class="mod-head"><div class="mod-no">P</div>
-      <div class="ht"><h2>Q2'26 release playbook — H1 report, 17 July 2026, 12:00 EEST</h2><div class="hq">Buy/sell thresholds locked at €66.95, ~2 hours before the number exists.</div></div>
-      <span class="tagchip a">Your pre-commitments</span>
+      <div class="ht"><h2>H1'26 post-print — scored against the pre-committed playbook</h2><div class="hq">Thresholds locked at €66.95 before the number; actuals from 17 Jul 2026 release.</div></div>
+      <span class="tagchip s">Sourced · 17 Jul 2026</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">PRE-SET</span><span class="vtext">Committed before the print, while disinterested — the same discipline as Module H, applied to a single known event. The report publishes ≈12:00 EEST today; webcast &amp; analyst call 14:00 EEST. Score the four triggers below from the report's own tables, then execute the mapped action without re-litigating.</span></div>
+    <div class="verdict bull"><span class="vchip">+5 STRONG</span><span class="vtext"><b>Playbook score +5 → BUY/ADD at the pre-print price.</b> Every trigger hit the top band. The market re-rated ~+12% to €77.40 on the day — past the €70 day-one ceiling — so the process call at current tape is <b>hold / do not chase</b>, not add.</span></div>
 
-    <p class="body">Where the model stands going in: spot <b>€66.95</b> (pre-release), MC median <b>€66.24</b>, P(FV&gt;price) 46%, Kelly f* −8.5% — i.e. price ≈ base-case fair value, no pre-print edge either way. The reverse-DCF break-even is a FY2026 Nubeqa®-booked run-rate of <b>≈€931m</b> at mode multiples (net debt €131.0m, Q1'26); sell-side consensus is <b>≈€915m</b> (~+50% YoY). Q1'26 printed <b>€145m</b> (royalties €95m + product sales €50m, +~50% YoY). Royalty tiers reset each January and ramp through the year (CEO, Q1'26 call), so the honest lenses on today's print are <b>YoY growth</b> and the <b>H1 cumulative</b>, never Q2×4.</p>
-    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Phasing assumption ↓</span>&nbsp; The euro bands below assume H1 ≈ <b>38–40%</b> of the full year (computed from 2025: Q1'25 ≈ €96.5m implied by Q1'26 ÷ 1.5, Q4'25 €212.6m sourced, Q2/Q3 interpolated on the tier ramp). The 4–6/2025 Nubeqa® comparative is estimated at <b>≈€135–145m</b> — today's report prints the exact figure; use the printed number, and the YoY bands, over the euro bands if they disagree.</p>
-
-    <table class="scoretab">
-      <thead><tr><th>Trigger — read it off today's report</th><th>Bands → points</th></tr></thead>
+    <div class="tbl-scroll"><table class="scoretab">
+      <thead><tr><th>Trigger</th><th>Pre-set band</th><th>Actual</th><th>Pts</th></tr></thead>
       <tbody>
-        <tr><td><b>① Nubeqa® booked in 4–6/2026</b> — royalties + product sales to Bayer, <i>excluding any milestone</i>. Primary driver: this is the engine's <code>nub</code>.</td><td><b>≥ €230m → +2</b> (STRONG; implies FY ≳ €960m central)<br><b>€205–229m → 0</b> (IN LINE; FY ≈ €900–960m — what €66.95 already pays for)<br><b>€180–204m → −1</b> (SOFT; FY ≈ €830–900m — one-quarter grace, Module H timing rule)<br><b>&lt; €180m → −2</b> (MISS; FY ≲ €830m)<br><span style="color:var(--muted);font-size:11.5px">Cross-checks (must broadly agree): YoY vs printed 4–6/25 comp ≥ +55% / +40–55% / +25–40% / &lt; +25%; H1 cumulative (Q1 €145m + Q2) ≥ €375m / €350–374m / €325–349m / &lt; €325m.</span></td></tr>
-        <tr><td><b>② FY2026 guidance action</b> — current: net sales €1,950–2,100m, operating profit €600–750m, ex-milestones. Already raised once (23 Apr: €550–750m → €600–750m).</td><td><b>Raised → +2</b> (a second raise in three months)<br><b>Maintained → 0</b><br><b>Cut, or explicit "lower end" steer → −2</b> — instant signal, no two-quarter grace: management that raised in April walking back in July is information.</td></tr>
-        <tr><td><b>③ Q2 group operating profit</b> — comp 4–6/25: €104.6m. Guidance-mid pace (H1 ≈ 40% of €675m, Q1 €114.8m booked) needs ≈ €155–160m.</td><td><b>≥ €155m → +1</b> (mid-or-better on track)<br><b>€130–154m → 0</b> (floor–mid corridor)<br><b>&lt; €130m → −1</b> (&lt; +25% YoY; the €600m floor starts to matter)</td></tr>
-        <tr><td><b>④ Base business</b> — group net sales minus Innovative Medicines (Branded + Generics&nbsp;&amp;&nbsp;CH + Animal Health + Fermion). Q1'26 grew; generics price erosion was the market's stated worry on Q1 day (−6.2%).</td><td><b>Growing YoY → 0</b><br><b>Declining YoY → −1</b> — and log it as <i>strike one</i> of Module H's two-consecutive-quarters kill-criterion.</td></tr>
+        <tr><td><b>① Nubeqa® 4–6/2026</b></td><td>≥ €230m → +2</td><td><b>€236.8m</b> (H1 €381.8m; Q1 €145m). Royalties ≈€77m + product sales ≈€160m. Max royalty tier reached in Q2. YoY ≈+76% vs H1-implied Q2'25 ~€135m. H1 +64.9% YoY.</td><td class="num"><b>+2</b></td></tr>
+        <tr><td><b>② FY2026 guidance</b></td><td>Raised → +2</td><td><b>Raised</b> to net sales <b>€2.00–2.10bn</b> (from €1.95–2.10bn) and OP <b>€650–750m</b> (from €600–750m). Second raise of 2026.</td><td class="num"><b>+2</b></td></tr>
+        <tr><td><b>③ Q2 operating profit</b></td><td>≥ €155m → +1</td><td><b>€176.6m</b> (+68.8% YoY; margin 33.9% vs 25.1%). H1 OP €291.3m (+59.6%). EPS €1.00 vs ~€0.96 cons.</td><td class="num"><b>+1</b></td></tr>
+        <tr><td><b>④ Base business (ex-IM)</b></td><td>Growing → 0</td><td>Q2 group €521.6m − IM €241.6m = <b>€280.0m</b> vs Q2'25 base ≈€269.8m → <b>+3.8% YoY</b>. Branded +12.8%; Generics −0.8%; Animal −7.9% (timing); Fermion +19.9% (timing).</td><td class="num"><b>0</b></td></tr>
       </tbody>
-    </table>
+    </table></div>
 
-    <div class="note c" style="margin-top:12px"><b>Modifiers — apply before scoring.</b> <b>Milestones:</b> guidance excludes them; if any new material milestone is booked, strip it from both the Nubeqa® print and operating profit before applying bands (a milestone is one-off cash, not run-rate). <b>FX / delivery timing:</b> royalties are USD-linked and tablet deliveries are lumpy (CFO: more deliveries expected in H2) — if royalties alone are ≥ +50% YoY and only product sales lag, or softness is attributable to EUR strength with Bayer's in-market USD sales on trend (verify on the 14:00 webcast), upgrade SOFT → IN LINE. A full MISS is not FX-excusable.</div>
+    <div class="kg" style="margin-top:14px">
+      <div class="kgi"><div class="k">Score</div><div class="v">+5</div></div>
+      <div class="kgi"><div class="k">Playbook action @ €67</div><div class="v">BUY / ADD</div></div>
+      <div class="kgi"><div class="k">Post-print close</div><div class="v">€77.40</div></div>
+      <div class="kgi"><div class="k">Process call @ €77</div><div class="v">HOLD · no chase</div></div>
+    </div>
 
-    <table class="scoretab" style="margin-top:14px">
-      <thead><tr><th>Score</th><th>Action at ≈€67 — sized off the re-marked engine</th></tr></thead>
+    <p class="body" style="margin-top:14px"><b>What the calculator would have said at €66.95:</b> H1 €381.8m ÷ 0.39 ≈ <b>€979m</b> FY Nubeqa® re-mark → MC median ~€69, positive Kelly/asymmetry vs pre-print price — the pre-committed add was correct <i>at the locked price</i>. At €77.40 the same €980m mode is ~11% under the tape; reverse-DCF needs ~€1,140m at 7× (or ~€1,000m at 8×). The edge was the pre-print process, not buying the gap.</p>
+    <div class="note t"><b>H2 watch-items from the call.</b> (1) Max royalty tier already hit — H2 growth = in-market volume, not further tier steps. (2) Q3 manufacturing maintenance → expect lumpy product sales; Q4 full capacity. (3) US innovative-pharma tariffs from Oct 2026 — small 2026, larger 2027 if sustained (Module H kill still live). (4) ODM-212 TEADES clean safety + orphan designations — supports a modest lift in the <code>pipe</code> term, not a new growth leg yet.</div>
+    <div class="src">Sources: Orion Group Half-Year Financial Report 1–6/2026 (17 Jul 2026); earnings slides / call coverage (Investing.com); Q1'26 interim for Q1 Nubeqa® split; Yahoo v8 close 17–18 Jul 2026.</div>
+  </section>
+
+  <!-- N — NUBEQA PATH & PRICE HORIZON -->
+  <section class="mod" id="mN">
+    <div class="mod-head"><div class="mod-no">N</div>
+      <div class="ht"><h2>Nubeqa® path — how far sales grow, how far the stock can follow</h2><div class="hq">Computed from H1'26 actuals, Bayer peak estimates, patent horizon, and the Module A engine.</div></div>
+      <span class="tagchip c">Computed · post-print</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext"><b>Sales can still grow into the early 2030s; the share price has already discounted much of the next 1–2 years.</b> Base path: Orion-booked peak ~<b>€1.4bn / FV ~€90 @7×</b> (~2032). Bull @8× ~€117. <b>Perfect envelope</b> (everything works + 9× re-rate + full pipeline): peak ~<b>€1.9bn Nubeqa® → stock ~€150–160</b> — roughly <b>2× today&rsquo;s €77.40</b>, earned over ~6 years, not overnight. Spot already prices ~2027–28 base.</span></div>
+
+    <p class="body"><b>What we can compute from reported numbers (not sell-side fiction).</b></p>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Fact</th><th>Figure</th><th>Implication</th></tr></thead>
       <tbody>
-        <tr><td><b>≥ +3</b></td><td><b>BUY / ADD.</b> Re-marking <code>nub</code> to the print-implied FY (≥€960m) gives median €67.3–68.7, Kelly +8%…+27%, asymmetry 1.2–1.8× — positive expectancy restored. Add up to <b>half-Kelly</b> (the calculator below prints it), staged: half once the tape settles (~12:30), half after the 14:00 webcast confirms the royalty trajectory. Day-one ceiling: don't pay above ≈€70 — at locked multiples even a €1,030m re-mark medians ≈€69, and re-rating the <i>multiple</i> on one print is a Module H trim-trigger, not a chase-trigger.</td></tr>
-        <tr><td><b>+1 … +2</b></td><td><b>HOLD, bullish tilt.</b> No chase. Add small only if the market gives ≤ €65 intraday (the re-marked P25 region on an in-line print).</td></tr>
-        <tr><td><b>−1 … 0</b></td><td><b>HOLD — do nothing today.</b> Price ≈ re-marked fair value; the print paid for itself. Rebuild the pipeline, write the journal entry, wait for Q3 (22 Oct 2026).</td></tr>
-        <tr><td><b>−2 … −3</b></td><td><b>TRIM 25–50%</b> of the position. Strike one under the two-quarter rule. Sell into strength — if the market has already gapped <i>below</i> the re-marked median (≈€65.3 at a €850m re-mark), don't panic-sell the hole: stop adding, set the exit review for the Q3 print.</td></tr>
-        <tr><td><b>≤ −4</b></td><td><b>EXIT / do not buy the dip.</b> A Nubeqa® miss plus a guidance failure is the single dominant driver breaking at a price that still embeds ≈€930m. Exit on the first bounce toward the re-marked median (≈€65); document it in Module H's journal.</td></tr>
+        <tr><td>FY2024 → FY2025 Orion-booked</td><td class="num">€368 → €610m</td><td>+66% — launch/mHSPC expansion phase</td></tr>
+        <tr><td>Q1'26 / Q2'26 / H1'26</td><td class="num">€145 / €236.8 / €381.8m</td><td>H1 +64.9% YoY; Q2 hit max royalty tier</td></tr>
+        <tr><td>2025 H1 / FY phasing</td><td class="num">≈38%</td><td>Structural (tier reset each Jan); H1'26 ÷ 0.39 → <b>FY26e ≈ €980m</b></td></tr>
+        <tr><td>Company ambition (Jan 2026)</td><td class="num">&gt; €1bn Orion-booked</td><td>Likely hit <b>2026–27</b>, not &ldquo;end of decade&rdquo;</td></tr>
+        <tr><td>Bayer / Jefferies global peak</td><td class="num">&gt;€3bn / €4.6bn</td><td>× ~20–25% Orion take-rate ⇒ Orion-booked peak ≈ <b>€900–1,150m</b> on those peaks — but H1 run-rate already challenges the low end, so either take-rate or peak is higher in practice</td></tr>
+        <tr><td>US exclusivity / EU SPC</td><td class="num">~2038–42 / mid-2030s</td><td>Growth runway ~5–8 years; plateau then cliff</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
-    <div class="mc-wrap" style="margin-top:16px">
-      <div class="mc-title">◆ Print-day calculator — type the report's numbers, get the pre-committed verdict</div>
-      <div class="mc-sub">Re-runs the Module A engine (20,000 paths, corr 60% / stress 6%) with <code>nub</code> re-marked to the H1-implied full year; Kelly &amp; asymmetry are computed against the live price you enter, thresholds stay locked to the table above.</div>
-      <div class="q2grid">
-        <div class="q2f"><label>Q2 royalties €m</label><input type="number" id="q2-roy" placeholder="e.g. 130" step="1"></div>
-        <div class="q2f"><label>Q2 product sales €m</label><input type="number" id="q2-prod" placeholder="e.g. 85" step="1"></div>
-        <div class="q2f"><label>4–6/25 Nubeqa® comp €m (from report)</label><input type="number" id="q2-comp" value="140" step="1"></div>
-        <div class="q2f"><label>Q2 operating profit €m</label><input type="number" id="q2-op" placeholder="e.g. 150" step="1"></div>
-        <div class="q2f"><label>FY2026 guidance</label><select id="q2-guide"><option value="maintained">Maintained</option><option value="raised">Raised</option><option value="cut">Cut / lower-end steer</option></select></div>
-        <div class="q2f"><label>Base business (ex-IM) YoY</label><select id="q2-base"><option value="growing">Growing</option><option value="declining">Declining</option></select></div>
-        <div class="q2f"><label>Live price € now</label><input type="number" id="q2-px" value="66.95" step="0.05"></div>
+    <p class="body" style="margin-top:14px"><b>Three Orion-booked paths</b> (assumption, not guidance). Engine FV = (nub × 7.0 + 1,100 × 2.6 + 180 − 131) / 140.69 at mode; bull also shows 8× Nubeqa multiple (re-rate).</p>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Year</th><th>Bear €m</th><th>Base €m</th><th>Bull €m</th><th>FV base @7×</th><th>FV bull @8×</th></tr></thead>
+      <tbody>
+        <tr><td>2026e</td><td class="num">900</td><td class="num now">980</td><td class="num">1,020</td><td class="num">€69</td><td class="num">€79</td></tr>
+        <tr><td>2027e</td><td class="num">950</td><td class="num now">1,100</td><td class="num">1,200</td><td class="num">€75</td><td class="num">€89</td></tr>
+        <tr><td>2028e</td><td class="num">980</td><td class="num now">1,200</td><td class="num">1,350</td><td class="num">€80</td><td class="num">€97</td></tr>
+        <tr><td>2029e</td><td class="num">1,000</td><td class="num now">1,280</td><td class="num">1,480</td><td class="num">€84</td><td class="num">€105</td></tr>
+        <tr><td>2030e</td><td class="num">1,000</td><td class="num now">1,340</td><td class="num">1,580</td><td class="num">€87</td><td class="num">€110</td></tr>
+        <tr><td>2031e</td><td class="num">980</td><td class="num now">1,380</td><td class="num">1,650</td><td class="num">€89</td><td class="num">€114</td></tr>
+        <tr><td class="num"><b>2032 peak</b></td><td class="num">950</td><td class="num now"><b>1,400</b></td><td class="num"><b>1,700</b></td><td class="num"><b>€90</b></td><td class="num"><b>€117</b></td></tr>
+        <tr><td>2034e</td><td class="num">850</td><td class="num">1,380</td><td class="num">1,650</td><td class="num">€89</td><td class="num">€114</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="reading" style="margin-top:14px"><b>Answers to the two horizon questions.</b><br>
+    <b>1. How far into the future will Nubeqa® sales increase?</b> Under the base path, Orion-booked sales keep rising through <b>~2032</b> (peak ≈€1.4bn), then plateau/soft-decline into the mid-2030s as EU SPC pressure builds, with the hard US cliff later (2038–42). That is roughly <b>5–6 more years of growth</b> from mid-2026, then a multi-year plateau. The bear path peaks earlier (~2029–30 at ~€1.0bn) if volume slows once tier progression is exhausted. The bull path (China mHSPC + earlier-line studies ARASTEP / DASL-HiCaP + higher global peak) can push Orion-booked toward <b>€1.6–1.7bn by ~2032</b>. Perfect path (below): toward <b>€1.9bn</b>.<br><br>
+    <b>2. How far into the future will the stock price rise?</b> The engine is a <i>level</i> model (run-rate × multiple), not a DCF of terminal value — so &ldquo;price rise&rdquo; here means the fair-value path as Nubeqa® grows, <i>if multiples hold</i>. Base @7×: fair value climbs from ~€69 (2026e) to ~€90 (2032) — about <b>+16% cumulative from today&rsquo;s €77</b>, or ~2–3%/yr if the market only pays for delivered growth with no multiple expansion. Bull @8×: fair value to ~€117 by 2032 (~+50% from spot). Perfect envelope: ~€150–160. <b>Importantly, spot €77.40 already sits above 2026–27 base fair value</b> — the market is either (a) pricing ~€1.14bn Nubeqa® today at 7×, or (b) re-rating the royalty stream toward ~8× on ~€1.0bn. Further upside requires growth <i>beyond</i> what is priced, multiple expansion, or both.
+    </div>
+
+    <!-- PERFECT CASE -->
+    <div style="margin-top:20px;padding:16px 16px 8px;border:1.5px solid var(--teal);border-radius:12px;background:var(--teal-wash)">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:700;margin-bottom:8px">◆ Perfect case — if everything goes right with Nubeqa®</div>
+      <p class="body" style="margin:0 0 12px">Outer envelope of the Module A engine, not the central forecast. Stacks every favourable lever the model can still justify (engine highs: Nubeqa multiple 9×, base 3.5×, pipe €550m) — not an infinite fantasy multiple.</p>
+
+      <p class="body" style="font-size:13px;margin:0 0 10px"><b>What has to go right</b></p>
+      <div class="tbl-scroll"><table class="brtab">
+        <thead><tr><th>Lever</th><th>Perfect outcome</th></tr></thead>
+        <tbody>
+          <tr><td>Orion-booked Nubeqa®</td><td>Compounds after max tier: <b>~€1.05bn (2026) → ~€1.9bn peak ~2032</b> (implies very high global in-market peak and/or high Orion take-rate + product-sales scale)</td></tr>
+          <tr><td>Labels / geography</td><td>China + earlier lines (ARASTEP, DASL-HiCaP) all work; share gains hold</td></tr>
+          <tr><td>Nubeqa® multiple</td><td>Market pays engine high: <b>9× sales</b> (vs 7× mode)</td></tr>
+          <tr><td>Rest of Orion + pipeline</td><td>Base re-rates toward <b>3.5×</b>; ODM-212 etc. deliver <b>~€550m</b> optionality</td></tr>
+          <tr><td>Patents / policy</td><td>No early cliff; US tariffs do not gut royalty economics</td></tr>
+        </tbody>
+      </table></div>
+
+      <p class="body" style="font-size:13px;margin:14px 0 8px"><b>Perfect sales ladder → engine fair value</b> &nbsp;<span class="asm">FV = (nub × nmlt + base × bmlt + pipe − 131) / 140.69</span></p>
+      <div class="tbl-scroll"><table class="brtab">
+        <thead><tr><th>Year</th><th>Perfect Nubeqa® €m</th><th>FV @7× calm</th><th>FV @9× re-rate</th><th>Full perfect (9× + hi base/pipe)</th></tr></thead>
+        <tbody>
+          <tr><td>2026e</td><td class="num">1,050</td><td class="num">€73</td><td class="num">€88</td><td class="num">€100</td></tr>
+          <tr><td>2027e</td><td class="num">1,250</td><td class="num">€83</td><td class="num">€101</td><td class="num">€112</td></tr>
+          <tr><td>2028e</td><td class="num">1,450</td><td class="num">€93</td><td class="num">€113</td><td class="num">€125</td></tr>
+          <tr><td>2029e</td><td class="num">1,600</td><td class="num">€100</td><td class="num">€123</td><td class="num">€135</td></tr>
+          <tr><td>2030e</td><td class="num">1,750</td><td class="num">€108</td><td class="num">€133</td><td class="num">€144</td></tr>
+          <tr><td>2031e</td><td class="num">1,850</td><td class="num">€113</td><td class="num">€139</td><td class="num">€151</td></tr>
+          <tr><td class="num"><b>2032 peak</b></td><td class="num now"><b>1,900</b></td><td class="num"><b>€115</b></td><td class="num"><b>€142</b></td><td class="num now"><b>€154</b></td></tr>
+          <tr><td>2035e</td><td class="num">1,750</td><td class="num">€108</td><td class="num">€133</td><td class="num">€144</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="kg" style="margin-top:14px">
+        <div class="kgi"><div class="k">Perfect peak stock (full stack)</div><div class="v">€150–160</div></div>
+        <div class="kgi"><div class="k">vs spot €77.40</div><div class="v">~2× · +99%</div></div>
+        <div class="kgi"><div class="k">CAGR if peak in 2032</div><div class="v">~12%/yr</div></div>
+        <div class="kgi"><div class="k">Perfect peak mkt cap</div><div class="v">~€21.6bn</div></div>
       </div>
-      <label class="q2chk"><input type="checkbox" id="q2-fx"> FX / delivery-timing modifier applies (royalties ≥ +50% YoY, only product sales lag — or EUR-strength effect confirmed on webcast)</label>
-      <button class="q2run" id="q2-run">Score the print</button>
-      <div class="q2out" id="q2-out"></div>
+
+      <p class="body" style="font-size:13px;margin:14px 0 8px"><b>Peak €154 decomposition</b> (nub €1,900m × 9× + base €1,180m × 3.5× + pipe €550m − net debt €131m)</p>
+      <div class="tbl-scroll"><table class="brtab">
+        <thead><tr><th>Component</th><th>EV</th><th>Per share</th></tr></thead>
+        <tbody>
+          <tr><td><b>Nubeqa®</b></td><td class="num">€17.1bn</td><td class="num now">€122</td></tr>
+          <tr><td>Rest of Orion</td><td class="num">€4.1bn</td><td class="num">€29</td></tr>
+          <tr><td>Pipeline optionality</td><td class="num">€0.55bn</td><td class="num">€4</td></tr>
+          <tr><td>Net debt</td><td class="num">−€0.13bn</td><td class="num">−€1</td></tr>
+          <tr><td><b>Equity value</b></td><td class="num"><b>~€21.6bn</b></td><td class="num now"><b>~€154</b></td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="reading" style="margin-top:12px"><b>The single number.</b> If everything goes perfectly at the peak of the cycle (~2031–2033), the engine&rsquo;s outer envelope is about <b>€150–160 per share</b> — roughly <b>double</b> today&rsquo;s €77.40. Perfect sales alone with calm 7× multiples only get you ~€115; most of the rest is multiple expansion and pipeline success. Stretch (€2.0bn Nubeqa® + full stack) ≈ <b>€160</b>. This is <i>not</i> a 2026–27 print: full-perfect 2026 is only ~€100 even with re-rate.</div>
+
+      <div class="note a" style="margin-top:12px"><b>What perfect is not.</b> (1) Not next year — the path is multi-year. (2) Not €300/€500 — engine high multiple on Nubeqa® is 9× sales; inventing 15× is a different model. (3) Fragile: tariffs, competition, EU SPC, or a re-rate <i>down</i> to 5.5× on €1.9bn still only produces ~€100–105. (4) A hump, not a permanent staircase — patent gravity in the mid/late 2030s still applies after the peak.</div>
     </div>
 
-    <div class="note c"><b>Post-print checklist (same day).</b> ① Strip milestones, score the four triggers, run the calculator. ② Execute per the action map — limit orders only; Q1 day proved this name can fall 6% on a beat-and-raise, so let the first half hour settle. ③ Re-mark the config: <code>nub</code> md → H1-implied FY, net debt → the H1 balance-sheet figure, <code>pipeline_price</code> → the post-print close; then <code>py utils/build_one.py orion</code> to re-inject Modules I &amp; J from live data. ④ Write the Module H journal entry — the falsifiable one-liner, dated today.</div>
-    <div class="src">Sources: Orion H1'26 release logistics (3 Jul 2026 stock exchange release); Q1'26 interim report &amp; earnings call (23 Apr 2026) — Nubeqa® split, tier-reset mechanics, guidance history; Vara Research consensus via Orion IR (upd. 17 Jul 2026); Yahoo v8 quote (17 Jul 2026). Bands are computed from the pipeline's own reverse-DCF at €66.95; the 38–40% H1 phasing is a labelled assumption.</div>
+    <div class="cmp" style="margin-top:14px">
+      <div class="cmpcard" style="border-top:3px solid var(--teal)"><b style="font-size:13px">What supports multi-year sales growth</b><div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">mHSPC ADT-only labels (EU/US 2025), China NMPA 2026, earlier-line trials (ARASTEP BCR, DASL-HiCaP neoadjuvant ~2028), max tier already unlocked so every incremental Bayer in-market euro flows at the top rate, patent estate into late 2030s US.</div></div>
+      <div class="cmpcard" style="border-top:3px solid var(--coral)"><b style="font-size:13px">What caps or reverses it</b><div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">US tariffs from Oct 2026 (larger 2027), competitive AR-pathway share loss, EU mid-2030s SPC erosion, US 2038–42 generics, feedstock of new patients saturating, FX (USD royalties). Module H kills still bind.</div></div>
+      <div class="cmpcard" style="border-top:3px solid var(--amber)"><b style="font-size:13px">What the tape has already paid for</b><div style="font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5">At €77.40: ~€1,140m Nubeqa® @7× <i>or</i> ~€1,000m @8×. That is 2027–28 base / 2026 bull — not 2032 peak, and not the €150–160 perfect envelope. Buying peak long-duration growth at this price is a multiple bet as much as a sales bet.</div></div>
+    </div>
+
+    <div class="note c"><b>How to use this module.</b> Treat <b>base</b> as the working case, <b>bull</b> as good execution + modest re-rate, <b>perfect</b> as the outer envelope for position-sizing dreams — not the entry thesis at €77. Update paths after every quarterly Nubeqa® print. If two consecutive quarters show YoY growth &lt; ~25% after max-tier (volume stall), shift weight to the bear path. If ARASTEP/DASL or China data lift Bayer&rsquo;s global peak again, shift toward bull/perfect. The stock-price path only works if the Nubeqa® <i>multiple</i> holds — a re-rate down to 5.5× on a €1.4bn run-rate still only produces ~€71/share.</div>
+    <div class="src">Sources: Orion H1'26 report (Nubeqa® €381.8m H1, Q2 €236.8m, guidance); FY2025 Nubeqa® €609.8m; Bayer peak &gt;€3bn / Jefferies €4.6bn; Orion 20–25% take-rate disclosure; patent trackers (US ~2038–42); engine constants from Module A / config.py (nub hi 1,200 in MC; perfect path extends sales as a labelled scenario beyond the MC hi). Path points and perfect ladder are labelled assumptions; FV columns are computed from those assumptions via the SOTP engine.</div>
   </section>
 
   <section class="mod" id="mQ"><div class="mod-head"><div class="mod-no">Q</div><div class="ht"><h2>Fundamental quality &amp; valuation dashboard</h2><div class="hq">Profitability, cash, leverage, valuation, margins, growth and liquidity &mdash; from fetched annual financials (2022&ndash;2025).</div></div><span class="tagchip c">Fetched financials</span></div><p class="body">Every figure below is <b>fetched</b> from Yahoo&rsquo;s fundamentals-timeseries API (annual income statement, balance sheet, cash-flow) and, where a ratio, computed from those raw line items at build time &mdash; no assumptions except the explicitly-tagged PEG forward-growth input. A quality/valuation cross-check on the pipeline&rsquo;s own engine.</p><div class="mc-wrap" style="margin:6px 0 4px"><div class="mc-title">Share price vs earnings &mdash; does the tape track the fundamentals?</div><div class="mc-sub">Raw daily close (left) against trailing-twelve-month diluted EPS (right). Two scales, each normalised to fill the plot so the lines overlay.</div><div class="hist-leg"><span><span class="sw" style="background:var(--blue)"></span>Share price €&nbsp;&middot;&nbsp;left</span><span><span class="sw" style="background:var(--amber-deep)"></span>TTM diluted EPS €&nbsp;&middot;&nbsp;right</span></div><svg viewBox="0 0 720 300" style="width:100%;height:auto" role="img" aria-label="Share price versus trailing-twelve-month diluted EPS."><defs><clipPath id="peclip"><rect x="58" y="30" width="590" height="222"/></clipPath></defs>
@@ -617,60 +823,67 @@
       <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
       <span class="tagchip c">Computed from live &amp; sourced data</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The pay-off distribution is broadly symmetric to price — no institutional edge without additional evidence. Live spot <b>€66.95</b> · MC median <b>€66.24</b> (P10 €57.19, P90 €75.93) · P(FV &gt; price) <b>46%</b>.</span></div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">The composite metrics flag a negative pay-off asymmetry — expected loss dominates expected gain, and the market is already pricing above-base assumptions. Live spot <b>€77.40</b> · MC median <b>€72.55</b> (P10 €63.11, P90 €83.13) · P(FV &gt; price) <b>28%</b>.</span></div>
 
-    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-17) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-19) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
 
     <div class="kg">
-      <div class="kgi"><div class="k">Live spot (ORNBV.HE)</div><div class="v">€66.95 <small>as of 2026-07-17</small></div></div>
-      <div class="kgi"><div class="k">52-week range</div><div class="v">€56.50–€75.30</div></div>
-      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">89%</div></div>
-      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+12.2% <small>PT €75.13</small></div></div>
+      <div class="kgi"><div class="k">Live spot (ORNBV.HE)</div><div class="v">€77.40 <small>as of 2026-07-19</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">€56.50–€78.20</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">100%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">-2.9% <small>PT €75.13</small></div></div>
     </div>
 
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">20.6× <small>EPS €3.76</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">19.8× <small>est EPS €3.91</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">16.8× <small>est EPS €4.61</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+18%</div></div>
+    </div>
     <div class="rev">
       <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
       <div class="rv">
-        <div class="n neg">931.88€m</div>
-        <div class="l">is the value of <b>Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline)</b> that reconciles the median MC fair value to today's <b>€66.95</b> price. That is <b>+3.5% above</b> the pipeline's base-case mode of <b>900€m</b>.</div>
+        <div class="n neg">1138.75€m</div>
+        <div class="l">is the value of <b>Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>€77.40</b> price. That is <b>+16.2% above</b> the pipeline's base-case mode of <b>980€m</b>.</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
     <div class="kelly">
-      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-8.5%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
-      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.84×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
-      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.99</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
-      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-0.7%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-86.2%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.24×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.64</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-5.8%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
     <div class="kelly">
-      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-14.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-18.8%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
-      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-18.0%</div><div class="d">Deep-tail loss threshold.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-21.5%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-18.5%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-22.2%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-21.5%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-24.5%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
     </div>
 
-    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1256 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
-    <table class="brtab">
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
-        <tr><td>Realised volatility 1y (ann.)</td><td class="num">31.2%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
-        <tr><td>Realised volatility 3y (ann.)</td><td class="num">28.0%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">33.3%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">28.8%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
         <tr><td>Max drawdown (5y)</td><td class="num">-36.9%</td><td>Peak-to-trough on adjusted close.</td></tr>
-        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-0.9% / -8.4% / -3.5% / +3.7%</td><td>Simple returns over trailing windows.</td></tr>
-        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">0.48</td><td>R² = 0.05. 252-day OLS.</td></tr>
-        <tr><td>Beta vs STOXX 600</td><td class="num">0.70</td><td>R² = 0.08. 252-day OLS.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">+13.2% / +5.1% / +12.5% / +20.4%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">0.52</td><td>R² = 0.05. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">0.66</td><td>R² = 0.06. 252-day OLS.</td></tr>
         <tr><td>Beta vs EUR/USD (EURUSD=X)</td><td class="num">-0.12</td><td>R² = 0.00. 252-day OLS on daily log-returns.</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
-    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs GMAB.CO</div><div class="bb"><div class="bi" style="left:50%;width:29.2%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-29.2%</div></div><div class="barsrow"><div class="bl">vs REC.MI</div><div class="bb"><div class="bi" style="left:50%;width:2.0%;background:var(--teal)"></div></div><div class="bv">+2.0%</div></div></div>
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs GMAB.CO</div><div class="bb"><div class="bi" style="left:50%;width:15.2%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-15.2%</div></div><div class="barsrow"><div class="bl">vs REC.MI</div><div class="bb"><div class="bi" style="left:50%;width:19.8%;background:var(--teal)"></div></div><div class="bv">+19.8%</div></div></div>
 
-    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline) of <b>931.88€m</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
-      <div class="src">Sources: Yahoo Finance v8 chart API (ORNBV.HE, ^OMXH25, ^STOXX, EURUSD=X) — fetched 2026-07-17. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline) of <b>1138.75€m</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (ORNBV.HE, ^OMXH25, ^STOXX, EURUSD=X) — fetched 2026-07-19. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
     </div>
   </section>
 
@@ -680,26 +893,26 @@
       <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
       <span class="tagchip a">Sourced + computed</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>44/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 38<sup>th</sup> percentile of its multi-year range.</span></div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>40/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 48<sup>th</sup> percentile of its multi-year range.</span></div>
 
     <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
 
     <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Orion-booked Nubeqa® net sales (€m, royalties + product sales) through the cycle</div>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
-      <tbody><tr><td>2024</td><td class="num">368.30€m</td><td>FY2024 reported — royalties + product sales to Bayer</td></tr><tr><td>Q1'26 ×4 (tier trough)</td><td class="num">580.00€m</td><td>Q1'26 print (€145.0m: royalties €95m + product sales €50m) annualised — understates the FY because royalty tiers reset each January (CEO, Q1'26 call)</td></tr><tr class='cur'><td>2025</td><td class="num now">609.80€m</td><td>FY2025 reported — royalties €432.5m + product sales €177.3m</td></tr><tr><td>Q4'25 run-rate ×4</td><td class="num">850.40€m</td><td>Q4'25 print (€212.6m) annualised — computed, not a forecast</td></tr><tr><td>2026 sell-side consensus</td><td class="num">915.00€m</td><td>≈+50% YoY per analyst consensus cited on the Q1'26 call — estimate, not company guidance</td></tr><tr><td>2030 company ambition</td><td class="num">1000.00€m</td><td>Orion's stated "potential to exceed €1bn by the end of the decade" (14 Jan 2026)</td></tr></tbody>
-    </table>
+      <tbody><tr><td>2024</td><td class="num">368.30€m</td><td>FY2024 reported — royalties + product sales to Bayer</td></tr><tr><td>2025</td><td class="num">609.80€m</td><td>FY2025 reported — royalties €432.5m + product sales €177.3m</td></tr><tr><td>Q1'26</td><td class="num">145.00€m</td><td>royalties €95m + product sales €50m (+~50% YoY)</td></tr><tr><td>Q2'26</td><td class="num">236.80€m</td><td>H1 total €381.8m − Q1; max royalty tier reached in Q2 (CFO)</td></tr><tr><td>H1'26</td><td class="num">381.80€m</td><td>sourced H1 print — +64.9% YoY</td></tr><tr class='cur'><td>2026e H1-implied</td><td class="num now">980.00€m</td><td>H1 €381.8m ÷ ~39% FY phasing (2025 H1/FY ≈38%) — computed, not guidance</td></tr><tr><td>2030–32 peak (base)</td><td class="num">1400.00€m</td><td>Module N base path — Orion-booked peak before patent pressure</td></tr><tr><td>2032 peak (perfect)</td><td class="num">1900.00€m</td><td>Module N perfect envelope — all labels/China/earlier-line work; outer scenario not central case</td></tr></tbody>
+    </table></div>
     <div class="cbar" style="margin-top:14px">
       <div class="fl" style="left:0;right:0"></div>
-      <div class="mk" style="left:38.2%"></div>
-      <div class="lb" style="left:38.2%">now · 2025 = €609.8m · Q1'26 print €145m (+~50% YoY)</div>
+      <div class="mk" style="left:47.6%"></div>
+      <div class="lb" style="left:47.6%">now · H1'26 = €381.8m · FY26e ≈ €980m · perfect peak €1.9bn → FV ~€150–160</div>
     </div>
     <div style="height:24px"></div>
 
-    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1256 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
     <div class="kg">
       <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">11%</div></div>
-      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">25%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">24%</div></div>
       <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">65%</div></div>
       <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
     </div>
@@ -708,71 +921,73 @@
     <div class="rev">
       <div class="rt">◆ Owner-earnings spread</div>
       <div class="rv">
-        <div class="n neg">-25 bp</div>
-        <div class="l"><b>Owner-earnings yield 2.32%</b> (€218m ÷ €9419m market cap) minus <b>real 10y ≈ 2.57%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+        <div class="n neg">-54 bp</div>
+        <div class="l"><b>Owner-earnings yield 2.00%</b> (€218m ÷ €10889m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: cash flow from operating + investing activities +€218.2m FY2025 (pipeline module — sourced). ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
     <div class="fac">
-      <div class="fi"><div class="fk">Value</div><div class="fv">11</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi"><div class="fk">Value</div><div class="fv">0</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
       <div class="fi hot"><div class="fk">Quality</div><div class="fv">80</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
-      <div class="fi"><div class="fk">Momentum</div><div class="fv">53</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
-      <div class="fi"><div class="fk">Low-vol</div><div class="fv">31</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
-      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">44</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+      <div class="fi"><div class="fk">Momentum</div><div class="fv">55</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">26</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">40</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
     </div>
 
-    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-25 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
-      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-17.</div>
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>-54 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-19.</div>
     </div>
   </section>
 
   <section class="mod" id="mSum">
     <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
-      <div class="ht"><h2>Scorecard — the four reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base-case calibration (Nubeqa® run-rate €900m, neutral priors).</div></div>
+      <div class="ht"><h2>Scorecard — the twelve reads after H1'26</h2><div class="hq">Struck at the re-marked base case (Nubeqa® run-rate €980m, spot €77.40).</div></div>
     </div>
-    <table class="scoretab">
+    <div class="tbl-scroll"><table class="scoretab">
       <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
       <tbody>
-        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~€66 ≈ the €66.95 price — at fair value after the July drift; correlation still doubles deep-loss odds</td></tr>
-        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>Nubeqa® multiple + run-rate dominate; generics barely move the answer</td></tr>
-        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted value ~€66 ≈ price; the bull anchor (€69) now clears it</td></tr>
+        <tr><td>A · Engine</td><td><span class="vchip bear">BEAR</span></td><td>Median ~€69 vs €77.40 — print re-marked fundamentals, tape ran through fair value</td></tr>
+        <tr><td>B · Tornado</td><td><span class="vchip mixed">MIXED</span></td><td>Nubeqa® multiple + run-rate still dominate; generics barely move the answer</td></tr>
+        <tr><td>C · Scenarios + Bayes</td><td><span class="vchip bear">BEAR</span></td><td>Weighted FV still below post-print price unless bull path + re-rate</td></tr>
         <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Piotroski 6/9, Altman ~10.7, negligible debt burden, low leverage</td></tr>
         <tr><td>E · Capital record</td><td><span class="vchip bull">BULL</span></td><td>Dividend up, payout ratio down, no dilution, no releveraging</td></tr>
-        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>No anchor holder &amp; hard vote-cap; PT gap re-opened to +12%, Jefferies Hold stands</td></tr>
-        <tr><td>G · Peers</td><td><span class="vchip mixed">MIXED</span></td><td>~13.9× vs Recordati's ~13.3–13.7× — the premium is mostly unwound</td></tr>
-        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Recurring near-term risks; the structural risk (patent cliff) is distant</td></tr>
-        <tr><td>I · Asymmetry</td><td><span class="vchip mixed">MIXED</span></td><td>Kelly f* -8%, asymmetry 0.84×, market implies +3.5% vs pipeline mode</td></tr>
-        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 44/100 · OE-yield spread -25 bp real</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Dispersed register; post-print price above pre-revision consensus PT</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip bear">BEAR</span></td><td>~16× trailing EV/EBITDA vs Recordati ~13–14× — premium back; Module H ~16× trim zone</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Tariffs live from Oct; patent cliff still distant; multiple-trim trigger near</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bear">BEAR</span></td><td>Kelly f* -86%, asymmetry 0.24×, market implies +16.2% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 40/100 · OE-yield spread -54 bp real</td></tr>
+        <tr><td>P · H1 print</td><td><span class="vchip bull">BULL</span></td><td>Playbook +5 STRONG; process add was right at €67 — not at €77</td></tr>
+        <tr><td>N · Nubeqa path</td><td><span class="vchip mixed">MIXED</span></td><td>Base peak ~€90 @7×; bull ~€117 @8×; <b>perfect envelope ~€150–160</b> (~2× spot) if everything works — spot already prices 2027–28 base</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <div class="tally">
-      <div class="tbar"><div class="tp bull" style="width:20.0%"></div><div class="tp mixed" style="width:80.0%"></div><div class="tp bear" style="width:0.0%"></div></div>
-      <div class="tlab"><span class="tb">2 Bull</span><span class="tm">8 Mixed</span><span class="tr">0 Bear</span></div>
+      <div class="tbar"><div class="tp bull" style="width:25.0%"></div><div class="tp mixed" style="width:41.7%"></div><div class="tp bear" style="width:33.3%"></div></div>
+      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">5 Mixed</span><span class="tr">4 Bear</span></div>
     </div>
     <div class="overall">
-      <span class="ov-chip">NET: MIXED</span>
-      <div class="ov-text"><b>A high-quality compounder priced for the outperformance to continue.</b> The two clear <b>bulls</b> are the balance sheet (D) and the capital-allocation record (E) — genuinely clean, genuinely disciplined, and both you can underwrite today without much debate. Central fair value (A, C) now sits ≈ <i>at</i> the €66.95 pre-release price after the July drift, the peer read (G) shows only a slim residual premium to the one usable comparable, and positioning (F) pairs a structurally dispersed shareholder base against a re-opened +12% consensus-PT gap with January's valuation downgrade still in force. The tornado (B) answers the question this build set out to research without ambiguity: net sales of the patent-protected Nubeqa® royalty stream — and, just as much, the <i>multiple</i> the market pays for it — are what actually move this stock; generics net sales are close to irrelevant at the margin, and the R&amp;D pipeline is real optionality but still small in euro terms. Quality is underwritable now, and the pullback has brought price back to the model's base case on the eve of the H1 print — Module P holds the pre-committed playbook for today's 12:00 EEST release.</div>
+      <span class="ov-chip">NET: MIXED → RICH</span>
+      <div class="ov-text"><b>Fundamentals confirmed; valuation spent the edge.</b> The H1 print was a clean playbook +5: Nubeqa® €236.8m in Q2, max tier hit, guidance raised, OP +69%. Quality (D, E) remains underwritable. But the stock closed €77.40 — reverse-DCF ~€1.14bn Nubeqa® at mode multiples — so Modules A/C/G/I flip bearish on price. Module N: base path peak ~€90 @7× / bull ~€117 @8×; the <b>perfect envelope is ~€150–160</b> (~2× spot by ~2032) if sales hit ~€1.9bn, the multiple re-rates to 9×, and pipeline delivers — an outer bound for dreams, not the entry case at €77. Long runway is real; free re-rating is not. <b>Posture: hold winners if owned pre-print; do not add at €77; re-evaluate on pullback toward ~€69–72 (2026e base FV) or Q3 maintenance noise.</b></div>
     </div>
   </section>
 
     <section class="audit" id="mAudit">
       <h3>Data sources &amp; audit trail</h3>
-      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-17 10:37</b>.</div>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-19 19:03</b>.</div>
 
-      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-17)</h4>
-      <table>
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-19)</h4>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
         <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ORNBV.HE?range=5y&interval=1d</td><td>Orion (B share) 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^OMXH25?range=5y&interval=1d</td><td>OMX Helsinki 25 index</td><td class="mods">I: beta vs OMXH25</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^STOXX?range=5y&interval=1d</td><td>STOXX Europe 600</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/EURUSD=X?range=5y&interval=1d</td><td>EUR/USD spot — Orion discloses that USD moves on Nubeqa® income drive real P&L swings</td><td class="mods">I: beta vs EUR/USD (macro read for a USD-royalty payer)</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/GMAB.CO?range=2y&interval=1d</td><td>Genmab (Nasdaq Copenhagen) — Nordic royalty-economics oncology peer</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/REC.MI?range=2y&interval=1d</td><td>Recordati (Borsa Italiana) — diversified specialty-pharma peer</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
-      </table>
+      </table></div>
       <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
 
       <h4>◆ Primary-source citations (module-level facts)</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
-        <tbody><tr><td>Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026)</td><td>Net sales €1,889.5m (+22.5%), operating profit €631.6m (+51.6%), EPS €3.56, dividend €1.80 proposed; balance sheet (assets €2,009.8m, equity €1,284.5m, interest-bearing net liabilities €144.4m, equity ratio 64.1%, gearing 11.2%, ROE 43.7%, ROCE 43.8%); net-sales split by business division (Innovative Medicines €812.7m, Branded Products €314.6m, Generics &amp; Consumer Health €552.8m, Animal Health €140.9m, Fermion €68.7m); Nubeqa® split (royalties €432.5m / product sales €177.3m); Bayer/MSD/Tenax licensing terms; shares 141,134,278; market cap €8,944.0m</td><td class="mods">A engine, D forensics, E capital record, F positioning</td></tr><tr><td>Orion Group Interim Report 1–3/2026 (23 Apr 2026)</td><td>Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Innovative Medicines division +~54%; FY2026 outlook raised to €1.95–2.10bn net sales / €600–750m operating profit; interest-bearing net liabilities €131.0m (31 Mar 2026); EPS €0.64 (Q1'25: €0.44); DASL-HiCaP darolutamide read-out expected 2028</td><td class="mods">B driver analysis, C scenarios, P Q2 playbook</td></tr><tr><td>Orion Q1'26 earnings call — CEO Liisa Hurme / CFO René Lindell (23 Apr 2026, transcript via Investing.com)</td><td>Nubeqa® booked in Q1'26: royalties €95m + tablet sales to Bayer €50m ≈ €145m (+~50% YoY); royalty tiers reset each January — Q1 is recognised at the lowest tier, quarterly prints ramp mechanically through the year, so Q1×4 understates the FY; sell-side consensus of ~+50% FY26 Nubeqa growth was put to management on the call ("Bayer is also optimistic on the full year… and so are we"); FY26 operating-profit guidance raised from €550–750m to €600–750m; higher tablet deliveries expected over the rest of 2026; shares fell 6.2% on results day on generics price-erosion concerns</td><td class="mods">P Q2 playbook, C scenarios</td></tr><tr><td>Orion stock exchange release (3 Jul 2026)</td><td>Half-Year Financial Report January–June 2026 publishes Friday 17 Jul 2026 ≈ 12:00 EEST; webcast &amp; analyst call 14:00 EEST</td><td class="mods">P Q2 playbook</td></tr><tr><td>Bayer media release, Feb 2022 (ASCO GU / ARASENS data) &amp; FDA approval releases 2024–2025</td><td>Nubeqa® global peak-sales estimate raised to &gt;€3bn (from &gt;€1bn); average total royalty rate to Orion ~20–25% of in-market sales including product sales to Bayer, tiered upward as sales grow; mHSPC label expansion (ADT+docetaxel 2022, ADT-only EU 2025/US 2025, China NMPA 2026)</td><td class="mods">A engine, C scenarios</td></tr><tr><td>Jefferies research note via Investing.com (30 Jan 2026)</td><td>Downgrade to Hold from Buy — "Nubeqa upside is priced in"; worldwide Nubeqa peak-sales estimate raised to €4.6bn (from €4.2bn); risk-reward called neutral over 12 months despite the estimate upgrade</td><td class="mods">F positioning, G peers</td></tr><tr><td>Yahoo Finance v8 quote (17 Jul 2026 morning, pre-release) &amp; Vara Research consensus via Orion IR (upd. 17 Jul 2026)</td><td>Spot €66.95 pre-H1-release (−4.4% vs the 28 Jun €70.00 anchor; €72.00 on 3 Jul, €69.65 on 10 Jul), 52-week range €56.50–75.30; Vara Research 8-analyst consensus PT €75.13 (prev. €75.86), recommendations 6 positive / 1 neutral / 1 negative</td><td class="mods">F positioning, P Q2 playbook</td></tr><tr><td>DrugPatentWatch / Grokipedia darolutamide patent trackers</td><td>US patent estate (9 filings, none expired) points to generic entry ≈2038–2042; EU core compound patents ~2027–2030 with per-country SPC extensions pushing effective exclusivity into the mid-2030s in most member states</td><td class="mods">H kill-criteria</td></tr><tr><td>Fiscal.ai &amp; Investing.com Pro — Recordati (BIT:REC) EV/EBITDA (28 Jun 2026)</td><td>Fiscal.ai: trailing EV/EBITDA 13.27&times; for FY2025; Investing.com Pro's own build (EV €11.94bn ÷ EBITDA €871.7m) computes to 13.7&times; — two independent aggregators converge on ≈13–14&times;. Genmab's multiple was checked against the same two providers plus Yahoo Finance and StockAnalysis.com and excluded: the four disagreed materially (≈11&times;–16&times;) with inconsistent per-share bases, likely reflecting Genmab's April 2026 share-capital reduction working through TTM figures at different speeds across providers</td><td class="mods">G peers</td></tr></tbody>
-      </table>
+        <tbody><tr><td>Orion Group Half-Year Financial Report 1–6/2026 (17 Jul 2026) &amp; earnings materials</td><td>Q2 net sales €521.6m (+25.2%), OP €176.6m (+68.8%, 33.9% margin), EPS €1.00; H1 net sales €939.3m (+21.8%), OP €291.3m (+59.6%); Nubeqa® Q2 €236.8m / H1 €381.8m (+64.9%); Innovative Medicines Q2 €241.6m / H1 €392.0m; max royalty tier reached in Q2 (royalties ≈€77m, product sales ≈€160m); FY2026 guidance raised to net sales €2.00–2.10bn / OP €650–750m; Q3 manufacturing maintenance; US pharma tariffs from Oct 2026 (small 2026, larger 2027 risk)</td><td class="mods">A engine, P post-print, N Nubeqa path, C scenarios</td></tr><tr><td>Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026)</td><td>Net sales €1,889.5m (+22.5%), operating profit €631.6m (+51.6%), EPS €3.56, dividend €1.80 proposed; balance sheet (assets €2,009.8m, equity €1,284.5m, interest-bearing net liabilities €144.4m, equity ratio 64.1%, gearing 11.2%, ROE 43.7%, ROCE 43.8%); net-sales split by business division (Innovative Medicines €812.7m, Branded Products €314.6m, Generics &amp; Consumer Health €552.8m, Animal Health €140.9m, Fermion €68.7m); Nubeqa® split (royalties €432.5m / product sales €177.3m); Bayer/MSD/Tenax licensing terms; shares 141,134,278; market cap €8,944.0m</td><td class="mods">A engine, D forensics, E capital record, F positioning</td></tr><tr><td>Orion Group Interim Report 1–3/2026 (23 Apr 2026)</td><td>Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Nubeqa® ≈€145m (royalties €95m + product sales €50m); interest-bearing net liabilities €131.0m (31 Mar 2026); DASL-HiCaP darolutamide read-out expected 2028</td><td class="mods">B driver analysis, C scenarios, N Nubeqa path</td></tr><tr><td>Orion Q2'26 earnings call — CEO Liisa Hurme / CFO René Lindell (17 Jul 2026, via Investing.com slides coverage)</td><td>Nubeqa® reached maximum royalty tier in Q2 — future quarters driven by in-market sales growth, not further tier steps; product deliveries lumpy (Q3 maintenance, Q4 full capacity); ODM-212 TEADES Phase 1 clean safety, TEADCO started, orphan designations US/EU for mesothelioma; US tariffs on innovative pharma from Oct 2026</td><td class="mods">P post-print, N Nubeqa path, H kill-criteria</td></tr><tr><td>Bayer media release, Feb 2022 (ASCO GU / ARASENS data) &amp; FDA approval releases 2024–2025</td><td>Nubeqa® global peak-sales estimate raised to &gt;€3bn (from &gt;€1bn); average total royalty rate to Orion ~20–25% of in-market sales including product sales to Bayer, tiered upward as sales grow; mHSPC label expansion (ADT+docetaxel 2022, ADT-only EU 2025/US 2025, China NMPA 2026)</td><td class="mods">A engine, C scenarios, N Nubeqa path</td></tr><tr><td>Jefferies research note via Investing.com (30 Jan 2026)</td><td>Downgrade to Hold from Buy — "Nubeqa upside is priced in"; worldwide Nubeqa peak-sales estimate raised to €4.6bn (from €4.2bn); risk-reward called neutral over 12 months despite the estimate upgrade</td><td class="mods">F positioning, G peers, N Nubeqa path</td></tr><tr><td>Yahoo Finance v8 quote (18 Jul 2026) &amp; Vara Research consensus via Orion IR (upd. 17 Jul 2026)</td><td>Post-print close €77.40 (+12.6% on results day from ~€68.75); 52-week range €56.50–€78.20; Vara Research 8-analyst consensus PT €75.13 pre-revision</td><td class="mods">F positioning, I asymmetry</td></tr><tr><td>DrugPatentWatch / Grokipedia darolutamide patent trackers</td><td>US patent estate (9 filings, none expired) points to generic entry ≈2038–2042; EU core compound patents ~2027–2030 with per-country SPC extensions pushing effective exclusivity into the mid-2030s in most member states</td><td class="mods">H kill-criteria, N Nubeqa path</td></tr><tr><td>Fiscal.ai &amp; Investing.com Pro — Recordati (BIT:REC) EV/EBITDA (28 Jun 2026)</td><td>Fiscal.ai: trailing EV/EBITDA 13.27&times; for FY2025; Investing.com Pro's own build (EV €11.94bn ÷ EBITDA €871.7m) computes to 13.7&times; — two independent aggregators converge on ≈13–14&times;. Genmab's multiple was checked against the same two providers plus Yahoo Finance and StockAnalysis.com and excluded: the four disagreed materially (≈11&times;–16&times;) with inconsistent per-share bases, likely reflecting Genmab's April 2026 share-capital reduction working through TTM figures at different speeds across providers</td><td class="mods">G peers</td></tr></tbody>
+      </table></div>
 
       <h4>◆ Data providers &amp; the audit rule</h4>
       
@@ -786,10 +1001,10 @@
 
 
       <h4>◆ Every metric computed here — formulas</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
-        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
-      </table>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
 
       <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
       <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
@@ -800,20 +1015,20 @@
 <footer>
     <div class="notes">
       <h4>How the engine computes (Module A)</h4>
-      <p>20,000 paths. Fair value = (Nubeqa®-complex run-rate × its multiple + rest-of-Orion net sales × its multiple + pipeline optionality − net debt €131.0m, Q1'26) ÷ 140.69m shares. Five triangular marginals: Nubeqa®-booked run-rate €700–1,050m around your mid (default €900m); its EV/sales multiple 5.5–9.0×; rest-of-Orion (generics, consumer health, animal health, Fermion) net sales €1,030–1,200m; its multiple 1.8–3.5×; pipeline optionality €0–500m. Dependence: a one-factor copula (each driver loads on a common factor — Nubeqa® run-rate 0.75, its multiple 0.55, rest-of-Orion sales 0.25, its multiple 0.20, pipeline 0.15, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the stress probability). Correlation = 0 and tail = 0 reproduce the independent model exactly. Both halves are valued on EV/sales rather than EV/EBIT because Orion discloses only one IFRS 8 segment — divisional EBIT isn't available, so this is a modelling simplification, not a hidden number. Tornado, scenario anchors and the Bayesian posterior are all computed live. The loadings reflect relative cyclicality — a modelling choice, not estimated coefficients.</p>
+      <p>20,000 paths. Fair value = (Nubeqa®-complex run-rate × its multiple + rest-of-Orion net sales × its multiple + pipeline optionality − net debt €131.0m, Q1'26) ÷ 140.69m shares. Five triangular marginals: Nubeqa®-booked run-rate €850–1,200m around your mid (default €980m post H1'26); its EV/sales multiple 5.5–9.0×; rest-of-Orion (generics, consumer health, animal health, Fermion) net sales €1,030–1,180m; its multiple 1.8–3.5×; pipeline optionality €0–550m. Dependence: a one-factor copula (each driver loads on a common factor — Nubeqa® run-rate 0.75, its multiple 0.55, rest-of-Orion sales 0.25, its multiple 0.20, pipeline 0.15, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the stress probability). Correlation = 0 and tail = 0 reproduce the independent model exactly. Both halves are valued on EV/sales rather than EV/EBIT because Orion discloses only one IFRS 8 segment — divisional EBIT isn't available, so this is a modelling simplification, not a hidden number. Tornado, scenario anchors and the Bayesian posterior are all computed live. The loadings reflect relative cyclicality — a modelling choice, not estimated coefficients.</p>
       <h4>The three labels, precisely</h4>
       <p><span style="color:var(--teal-deep)"><b>Sourced</b></span>: a figure fetched from a citable source (Orion's own releases, Investing.com, MarketScreener, Fiscal.ai, patent trackers, Orion's investor-relations pages). <span style="color:var(--blue-deep)"><b>Computed</b></span>: calculated here from sourced inputs (the simulation outputs, the forensic scores, Orion's own EV/EBITDA, the payout ratios). <span style="color:var(--amber-deep)"><b>Your assumption</b></span>: an input you set that is judgment, not data (Nubeqa® run-rate mid, correlation, tail probability, scenario priors, evidence likelihood-ratios, kill thresholds).</p>
       <h4>Still excluded — post-Modules-I&amp;J audit</h4>
       <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>Genmab EV/EBITDA</b> — public trackers disagree materially on the current multiple (roughly 11&times; to 16&times; across Fiscal.ai / StockAnalysis.com / Yahoo Finance snapshots, with Yahoo's own GMAB vs GMAB.CO listings showing inconsistent trailing EPS bases at time of write — likely muddied by Genmab's April 2026 share-capital reduction). Rather than pick one, Genmab is left out of the numeric peer chart in Module G; the read leans on the live 12-month relative <i>return</i> in Module I instead, which has no such ambiguity. <b>Segment-level EBIT</b> — Orion reports one IFRS 8 segment; only segment <i>net sales</i> are disclosed, which is why the engine values both halves on EV/Sales rather than EV/EBIT — a modelling simplification, not a hidden number. <b>Beneish M-score</b> — needs eight two-year ratios not fully disclosed; a half-estimated score is worse than none. <b>Options skew, insider transaction flow, and precise borrow cost</b> — not reliably fetchable for a dual-class Nasdaq Helsinki name from a public API. Everything else previously flagged as "cut" (factor &amp; FX betas, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
-      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures fetched 2026-07-17 (pre-H1-release); balance-sheet figures ≈ FY2025 / Q1'26 releases; verify against primary filings before acting.</p>
+      <p class="disc">For analysis and education only — not investment advice, not a recommendation, not a price target. The model quantifies the uncertainty in a set of assumptions; it does not make those assumptions correct. Live spot &amp; factor exposures fetched 2026-07-18 (post-H1); Nubeqa® actuals from H1'26 report; balance-sheet net debt still Q1'26 until H1 BS is wired; verify against primary filings before acting.</p>
     </div>
   </footer>
 
 </div>
 
 <script>
-  const PRICE=66.95, SHARES=140.69, NETDEBT=131.0, N=20000;
-  const NUB={lo:700,hi:1050}, NMLT={lo:5.5,md:7.0,hi:9.0}, BASE={lo:1030,md:1110,hi:1200}, BMLT={lo:1.8,md:2.6,hi:3.5}, PIPE={lo:0,md:150,hi:500};
+  const PRICE=77.40, SHARES=140.69, NETDEBT=131.0, N=20000;
+  const NUB={lo:850,hi:1200}, NMLT={lo:5.5,md:7.0,hi:9.0}, BASE={lo:1030,md:1100,hi:1180}, BMLT={lo:1.8,md:2.6,hi:3.5}, PIPE={lo:0,md:180,hi:550};
   const RHO={nub:0.75,nmlt:0.55,base:0.25,bmlt:0.20,pipe:0.15};
 
   function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
@@ -932,11 +1147,11 @@
   }
 
   // scenarios (computed anchors)
-  let SFV={bear:63,base:66,bull:69};
+  let SFV={bear:65,base:69,bull:78};
   function computeScenarioAnchors(){
-    SFV.bear=simulate(750,0.55,0.07,8000).p50;
-    SFV.base=simulate(900,0.55,0.07,8000).p50;
-    SFV.bull=simulate(1050,0.55,0.07,8000).p50;
+    SFV.bear=simulate(900,0.55,0.07,8000).p50;
+    SFV.base=simulate(980,0.55,0.07,8000).p50;
+    SFV.bull=simulate(1200,0.55,0.07,8000).p50;
     document.getElementById('sfv-bear').textContent='€'+SFV.bear.toFixed(0);
     document.getElementById('sfv-base').textContent='€'+SFV.base.toFixed(0);
     document.getElementById('sfv-bull').textContent='€'+SFV.bull.toFixed(0);
@@ -969,68 +1184,64 @@
     return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:linear-gradient(90deg,'+color+','+color+')"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
   }
   document.getElementById('peerbars').innerHTML=[
-    peerBar('Orion — trailing','EV ÷ FY2025 EBITDA · computed',13.9,'13.9×','var(--coral)'),
+    peerBar('Orion — trailing','EV ÷ FY2025 EBITDA · computed @ €77.40',16.0,'16.0×','var(--coral)'),
     peerBar('Recordati','Fiscal.ai / Investing.com Pro · sourced',13.7,'13.7×','var(--teal-deep)'),
   ].join('');
 
   ['i-mid','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
   update(); computeScenarioAnchors();
 
-  // ---- Module P: Q2 2026 print-day calculator (thresholds locked pre-release at 66.95 EUR) ----
-  const Q1_NUB=145.0, H1_SHARE={lo:0.38, mid:0.39, hi:0.40};
-  function q2num(id){const v=parseFloat(document.getElementById(id).value);return isNaN(v)?null:v;}
-  function q2Score(){
-    const roy=q2num('q2-roy'), prod=q2num('q2-prod'), comp=q2num('q2-comp')||140;
-    const op=q2num('q2-op'); const px=q2num('q2-px')||PRICE;
-    const guide=document.getElementById('q2-guide').value;
-    const baseYoY=document.getElementById('q2-base').value;
-    const fxmod=document.getElementById('q2-fx').checked;
-    const out=document.getElementById('q2-out');
-    if(roy===null||prod===null||op===null){out.innerHTML='<div class="q2err">Enter Q2 royalties, product sales and operating profit from the report (ex-milestones).</div>';return;}
-    const q2=roy+prod, h1=Q1_NUB+q2, yoy=(q2/comp-1)*100;
-    const fyLo=h1/H1_SHARE.hi, fyMid=h1/H1_SHARE.mid, fyHi=h1/H1_SHARE.lo;
-    let nubPts, nubLab;
-    if(q2>=230){nubPts=2;nubLab='STRONG';}
-    else if(q2>=205){nubPts=0;nubLab='IN LINE';}
-    else if(q2>=180){nubPts=-1;nubLab='SOFT';}
-    else {nubPts=-2;nubLab='MISS';}
-    if(fxmod&&nubPts===-1){nubPts=0;nubLab='SOFT → IN LINE (FX/timing modifier)';}
-    const gPts=guide==='raised'?2:(guide==='cut'?-2:0);
-    const gLab=guide==='raised'?'raised':(guide==='cut'?'cut / lower-end':'maintained');
-    const oPts=op>=155?1:(op<130?-1:0);
-    const bPts=baseYoY==='declining'?-1:0;
-    const score=nubPts+gPts+oPts+bPts;
-    const mid=Math.min(1095,Math.max(705,fyMid));
-    const sim=simulate(mid,0.6,0.06);
-    let ups=0,dns=0,eu=0,ed=0;const n=sim.fv.length;
-    for(let i=0;i<n;i++){const d=sim.fv[i]-px;if(d>0){ups++;eu+=d;}else if(d<0){dns++;ed-=d;}}
-    const p=ups/n; eu=ups?eu/ups:0; ed=dns?ed/dns:1e-9;
-    const b=eu/ed, kelly=b>0?(b*p-(1-p))/b:-1;
-    let act,cls,chip;
-    if(score>=3){cls='bull';chip='BUY / ADD';act='Positive expectancy restored. Add up to half-Kelly ('+(Math.max(0,kelly)*50).toFixed(1)+'% of book), staged: half once the tape settles (~12:30), half after the 14:00 EEST webcast confirms the royalty trajectory. Day-one ceiling ≈€70 — do not re-rate the multiple on one print.';}
-    else if(score>=1){cls='mixed';chip='HOLD · BULLISH TILT';act='No chase. Add small only if the market gives ≤ €65 intraday.';}
-    else if(score>=-1){cls='mixed';chip='HOLD';act='Do nothing today — price ≈ re-marked fair value. Re-mark the config, rebuild the pipeline, write the Module H journal entry.';}
-    else if(score>=-3){cls='bear';chip='TRIM 25–50%';act='Strike one under the two-quarter rule. Sell into strength; if price already gapped below the re-marked median (€'+sim.p50.toFixed(1)+'), stop adding rather than panic-sell — exit review at the Q3 print (22 Oct 2026).';}
-    else {cls='bear';chip='EXIT';act='Dominant driver failing at a price that embedded ≈€930m. Exit on the first bounce toward the re-marked median (€'+sim.p50.toFixed(1)+'); do not buy the dip. Document in Module H.';}
-    const st=(k,v)=>'<div class="q2s"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
-    out.innerHTML=
-      '<div class="q2stats">'
-      +st('Q2 Nubeqa® print','€'+q2.toFixed(0)+'m <small>'+(yoy>=0?'+':'')+yoy.toFixed(0)+'% YoY</small>')
-      +st('H1 cumulative','€'+h1.toFixed(0)+'m')
-      +st('Implied FY26 run-rate','€'+fyMid.toFixed(0)+'m <small>€'+fyLo.toFixed(0)+'–'+fyHi.toFixed(0)+'m</small>')
-      +st('Re-marked median','€'+sim.p50.toFixed(1)+' <small>P10 €'+sim.p10.toFixed(0)+' · P90 €'+sim.p90.toFixed(0)+'</small>')
-      +st('P(FV &gt; €'+px.toFixed(2)+')',Math.round(p*100)+'%')
-      +st('Kelly f* at live price',(kelly*100>=0?'+':'')+(kelly*100).toFixed(1)+'% <small>half-Kelly '+(Math.max(0,kelly)*50).toFixed(1)+'%</small>')
-      +'</div>'
-      +'<div class="q2score">Nubeqa® <b>'+nubLab+'</b> ('+(nubPts>=0?'+':'')+nubPts+') · Guidance <b>'+gLab+'</b> ('+(gPts>=0?'+':'')+gPts+') · Op profit €'+op.toFixed(0)+'m ('+(oPts>=0?'+':'')+oPts+') · Base '+baseYoY+' ('+(bPts>=0?'+':'')+bPts+') → <b>score '+(score>=0?'+':'')+score+'</b>'+(fyMid<705||fyMid>1095?' · <i>note: implied FY outside engine range, re-mark clamped</i>':'')+'</div>'
-      +'<div class="verdict '+cls+'"><span class="vchip">'+chip+'</span><span class="vtext">'+act+'</span></div>';
-  }
-  document.getElementById('q2-run').addEventListener('click',q2Score);
+  // Module P calculator removed post-print — actuals locked in Module P HTML.
 
   const links=[].slice.call(document.querySelectorAll('.stepper a'));
-  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
-  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
-  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+  const map={};links.forEach(a=>{const h=a.getAttribute('href');if(h&&h.charAt(0)==='#')map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  /* Horizontal-only: never call scrollIntoView (it scrolls the page and fights sticky nav). */
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}
+      catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    /* Prefer the section whose top is nearest the activation band under the sticky nav. */
+    let best=null,bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting)visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  /* Keep the active chip centered when the user taps a stepper link. */
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
 </script>
 </body>
 </html>

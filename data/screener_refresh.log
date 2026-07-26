@@ -1,0 +1,12 @@
+
+===== refresh started 2026-07-19 12:34:06 (clear=False) =====
+Enumerating Nasdaq Helsinki + Stockholm universe…
+  · HEL: 197 of 197 symbols
+  · STO: 1117 of 1117 symbols
+  · universe: 1314 equities
+Fetching fundamentals for 1314 symbols (6 workers, cache TTL 24h)…
+  · fetched 1314 (0 errors) in 7s
+  → /home/robert/stock-analysis/dashboard/screener_data.json
+  → /home/robert/stock-analysis/dashboard/screener_data.js
+  → /home/robert/stock-analysis/data/screener_latest.csv
+OK — 1314 rows (1314 with full fundamentals) in 7s

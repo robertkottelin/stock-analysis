@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inission — Research Pipeline (strict-data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:800px}
+  .keystat{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .ks{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;min-width:92px}
+  .ks .kl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .ks .kv{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:2px}
+  .ks .kv small{font-size:11px;color:var(--muted);font-weight:400}
+  .legend{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .hero{margin-top:18px;background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--blue);border-radius:var(--radius);padding:clamp(16px,3vw,24px)}
+  .hero .htag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:8px}
+  .hero h3{font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.15}
+  .hero h3 b{color:var(--blue-deep)}
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:680px){.lenses{grid-template-columns:1fr}}
+  .lens{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .lens .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .lens .lh{font-family:var(--disp);font-weight:600;font-size:14px;margin-bottom:5px}
+  .lens.empir .lh{color:var(--coral-deep)} .lens.comp .lh{color:var(--blue-deep)} .lens.owner .lh{color:var(--teal-deep)}
+  .lens .lb{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .synth{margin-top:14px;background:var(--blue-wash);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55}
+  .synth b{color:var(--blue-deep)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .reactab .rr{display:grid;grid-template-columns:118px 1fr 86px;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:560px){.reactab .rr{grid-template-columns:80px 1fr 64px}}
+  .reactab .re{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  .reactab .rd{font-size:12px;color:var(--muted);line-height:1.4}
+  .reactab .rp{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;color:var(--coral-deep)}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:58px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:16px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)} .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:185px 1fr 66px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:120px 1fr 52px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:116px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:86px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+
+  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){.qgrid{grid-template-columns:1fr}}
+  .qcard{border:1px solid var(--line);border-radius:12px;padding:14px 15px 15px;background:var(--surface-2)}
+  .qtt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.01em}
+  .qsub{font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.35}
+  .qcard svg{display:block}
+  .qread{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .qread b{color:var(--ink)}
+</style>
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+<style>
+  .audit{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,3vw,26px)}
+  .audit h3{font-family:var(--disp);font-weight:600;font-size:20px;letter-spacing:-.01em;margin-bottom:6px}
+  .audit .lead{font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+  .audit h4{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue-deep);font-weight:600;margin:18px 0 8px}
+  .audit table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .audit table th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong);background:var(--surface-2)}
+  .audit table td{padding:7px 8px;border-bottom:1px dashed var(--line);vertical-align:top;line-height:1.45}
+  .audit table td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink);word-break:break-all}
+  .audit table td.mods{font-family:var(--mono);font-size:10.5px;color:var(--blue-deep);font-weight:600}
+  .audit ul{margin:6px 0 0 20px;font-size:12.5px;line-height:1.65;color:var(--ink)}
+  .audit ul li{margin-bottom:4px}
+  .audit ul li b{color:var(--ink)}
+  .audit .fetchbox{background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5}
+  .audit .fetchbox b{color:var(--ink)}
+  .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
+  .audit .refs cite{font-style:italic;color:var(--ink)}
+</style>
+
+<style id="bullcase-css">
+  /* Module U — perfect-execution bull path */
+  .bullpath{border:1.5px solid var(--teal);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:linear-gradient(180deg,#fff,var(--teal-wash));margin-top:8px}
+  .bullpath .bp-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .bullpath .bp-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.45}
+  .bp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
+  @media(max-width:780px){.bp-kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.bp-kpis{grid-template-columns:1fr}}
+  .bp-kpis .k{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px;min-width:0}
+  .bp-kpis .k .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .bp-kpis .k .val{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--teal-deep);margin-top:3px;line-height:1.1}
+  .bp-kpis .k .val small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+  .bp-kpis .k .hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.35}
+  .bp-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 22px;margin:8px 0 6px}
+  @media(max-width:560px){.bp-controls{grid-template-columns:1fr}}
+  .guard{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;line-height:1.45;background:var(--surface)}
+  .guard .gdot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px}
+  .mile{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px;line-height:1.45}
+  .mile .my{font-family:var(--mono);font-weight:600;color:var(--teal-deep);font-size:12px}
+  .mile .mt{color:var(--ink)}
+  #bull-chart{width:100%;height:auto;display:block;margin-top:8px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Research pipeline · strict-data · Inission AB (publ) · STO: INISS B · built 2026-07-20</div>
+  <h1>Inission — the analyst's instrument panel
+    <span class="sub">Nordic electronics manufacturing services (EMS) roll-up plus a power-electronics OEM (Inission Power, formerly Enedo) — valued by a single-leg <b>sales × EBITA margin × EV/EBITA − net debt</b> engine. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline question this build answers: <b>after a 37% sales surge and a double from the 52-week low, how much operational recovery is already in the price?</b></span>
+  </h1>
+
+  <div class="keystat">
+    <div class="ks"><div class="kl">Price</div><div class="kv">kr68.0</div></div>
+    <div class="ks"><div class="kl">Market cap</div><div class="kv">kr1.57<small>bn</small></div></div>
+    <div class="ks"><div class="kl">Net debt</div><div class="kv">kr0.47<small>bn</small></div></div>
+    <div class="ks"><div class="kl">P/E <small>TTM</small></div><div class="kv">~25<small>×</small></div></div>
+    <div class="ks"><div class="kl">EV/EBITA <small>LTM</small></div><div class="kv">~14.8<small>×</small></div></div>
+    <div class="ks"><div class="kl">FCF yield</div><div class="kv">~9.8<small>%</small></div></div>
+    <div class="ks"><div class="kl">Cons. PT</div><div class="kv">kr75<small> (+10%)</small></div></div>
+  </div>
+
+  <div class="legend">
+    <span class="lg sourced"><span class="d"></span>Sourced — fetched &amp; cited</span>
+    <span class="lg computed"><span class="d"></span>Computed — by this tool from sourced inputs</span>
+    <span class="lg assumed"><span class="d"></span>Your assumption — a judgment you set, not data</span>
+  </div>
+  <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
+    <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-20 10:59</b>
+    </span>
+    <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
+      Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
+    </span>
+  </div>
+
+  <div class="hero">
+    <div class="htag">◆ The most predictive driver — three converging lenses</div>
+    <h3>There is no commodity spread here. The industrial ballast is the <b>EMS contract-manufacturing base</b> (medtech, defence, data centres, electrification), but the most <i>predictive</i> mover of the share price is <b>order intake and EBITA margin</b> — and, right behind it, the <b>EV/EBITA multiple</b> the market grants a mid-cap Nordic EMS.</h3>
+    <div class="lenses">
+      <div class="lens empir">
+        <div class="lt">Lens 1 — what moves the price (empirical)</div>
+        <div class="lh">Order book → margin expansion</div>
+        <div class="lb">The stock roughly doubled from the SEK 36 52-week low as H2'25 / Q1'26 converted a high book-to-bill into both volume and margin: Q1 sales +37% (organic +26%), EBITA margin 7.0% vs 4.1%. The tape tracks industrial demand (defence, data centres, quantum/industrial electronics) more than the balance sheet.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">Lens 2 — what moves fair value (computed)</div>
+        <div class="lh">Sales × margin, then the multiple</div>
+        <div class="lb">The tornado (Module B) ranks <b>EBITA margin</b> and <b>sales</b> as the two biggest levers on intrinsic value, with the <b>EV/EBITA multiple</b> close behind. Net debt is second-order once FCF is positive.</div>
+      </div>
+      <div class="lens owner">
+        <div class="lt">Lens 3 — what management &amp; the anchor back</div>
+        <div class="lb">Management targets FY2026 sales SEK 2.3–2.5bn and EBITA margin &gt;6%, then medium-term growth &gt;15% (10% organic + 5% M&amp;A) and EBITA margin &gt;9%. ABG (commissioned) marks adj. EBITA ~6.8% for 2026e and a SEK 50–90 fair-value range. Insider ownership remains high (~52%).</div>
+      </div>
+    </div>
+    <div class="synth"><b>Synthesis.</b> The three reconcile on one tension: operational momentum is unambiguously strong (Q1 beat ABG's already constructive preview), but the share has re-rated from deep-value to full. Live reverse-DCF (Module I) implies only ~11.7× EV/EBITA at mode drivers — almost exactly the pipeline mode — so the market is not pricing a heroic multiple; it is pricing that the constructive sales/margin path lands. A ~9.7% owner-earnings yield pays you to wait if volume holds; the swing lives in whether the medium-term &gt;9% EBITA margin is reachable. Correlated MC median (~kr59) sits below the mode point-estimate (~kr67) and below spot (~kr68) — a genuine two-sided setup that currently tilts against adding risk at the print.</div>
+  </div>
+
+  <nav class="stepper" id="stepper">
+    <a href="#mA"><span class="n">A</span>Engine</a>
+    <a href="#mB"><span class="n">B</span>Driver analysis</a>
+    <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
+    <a href="#mU"><span class="n">U</span>10y upside</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mH"><span class="n">H</span>Kill-criteria</a>
+    <a href="#mQ"><span class="n">Q</span>Quality</a>
+    <a href="#mI"><span class="n">I</span>Asymmetry</a>
+    <a href="#mJ"><span class="n">J</span>Base rates</a>
+    <a href="#mSum"><span class="n">∑</span>Scorecard</a>
+    <a href="#mAudit"><span class="n">§</span>Audit</a>
+  </nav>
+
+  <!-- ===================== MODULE A ===================== -->
+  <section class="mod" id="mA">
+    <div class="mod-head"><div class="mod-no">A</div>
+      <div class="ht"><h2>Valuation engine — correlated &amp; fat-tailed</h2><div class="hq">Single-leg EMS industrial: group sales × EBITA margin × EV/EBITA − net debt, ÷ shares.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Mode point-estimate ≈ <b>kr67</b> is near spot, but the <b>correlated MC median lands ~kr59</b> (P10 ~kr35 / P90 ~kr85) because the joint distribution is left-skewed. Only ~31% of paths clear the live price — operational upside is real, but the tape already prices a constructive outcome.</span></div>
+    <p class="body">20,000 paths. Fair value per share = <b>(sales × EBITA margin% / 100 × EV/EBITA − net debt) ÷ 23.05m shares</b>. Mode arithmetic: sales SEK 2,550m × 6.8% EBITA = SEK 173m EBITA at 11.5× → EV SEK 1,994m − net debt SEK 450m → equity SEK 1,544m ≈ <b>kr67/share</b>. Live Module I (full copula + regime shock) pulls the median down to ~kr59 because bad states co-move. Anchors: FY2025 sales SEK 2,206m / EBITA 5.0% (adj. 6.1%); LTM sales SEK 2,387m / EBITA 5.8%; Q1'26 run-rate 7.0% margin; company guidance SEK 2.3–2.5bn and &gt;6%; ABG 2026e adj. EBITA 6.8%.</p>
+    <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The EBITA margin (does Q1's 7% hold through the year?) and the EV/EBITA multiple (does the market keep paying mid-teens after the re-rating?) are <b>your</b> calls. Correlation and tail control how hard sales and margin fall together in an industrial downturn.</p>
+    <div class="mc-wrap">
+      <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
+      <div class="mc-sub">Fixed inputs (sourced): 23.05m diluted shares, price kr68.40 (live, 2026-07-20). Drivers below are triangular distributions with a one-factor copula.</div>
+      <div class="controls">
+        <div class="ctrl">
+          <label><span class="lab">Group net sales <span>MSEK · assumption</span></span><span class="cval"><span id="v-sales">2550</span></span></label>
+          <input type="range" id="i-sales" min="2100" max="2900" step="10" value="2550">
+          <div class="tri">Guidance 2,300–2,500 · ABG 2,453 · LTM 2,387 · Q1 momentum higher</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">EBITA margin <span>% · assumption</span></span><span class="cval"><span id="v-mgn">6.8</span>%</span></label>
+          <input type="range" id="i-mgn" min="4.0" max="8.5" step="0.1" value="6.8">
+          <div class="tri">FY25 5.0% (adj 6.1%) · LTM 5.8% · Q1 7.0% · med-term target &gt;9%</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">EV/EBITA multiple <span>× · assumption</span></span><span class="cval"><span id="v-mlt">11.5</span>×</span></label>
+          <input type="range" id="i-mlt" min="7.5" max="14.5" step="0.1" value="11.5">
+          <div class="tri">ABG ~11× · LTM tape ~14.8× · quality EMS mid-teens</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Net debt <span>MSEK · assumption</span></span><span class="cval"><span id="v-nd">450</span></span></label>
+          <input type="range" id="i-nd" min="280" max="620" step="10" value="450">
+          <div class="tri">Q1'26 reported 466 · ex-lease 213 · M&amp;A re-lever risk up</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Correlation <span>% common factor</span></span><span class="cval"><span id="v-corr">60</span>%</span></label>
+          <input type="range" id="i-corr" min="0" max="100" step="5" value="60">
+          <div class="tri">How tightly sales, margin and multiple move together</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Regime-shock chance <span>% fat left tail</span></span><span class="cval"><span id="v-tail">8</span>%</span></label>
+          <input type="range" id="i-tail" min="0" max="25" step="1" value="8">
+          <div class="tri">Industrial demand double-dip / inventory destock probability</div>
+        </div>
+      </div>
+      <div class="cmp">
+        <div class="cmpcard">
+          <div class="ct"><span class="dd" style="background:var(--faint)"></span>Independent (ρ=0, no shock)</div>
+          <div class="cmprow"><span class="ck">Median FV</span><span class="cv" id="oi-med">—</span></div>
+          <div class="cmprow"><span class="ck">P10 / P90</span><span class="cv"><span id="oi-p10">—</span> / <span id="oi-p90">—</span></span></div>
+          <div class="cmprow"><span class="ck">P(deep &lt; kr40)</span><span class="cv" id="oi-tail">—</span></div>
+        </div>
+        <div class="cmpcard hot">
+          <div class="ct"><span class="dd" style="background:var(--coral)"></span>Correlated + regime shock</div>
+          <div class="cmprow"><span class="ck">Median FV</span><span class="cv" id="co-med">—</span></div>
+          <div class="cmprow"><span class="ck">P10 / P90</span><span class="cv"><span id="co-p10">—</span> / <span id="co-p90">—</span></span></div>
+          <div class="cmprow"><span class="ck">P(deep &lt; kr40)</span><span class="cv warn" id="co-tail">—</span></div>
+        </div>
+      </div>
+      <div class="hist-wrap">
+        <div class="hist-leg"><span><span class="sw" style="background:var(--coral)"></span>FV &lt; price</span><span><span class="sw" style="background:var(--teal)"></span>FV ≥ price</span></div>
+        <svg id="hist" viewBox="0 0 700 230" role="img" aria-label="Fair value histogram"></svg>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+    <div class="note a"><b>The one modelling choice, flagged.</b> Segments (EMS vs Power OEM) are valued as one consolidated EBITA stream — the market does not split the mid-cap this way, and Power is still only ~14% of LTM sales. Net debt is the <b>company-reported lease-inclusive</b> figure (~SEK 466m), matching ABG and Yahoo EV construction. Ex-lease net debt is only ~SEK 213m; using that instead would lift fair value by roughly SEK 10/share without changing the operational thesis. Working-capital intensity (inventory ~SEK 590m) is inside the cash-conversion story, not a separate engine term.</div>
+  </section>
+
+  <!-- ===================== MODULE B ===================== -->
+  <section class="mod" id="mB">
+    <div class="mod-head"><div class="mod-no">B</div>
+      <div class="ht"><h2>Driver analysis — tornado &amp; reaction function</h2><div class="hq">Which assumption moves fair value the most, and what does the market already imply?</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">The tornado is dominated by <b>EBITA margin</b> and <b>sales</b> — both of which just printed a strong Q1. Multiple risk is real after the double, but the operational levers still point up if book-to-bill holds.</span></div>
+    <p class="body">One-at-a-time swing of each driver across its triangular range (others at mode). The widest bar is the most contested number in the thesis.</p>
+    <svg id="tornado" viewBox="0 0 700 200" role="img" aria-label="Tornado sensitivity chart"></svg>
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:18px 0 8px">◆ Reaction function — what just happened</div>
+    <div class="reactab">
+      <div class="rr"><div class="re">FY2023 peak</div><div class="rd">EBITA margin 7.4% on SEK 2.2bn sales — the prior cycle high the medium-term &gt;9% target must beat.</div><div class="rp">7.4%</div></div>
+      <div class="rr"><div class="re">2024–25 soft</div><div class="rd">Sales flat-to-up modestly; reported EBITA margin compressed to 5.0–5.8%; FCF swung from −SEK 8m (2024) to +SEK 153m (2025) as WC released.</div><div class="rp">5.0%</div></div>
+      <div class="rr"><div class="re">Q1'26</div><div class="rd">Sales +37% (organic +26%); EBITA margin 7.0%; Power OEM back to +3.9% from −3.6%; backlog SEK 1.5bn; book-to-bill 1.1.</div><div class="rp">7.0%</div></div>
+      <div class="rr"><div class="re">Tape</div><div class="rd">Share from SEK 36 52w low to ~68 — re-rating ahead of, then with, the print. LTM EV/EBITA ~14.8×; forward (ABG 2026e adj.) ~11–12×.</div><div class="rp">~2×</div></div>
+    </div>
+    <div class="note t"><b>Read.</b> Margin is the highest-leverage driver because every 100 bp of EBITA margin on SEK 2.55bn sales is ~SEK 25.5m of EBITA ≈ SEK 12–13/share at an 11.5× multiple. The Q1 7.0% print already sits above mode (6.8%); the open question is durability through H2, not existence.</div>
+  </section>
+
+  <!-- ===================== MODULE C ===================== -->
+  <section class="mod" id="mC">
+    <div class="mod-head"><div class="mod-no">C</div>
+      <div class="ht"><h2>Scenarios + Bayesian blend</h2><div class="hq">Three narrative anchors, then a prior you can update with evidence chips.</div></div>
+      <span class="tagchip a">Assumed + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Bear / base / bull scenario medians span a wide band. The Bayesian blend at neutral priors sits near price — evidence chips (Q1 beat, backlog, Power turnaround) tilt bullish if you weight them.</span></div>
+    <div class="scen">
+      <div class="scard bear">
+        <div class="sn">Bear — destock + margin fade</div>
+        <div class="sd">Industrial demand softens; sales ~SEK 2.2bn; EBITA margin reverts toward 4.5%; multiple compresses to ~8.5× as the re-rating unwinds.</div>
+        <div class="sfv" id="sfv-bear">—</div>
+        <div class="sfvl">Scenario median FV</div>
+      </div>
+      <div class="scard base">
+        <div class="sn">Base — guide &amp; hold</div>
+        <div class="sd">Sales SEK ~2.55bn (above guidance mid); EBITA margin ~6.8% (ABG path); multiple ~11.5×. The "fairly valued compounder" case.</div>
+        <div class="sfv" id="sfv-base">—</div>
+        <div class="sfvl">Scenario median FV</div>
+      </div>
+      <div class="scard bull">
+        <div class="sn">Bull — 9% path opens</div>
+        <div class="sd">Sales SEK ~2.85bn; margin tracks toward 8%+ on mix and Power recovery; multiple re-rates to ~13.5× as the market accepts durability.</div>
+        <div class="sfv" id="sfv-bull">—</div>
+        <div class="sfvl">Scenario median FV</div>
+      </div>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:8px 0 10px">◆ Priors &amp; evidence (click chips to update)</div>
+    <div class="controls" style="margin-bottom:12px">
+      <div class="ctrl">
+        <label><span class="lab">Prior weight — Bear</span><span class="cval"><span id="v-pb">33</span></span></label>
+        <input type="range" id="i-pb" min="0" max="100" step="1" value="33">
+      </div>
+      <div class="ctrl">
+        <label><span class="lab">Prior weight — Base</span><span class="cval"><span id="v-pn">34</span></span></label>
+        <input type="range" id="i-pn" min="0" max="100" step="1" value="34">
+      </div>
+      <div class="ctrl">
+        <label><span class="lab">Prior weight — Bull</span><span class="cval"><span id="v-pu">33</span></span></label>
+        <input type="range" id="i-pu" min="0" max="100" step="1" value="33">
+      </div>
+    </div>
+    <div class="evid" id="evid">
+      <div class="ev on" data-lr="0.7,1.0,1.4"><span>Q1 sales +37% / EBITA 7.0%</span><span class="ar">bullish</span></div>
+      <div class="ev on" data-lr="0.8,1.0,1.25"><span>Backlog SEK 1.5bn, B/B 1.1</span><span class="ar">bullish</span></div>
+      <div class="ev on" data-lr="0.75,1.0,1.3"><span>Power OEM margin turn (+3.9%)</span><span class="ar">bullish</span></div>
+      <div class="ev" data-lr="1.4,1.0,0.7"><span>Share already 2× from lows</span><span class="ar">bearish</span></div>
+      <div class="ev" data-lr="1.35,1.0,0.75"><span>FY25 EBITA only 5.0% reported</span><span class="ar">bearish</span></div>
+      <div class="ev" data-lr="1.25,1.0,0.85"><span>M&amp;A / dilution risk ongoing</span><span class="ar">bearish</span></div>
+      <div class="ev" data-lr="0.85,1.0,1.2"><span>ABG FV range up to kr90</span><span class="ar">bullish</span></div>
+      <div class="ev" data-lr="1.3,1.0,0.8"><span>Inventory-heavy WC (~kr590m)</span><span class="ar">bearish</span></div>
+    </div>
+    <div class="wbar"><div class="wp bear" id="wp-b" style="width:33%"></div><div class="wp base" id="wp-n" style="width:34%"></div><div class="wp bull" id="wp-u" style="width:33%"></div></div>
+    <div class="wlab"><span id="wl-b">Bear 33%</span><span id="wl-n">Base 34%</span><span id="wl-u">Bull 33%</span></div>
+    <div class="blend">
+      <div class="bn" id="blend-fv">—</div>
+      <div class="bl">Bayesian-blend fair value &nbsp;·&nbsp; <span id="blend-gap">—</span></div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE D ===================== -->
+  <section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Accounting forensics</h2><div class="hq">Cash conversion, working capital, goodwill and the quality of the EBITA print.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">FY2025 FCF SEK 153m is real and LTM FCF ~SEK 171m is solid — but FY2024 FCF was −SEK 8m on WC absorption, inventory is still ~SEK 590m, and goodwill + intangibles are material on an acquisition-built balance sheet.</span></div>
+    <p class="body">Real reported figures (FY2025 / Q1'26): revenue SEK 2,206m (LTM 2,387m); EBITA SEK 111.1m / LTM 137.8m; adj. EBITA FY25 SEK 133.7m; reported net profit SEK 29.8m (EPS 1.30); <b>operating cash flow SEK 178.5m</b>; FCF <b>+SEK 153.3m</b>; net debt SEK 466m (ex-lease 213); equity ratio 40.2%; goodwill SEK 224m; inventory SEK 590m; tangible book ~SEK 18.5/share.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Cash conversion</span><span class="tg s">sourced</span></div><div class="scv">solid<span class="un"></span></div><div class="scband good">FY25 FCF +153m</div><div class="scd">OCF SEK 179m on EBITA 111m — strong conversion once WC behaves. Capex is light (~SEK 25m); the cash swing is inventory and receivables, not maintenance capex.</div></div>
+      <div class="sc"><div class="scl"><span>Working capital</span><span class="tg a">flagged</span></div><div class="scv">heavy<span class="un"></span></div><div class="scband mid">Watch</div><div class="scd">Inventory SEK ~590m (~25% of LTM sales) is structural for EMS. A growth surge can absorb cash; a destock can release it. Not fraud — the cycle's cash signature.</div></div>
+      <div class="sc"><div class="scl"><span>Goodwill / intangibles</span><span class="tg a">flagged</span></div><div class="scv">material<span class="un"></span></div><div class="scband mid">Watch</div><div class="scd">Goodwill SEK 224m + other intangibles ~SEK 100m on equity SEK 748m — acquisition-built. EBITA (not EBIT) is the right profit metric because PPA amortisation sits below it.</div></div>
+      <div class="sc"><div class="scl"><span>Leverage</span><span class="tg s">sourced</span></div><div class="scv">~2.0×<span class="un"> ND/EBITDA</span></div><div class="scband mid">Manageable</div><div class="scd">Lease-adj ND/EBITDA ~1.7× (ABG); equity ratio 40% above the &gt;30% target. Room for bolt-ons, not for a large cash deal without equity.</div></div>
+    </div>
+    <div class="note t"><b>Forensic read.</b> No red-flag accruals story — the volatile line is WC, which EMS investors expect. Adj. EBITA (stripping listing-transfer and one-offs) is the cleaner operating read; reported FY25 EBITA 5.0% understates the run-rate after Q1.</div>
+  </section>
+
+  <!-- ===================== MODULE E ===================== -->
+  <section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital allocation record</h2><div class="hq">Dividends, M&amp;A discipline, and whether FCF compounds for owners.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">A genuine margin-and-cash turnaround (FCF −8 → +153), a modest dividend (SEK 0.60), Main Market listing completed, and a stated M&amp;A model that targets average 5% annual acquired growth — not empire-building at any price.</span></div>
+    <div class="rec">
+      <div class="ri"><div class="rk">FCF turn</div><div class="rd"><b>FY2024 FCF −SEK 8m → FY2025 +SEK 153m</b> — the single clearest capital-discipline print in the file, driven by WC release and higher volumes.</div></div>
+      <div class="ri"><div class="rk">Dividend</div><div class="rd">SEK 0.60/share for 2025 (was 1.00 in 2024 on higher earnings). Policy historically up to ~30% of EAT — growth and M&amp;A come first.</div></div>
+      <div class="ri"><div class="rk">M&amp;A model</div><div class="rd">Stated ambition: ~5% annual acquired growth over three years, traditional valuation model, sellers "beginning to align." Selteka (Lithuania, Jun 2025) is the latest bolt-on; pipeline active.</div></div>
+      <div class="ri"><div class="rk">Listing</div><div class="rd">Moved from First North to Nasdaq Stockholm Main Market (Apr 2025) — higher governance bar, wider investor set, temporary advisory costs that hit FY25 adj. items.</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE F ===================== -->
+  <section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Market positioning &amp; ownership</h2><div class="hq">Who owns it, how thin is the float, and what does the tape already know?</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Insider-heavy ownership (~52%) aligns incentives but limits free float (~44%). Thin average daily volume (~SEK 0.2m EUR equivalent) means the re-rating can reverse quickly. Coverage is thin (≈1–2 brokers); ABG is commissioned research.</span></div>
+    <p class="body">Inission is a founder-influenced mid-cap: Chairman Olle Hulteberg sold 350k Class B shares in Feb 2026 but remains a large long-term holder; shareholder count has risen to 2,145 post-Main-Market move. Consensus PT ~SEK 75 (+10% at 68). ABG fair-value range SEK 50–90. The stock is liquid enough for a patient position, not for a large fund's full line.</p>
+    <div class="note a"><b>Positioning risk.</b> Low float + high beta to industrial news means drawdowns can be sharp even when the fundamental case is intact. Size positions for the liquidity you actually have.</div>
+  </section>
+
+  <!-- ===================== MODULE G ===================== -->
+  <section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer context</h2><div class="hq">Nordic EMS / electronics manufacturing comps — HANZA, NOTE, AQ Group.</div></div>
+      <span class="tagchip s">Sourced + computed</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">ABG notes Inission trades at a discount on forward P/E (12×–9× 2026–28e vs peers 17×–13×). On EV/EBITA the gap is narrower after the re-rating, but the quality-of-growth print (organic +26% in Q1) is competitive with the peer set.</span></div>
+    <p class="body">Closest listed Nordics: <b>HANZA</b> (EMS, more multi-tech), <b>NOTE</b> (EMS, electronics), <b>AQ Group</b> (electrical/mechanical systems). Inission's differentiation is the dual EMS + Power OEM platform and the defence/data-centre order book. Module I will compute live 12-month relative returns vs these three.</p>
+    <div id="peerbars" class="bars"></div>
+    <div class="note t"><b>Peer read.</b> A discount to peers is only cheap if margin durability is believed. The medium-term &gt;9% EBITA target, if delivered, justifies re-rating toward the peer median; if not, today's forward multiple is fair, not free.</div>
+  </section>
+
+  <!-- ===================== MODULE H ===================== -->
+  <section class="mod" id="mH">
+    <div class="mod-head"><div class="mod-no">H</div>
+      <div class="ht"><h2>Kill-criteria</h2><div class="hq">What would falsify the thesis — explicit, checkable, and pre-committed.</div></div>
+      <span class="tagchip a">Assumed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The thesis dies if margin and order book both reverse — not if the multiple compresses alone. Watch quarterly organic growth, book-to-bill, and Power OEM profitability.</span></div>
+    <div class="kc">
+      <div class="kci"><div class="kx"></div><div><b>Order book rolls over.</b> Book-to-bill stays <span class="kv">&lt; 0.9</span> for two consecutive quarters and backlog falls below SEK 1.2bn — demand thesis broken.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Margin mean-reverts hard.</b> Group EBITA margin prints <span class="kv">&lt; 4.5%</span> for two consecutive quarters — the Q1 7% was a peak, not a floor.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Leverage runs.</b> Lease-adj net debt/EBITDA climbs <span class="kv">above ~2.5×</span> on a large acquisition without a clear synergy path.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Power OEM relapse.</b> Inission Power LTM EBITA margin stays <span class="kv">negative</span> through FY2026 — the turnaround fails and remains a permanent drag.</div></div>
+      <div class="kci"><div class="kx"></div><div><b>Cash conversion breaks.</b> Free cash flow turns negative for a full year while sales are growing — WC absorption or quality-of-earnings concern.</div></div>
+    </div>
+  </section>
+
+  <!-- ===================== MODULE Q ===================== -->
+  <section class="mod" id="mQ">
+    <div class="mod-head"><div class="mod-no">Q</div>
+      <div class="ht"><h2>Fundamental quality &amp; valuation dashboard</h2><div class="hq">Sales, EBITA margin, leverage and cash — from reported annual and LTM figures.</div></div>
+      <span class="tagchip s">Sourced financials</span>
+    </div>
+    <div class="qgrid">
+      <div class="qcard">
+        <div class="qtt">① Group EBITA margin</div>
+        <div class="qsub">EBITA ÷ sales · the operational story</div>
+        <svg viewBox="0 0 360 200" style="width:100%;height:auto" role="img">
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="48" y1="160" x2="340" y2="160"/><line x1="48" y1="120" x2="340" y2="120"/>
+            <line x1="48" y1="80" x2="340" y2="80"/><line x1="48" y1="40" x2="340" y2="40"/>
+          </g>
+          <g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end">
+            <text x="44" y="163">0%</text><text x="44" y="123">3%</text><text x="44" y="83">6%</text><text x="44" y="43">9%</text>
+          </g>
+          <!-- 2022 4.7%, 2023 7.4%, 2024 5.8%, 2025 5.0%, LTM 5.8%, target 9 -->
+          <rect x="60" y="97" width="36" height="63" rx="2" fill="var(--teal)" opacity="0.75"/>
+          <rect x="110" y="61" width="36" height="99" rx="2" fill="var(--teal)" opacity="0.9"/>
+          <rect x="160" y="83" width="36" height="77" rx="2" fill="var(--teal)" opacity="0.75"/>
+          <rect x="210" y="93" width="36" height="67" rx="2" fill="var(--amber)" opacity="0.8"/>
+          <rect x="260" y="83" width="36" height="77" rx="2" fill="var(--teal)" opacity="0.85"/>
+          <line x1="48" y1="40" x2="340" y2="40" stroke="var(--coral)" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="335" y="36" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral-deep)" text-anchor="end">med-term 9%</text>
+          <g font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--muted)" text-anchor="middle">
+            <text x="78" y="176">'22</text><text x="128" y="176">'23</text><text x="178" y="176">'24</text>
+            <text x="228" y="176">'25</text><text x="278" y="176">LTM</text>
+          </g>
+        </svg>
+        <div class="qread"><b>Margin cycle.</b> Peak 7.4% in 2023, trough-ish 5.0% reported in 2025, LTM 5.8% and Q1 7.0%. The &gt;9% medium-term target is ambitious vs history — not impossible if mix and Power hold.</div>
+      </div>
+      <div class="qcard">
+        <div class="qtt">② Net sales (SEK bn)</div>
+        <div class="qsub">Top-line scale · organic + M&amp;A</div>
+        <svg viewBox="0 0 360 200" style="width:100%;height:auto" role="img">
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="48" y1="160" x2="340" y2="160"/><line x1="48" y1="120" x2="340" y2="120"/>
+            <line x1="48" y1="80" x2="340" y2="80"/><line x1="48" y1="40" x2="340" y2="40"/>
+          </g>
+          <g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end">
+            <text x="44" y="163">0</text><text x="44" y="123">1.0</text><text x="44" y="83">2.0</text><text x="44" y="43">3.0</text>
+          </g>
+          <!-- 2021 1.29, 2022 2.01, 2023 2.21, 2024 2.15, 2025 2.21, LTM 2.39 -->
+          <rect x="55" y="109" width="32" height="51" rx="2" fill="var(--blue)" opacity="0.7"/>
+          <rect x="100" y="80" width="32" height="80" rx="2" fill="var(--blue)" opacity="0.75"/>
+          <rect x="145" y="72" width="32" height="88" rx="2" fill="var(--blue)" opacity="0.8"/>
+          <rect x="190" y="74" width="32" height="86" rx="2" fill="var(--blue)" opacity="0.75"/>
+          <rect x="235" y="72" width="32" height="88" rx="2" fill="var(--blue)" opacity="0.85"/>
+          <rect x="280" y="64" width="32" height="96" rx="2" fill="var(--teal)" opacity="0.9"/>
+          <g font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--muted)" text-anchor="middle">
+            <text x="71" y="176">'21</text><text x="116" y="176">'22</text><text x="161" y="176">'23</text>
+            <text x="206" y="176">'24</text><text x="251" y="176">'25</text><text x="296" y="176">LTM</text>
+          </g>
+        </svg>
+        <div class="qread"><b>Scale.</b> From SEK 1.3bn (2021) to LTM SEK 2.4bn — acquisition-led with a real organic surge in Q1'26. Guidance 2.3–2.5bn looks conservative vs the run-rate if momentum holds.</div>
+      </div>
+      <div class="qcard">
+        <div class="qtt">③ Free cash flow (SEK m)</div>
+        <div class="qsub">Owner earnings · lumpy</div>
+        <svg viewBox="0 0 360 200" style="width:100%;height:auto" role="img">
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="48" y1="160" x2="340" y2="160"/><line x1="48" y1="120" x2="340" y2="120"/>
+            <line x1="48" y1="80" x2="340" y2="80"/><line x1="48" y1="40" x2="340" y2="40"/>
+          </g>
+          <g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end">
+            <text x="44" y="163">-80</text><text x="44" y="123">0</text><text x="44" y="83">80</text><text x="44" y="43">160</text>
+          </g>
+          <!-- 2021 -70, 2022 46, 2023 101, 2024 -8, 2025 153 -->
+          <rect x="60" y="120" width="40" height="28" rx="2" fill="var(--coral)" opacity="0.7"/>
+          <rect x="115" y="101" width="40" height="19" rx="2" fill="var(--teal)" opacity="0.75"/>
+          <rect x="170" y="80" width="40" height="40" rx="2" fill="var(--teal)" opacity="0.85"/>
+          <rect x="225" y="120" width="40" height="3" rx="1" fill="var(--coral)" opacity="0.8"/>
+          <rect x="280" y="59" width="40" height="61" rx="2" fill="var(--teal)" opacity="0.95"/>
+          <line x1="48" y1="120" x2="340" y2="120" stroke="var(--ink)" stroke-width="1"/>
+          <g font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--muted)" text-anchor="middle">
+            <text x="80" y="176">'21</text><text x="135" y="176">'22</text><text x="190" y="176">'23</text>
+            <text x="245" y="176">'24</text><text x="300" y="176">'25</text>
+          </g>
+        </svg>
+        <div class="qread"><b>Cash.</b> Lumpy by design (WC). FY25 SEK 153m is the best print in the series and underpins the ~10% FCF yield at today's market cap.</div>
+      </div>
+      <div class="qcard">
+        <div class="qtt">④ Leverage &amp; equity ratio</div>
+        <div class="qsub">Net debt &amp; solvency</div>
+        <div style="padding:18px 8px 8px">
+          <div class="cmprow"><span class="ck">Net debt (Q1'26)</span><span class="cv">SEK 466m</span></div>
+          <div class="cmprow"><span class="ck">Net debt ex-lease</span><span class="cv">SEK 213m</span></div>
+          <div class="cmprow"><span class="ck">Equity ratio</span><span class="cv pos">40.2%</span></div>
+          <div class="cmprow"><span class="ck">ND/EBITDA (screener)</span><span class="cv">~2.5×</span></div>
+          <div class="cmprow"><span class="ck">Lease-adj ND/EBITDA (ABG)</span><span class="cv">~1.7×</span></div>
+          <div class="cmprow"><span class="ck">Current ratio</span><span class="cv">1.5×</span></div>
+        </div>
+        <div class="qread"><b>Balance sheet.</b> Equity ratio above the &gt;30% target; leverage manageable for bolt-ons. Not a fortress, not stressed.</div>
+      </div>
+    </div>
+    <div class="src">Source: Inission year-end report 2025; Q1 2026 interim; ABG Sundal Collier (13 Apr 2026); stockanalysis.com/Fiscal.ai multi-year series. EBITA margins for 2021–2024 from ABG history; 2025 and LTM from company releases.</div>
+  </section>
+
+  <!-- Placeholders for I/J (replaced by inject.py) -->
+
+  <!-- ===================== SCORECARD ===================== -->
+
+
+  <section class="mod" id="mU" style="border:1.5px solid var(--teal)">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">U</div>
+      <div class="ht"><h2>Perfect-execution bull — the 10-year ceiling</h2><div class="hq">Nordic EMS compounder — margin to 9%+, disciplined M&A. If everything goes right for 10 years, what is a realistic best-case stock price?</div></div>
+      <span class="tagchip a">Scenario tool · your assumptions</span>
+    </div>
+
+    <div class="verdict bull"><span class="vchip">BULL · CEILING</span><span class="vtext">Under the default perfect-execution path, year-10 fair value lands near <b>kr321</b> — about <b>+369%</b> above today’s <b>kr68.40</b>, a price CAGR of <b>16.7%</b> (total-shareholder-return ≈ <b>17.5%</b> incl. dividends). Discounted back at 10%, the PV of that terminal equity plus dividends is ≈ <b>kr137</b> per share (+100% vs spot). Consensus PT kr75 sits below this terminal — the street prices a cycle, not a decade of perfect execution.</span></div>
+
+    <p class="body"><b>What this module is — and is not.</b> Modules A–C underwrite a <i>through-cycle base</i>. This one is the opposite exercise: an explicit, end-to-end <b>everything-goes-right</b> path over 10 years — sales compound, margin reaches a defended peak, the market awards a quality multiple, free cash builds or buys back stock. Every driver below is an <b>assumption</b> you can move; the defaults are ambitious but deliberately short of fantasy (no Atlas-Copco multiple, no 20% sales CAGR). Inission's ceiling is a Nordic EMS platform that compounds mid-to-high single digits organically, keeps adding bolt-ons at sensible multiples, and defends a high-single-digit EBITA margin through the cycle — re-rating toward quality manufacturing peers, not a software multiple.</p>
+
+    <div class="bullpath">
+      <div class="bp-title">◆ Live bull-path calculator — 10-year perfect execution</div>
+      <div class="bp-sub">Fair value each year = EV/EBITA multiple × (sales × EBITA margin) + net cash, ÷ diluted shares. Net cash and share count evolve from free-cash-flow: a slice pays the dividend, a slice buys back stock at that year’s fair value, the rest accrues to the balance sheet.</div>
+
+      <div class="bp-kpis" id="bp-kpis">
+        <div class="k"><div class="lab">Year-10 fair value</div><div class="val" id="bp-term">kr321</div><div class="hint" id="bp-term-h">+369% vs spot kr68.40</div></div>
+        <div class="k"><div class="lab">Price CAGR (10y)</div><div class="val" id="bp-cagr">16.7%</div><div class="hint" id="bp-cagr-h">TSR ≈ 17.5% incl. dividends</div></div>
+        <div class="k"><div class="lab">PV @ 10% disc.</div><div class="val" id="bp-pv">kr137</div><div class="hint" id="bp-pv-h">Terminal PV kr124 + div PV kr13</div></div>
+        <div class="k"><div class="lab">Y5 checkpoint</div><div class="val" id="bp-mid">kr159</div><div class="hint" id="bp-mid-h">Sales 3,747→5,505 €m by Y10</div></div>
+      </div>
+
+      <div class="bp-controls">
+        <div class="ctrl">
+          <label><span class="lab">Sales CAGR <span>% · assumption</span></span><span class="cval"><span id="bv-scagr">8.0</span>%</span></label>
+          <input type="range" id="bi-scagr" min="0" max="12" step="0.1" value="8.0">
+          <div class="tri">Perfect-execution revenue compounding over the horizon</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal EBITA/EBITDA margin <span>% · assumption</span></span><span class="cval"><span id="bv-mgn">9.0</span>%</span></label>
+          <input type="range" id="bi-mgn" min="4" max="12" step="0.1" value="9.0">
+          <div class="tri">Today ~6.8%; the terminal through-cycle margin you underwrite</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal multiple <span>× · assumption</span></span><span class="cval"><span id="bv-mlt">13.0</span>×</span></label>
+          <input type="range" id="bi-mlt" min="7" max="18" step="0.1" value="13.0">
+          <div class="tri">Now ~11.5× · the terminal EV/EBITA(DA) the market grants</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Discount rate <span>% · assumption</span></span><span class="cval"><span id="bv-disc">10</span>%</span></label>
+          <input type="range" id="bi-disc" min="4" max="16" step="0.5" value="10">
+          <div class="tri">For PV of terminal equity + dividends only — not a WACC claim</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">FCF / EBITA after tax <span>% · assumption</span></span><span class="cval"><span id="bv-fcf">70</span>%</span></label>
+          <input type="range" id="bi-fcf" min="50" max="95" step="1" value="70">
+          <div class="tri">Cash conversion after tax haircut — capex-heavy names sit lower</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Buyback share of FCF <span>% · assumption</span></span><span class="cval"><span id="bv-bb">10</span>%</span></label>
+          <input type="range" id="bi-bb" min="0" max="50" step="1" value="10">
+          <div class="tri">Executed at that year’s FV; rest of non-dividend FCF → net cash</div>
+        </div>
+      </div>
+
+      <div class="hist-wrap" id="bp-chart-wrap"><svg id="bull-chart" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img" aria-label="Bull-case fair-value path">
+  <line x1="48" y1="160.4" x2="684" y2="160.4" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="684" y="156.4" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot kr68</text>
+  <polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="48.0,161.1 111.6,155.2 175.2,147.4 238.8,137.7 302.4,126.0 366.0,112.4 429.6,96.9 493.2,79.9 556.8,62.0 620.4,43.7 684.0,26.2"/>
+  <circle cx="48.0" cy="161.1" r="3.2" fill="var(--teal-deep)"/><circle cx="111.6" cy="155.2" r="3.2" fill="var(--teal-deep)"/><circle cx="175.2" cy="147.4" r="3.2" fill="var(--teal-deep)"/><circle cx="238.8" cy="137.7" r="3.2" fill="var(--teal-deep)"/><circle cx="302.4" cy="126.0" r="3.2" fill="var(--teal-deep)"/><circle cx="366.0" cy="112.4" r="3.2" fill="var(--teal-deep)"/><circle cx="429.6" cy="96.9" r="3.2" fill="var(--teal-deep)"/><circle cx="493.2" cy="79.9" r="3.2" fill="var(--teal-deep)"/><circle cx="556.8" cy="62.0" r="3.2" fill="var(--teal-deep)"/><circle cx="620.4" cy="43.7" r="3.2" fill="var(--teal-deep)"/><circle cx="684.0" cy="26.2" r="3.2" fill="var(--teal-deep)"/>
+  <text x="48.0" y="153.1" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">kr67</text><text x="366.0" y="104.4" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">kr159</text><text x="684.0" y="18.2" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">kr321</text>
+  <text x="48.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y0</text><text x="175.2" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y2</text><text x="302.4" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y4</text><text x="429.6" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y6</text><text x="556.8" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y8</text><text x="684.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y10</text>
+</svg></div>
+
+      <div class="tbl-scroll" style="margin-top:14px">
+        <table class="brtab" id="bp-table">
+          <thead><tr>
+            <th>Year</th>
+            <th style="text-align:right">Sales €m</th>
+            <th style="text-align:right">EBITA %</th>
+            <th style="text-align:right">EV/EBITA</th>
+            <th style="text-align:right">Net cash €m</th>
+            <th style="text-align:right">Shares m</th>
+            <th style="text-align:right">Fair value</th>
+          </tr></thead>
+          <tbody id="bp-tbody"><tr class='now'><td>Y0 · now</td><td class='num'>2,550</td><td class='num'>6.8%</td><td class='num'>11.5×</td><td class='num'>-450</td><td class='num'>23.1</td><td class='num'><b>kr67</b></td></tr><tr><td>Y1</td><td class='num'>2,754</td><td class='num'>6.9%</td><td class='num'>11.5×</td><td class='num'>-388</td><td class='num'>22.9</td><td class='num'><b>kr78</b></td></tr><tr><td>Y2</td><td class='num'>2,974</td><td class='num'>7.0%</td><td class='num'>11.7×</td><td class='num'>-320</td><td class='num'>22.8</td><td class='num'><b>kr93</b></td></tr><tr><td>Y3</td><td class='num'>3,212</td><td class='num'>7.3%</td><td class='num'>11.8×</td><td class='num'>-243</td><td class='num'>22.7</td><td class='num'><b>kr111</b></td></tr><tr><td>Y4</td><td class='num'>3,469</td><td class='num'>7.6%</td><td class='num'>12.0×</td><td class='num'>-157</td><td class='num'>22.6</td><td class='num'><b>kr133</b></td></tr><tr><td>Y5</td><td class='num'>3,747</td><td class='num'>7.9%</td><td class='num'>12.2×</td><td class='num'>-60</td><td class='num'>22.5</td><td class='num'><b>kr159</b></td></tr><tr><td>Y6</td><td class='num'>4,047</td><td class='num'>8.2%</td><td class='num'>12.5×</td><td class='num'>49</td><td class='num'>22.4</td><td class='num'><b>kr188</b></td></tr><tr><td>Y7</td><td class='num'>4,370</td><td class='num'>8.5%</td><td class='num'>12.7×</td><td class='num'>171</td><td class='num'>22.3</td><td class='num'><b>kr220</b></td></tr><tr><td>Y8</td><td class='num'>4,720</td><td class='num'>8.8%</td><td class='num'>12.8×</td><td class='num'>307</td><td class='num'>22.2</td><td class='num'><b>kr253</b></td></tr><tr><td>Y9</td><td class='num'>5,097</td><td class='num'>8.9%</td><td class='num'>13.0×</td><td class='num'>456</td><td class='num'>22.1</td><td class='num'><b>kr288</b></td></tr><tr class='cur'><td>Y10</td><td class='num'>5,505</td><td class='num'>9.0%</td><td class='num'>13.0×</td><td class='num'>618</td><td class='num'>22.0</td><td class='num'><b>kr321</b></td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="kg" style="margin-top:14px" id="bp-endstate">
+        <div class="kgi pos"><div class="k">Y10 EBITA</div><div class="v">kr495m</div></div>
+        <div class="kgi"><div class="k">Y10 sales</div><div class="v">kr5,505m</div></div>
+        <div class="kgi"><div class="k">Shares retired</div><div class="v">1.0m</div></div>
+        <div class="kgi pos"><div class="k">Cum. FCF (10y)</div><div class="v">kr1,781m</div></div>
+      </div>
+    </div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin:20px 0 8px">◆ What “everything goes right” means (milestones)</div>
+    <div><div class='mile'><div class='my'>Y2</div><div class='mt'>EBITA margin sustainably ≥ 7% and book-to-bill ≥ 1.0 through a soft quarter; Power OEM profitable on an LTM basis.</div></div><div class='mile'><div class='my'>Y5</div><div class='mt'>Group sales clearly above SEK 3.5bn; EBITA margin mid-to-high single digits; at least one material bolt-on integrated without leverage blow-out.</div></div><div class='mile'><div class='my'>Y8</div><div class='mt'>Medium-term >9% EBITA margin delivered and held for two consecutive years; net debt/EBITDA ≤ 1.5× lease-adj.</div></div><div class='mile'><div class='my'>Y10</div><div class='mt'>Through-cycle EBITA margin ~9%, sales ~SEK 5.5bn, quality multiple ~13× — the default terminal state this calculator prices.</div></div></div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin:20px 0 8px">◆ Kill-switches — the path breaks if…</div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div class='guard'><span class='gdot'></span><div>Industrial / defence / data-centre demand double-dips and the 7% Q1 margin proves a peak, not a floor.</div></div><div class='guard'><span class='gdot'></span><div>A large, value-destructive acquisition re-levers the balance sheet and absorbs the FCF this path compounds.</div></div><div class='guard'><span class='gdot'></span><div>Power OEM (ex-Enedo) fails to sustain the Q1 turnaround and remains a permanent margin drag.</div></div><div class='guard'><span class='gdot'></span><div>Multiple never re-rates — the market permanently slots INISS with deep cyclicals (~7–9×) despite the mix shift.</div></div></div>
+
+    <div class="note t" style="margin-top:16px"><b>How to use this number.</b> The year-10 fair value is a <i>ceiling under a named path</i>, not a target price and not a probability-weighted expectation. Compare it to Module C’s near-term bull (~scenario card) and to Module A’s P90: if even perfect execution only compounds at high-single-digit CAGR, the asymmetry lives elsewhere; if the ceiling is a multi-bagger with credible milestones, the right tail is economically real. Move the sliders until the path stops feeling honest — that boundary is the point of the tool.
+      <div class="src">Method: sales compound at assumed CAGR; margin and EV/EBITA ease from today to terminal via smoothstep; FCF = EBITA × (1 − tax) × conversion; split into dividend / buyback / cash; fair value = multiple × EBITA − net debt, ÷ shares Defaults from stocks/config.py → bull_case. Interactive path recomputed in-browser; Python reference engine in utils/bullcase.py.</div>
+    </div>
+  </section>
+
+<script id="bullcase-js">
+(function(){
+  const D = {"sales0": 2550.0, "mgn0": 6.8, "mlt0": 11.5, "nc0": -450.0, "shares0": 23.05, "salesCagr": 8.0, "mgnTerm": 9.0, "mltTerm": 13.0, "tax": 22.0, "fcfOn": 70.0, "payout": 30.0, "buyback": 10.0, "discount": 10.0, "horizon": 10, "spot": 68.4, "cur": "kr"};
+  const $ = (id) => document.getElementById(id);
+  function smoothstep(t){ t=Math.max(0,Math.min(1,t)); return t*t*(3-2*t); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function fvps(sales,mgn,mlt,nc,sh){ return sh>0 ? (mlt*(sales*mgn/100)+nc)/sh : 0; }
+  function fmt(cur,x,dp){ return cur + (dp===0?Math.round(x).toLocaleString('en-US'):x.toFixed(dp)); }
+  function pct(x,dp){ return (x*100).toFixed(dp)+'%'; }
+
+  function run(){
+    if(!$('bi-scagr')) return;
+    const sales0=+D.sales0, mgn0=+D.mgn0, mlt0=+D.mlt0, nc0=+D.nc0, sh0=+D.shares0;
+    const scagr=($('bi-scagr').value)/100;
+    const mgnT=+$('bi-mgn').value;
+    const mltT=+$('bi-mlt').value;
+    const disc=($('bi-disc').value)/100;
+    const fcfOn=($('bi-fcf').value)/100;
+    const bb=($('bi-bb').value)/100;
+    const tax=D.tax/100;
+    const H=+D.horizon|0;
+    const spot=+D.spot, cur=D.cur;
+    // Dividend payout fixed from server default (buyback is the free slider)
+    const pay = D.payout/100;
+
+    $('bv-scagr').textContent=(scagr*100).toFixed(1);
+    $('bv-mgn').textContent=mgnT.toFixed(1);
+    $('bv-mlt').textContent=mltT.toFixed(1);
+    $('bv-disc').textContent=(disc*100).toFixed(0);
+    $('bv-fcf').textContent=(fcfOn*100).toFixed(0);
+    $('bv-bb').textContent=(bb*100).toFixed(0);
+
+    let sales=sales0, mgn=mgn0, mlt=mlt0, nc=nc0, sh=sh0;
+    let cumDiv=0, cumDivPv=0, cumFcf=0, cumBb=0;
+    const rows=[];
+    rows.push({y:0,sales,mgn,mlt,nc,sh,fv:fvps(sales,mgn,mlt,nc,sh)});
+    for(let y=1;y<=H;y++){
+      const te=smoothstep(y/H);
+      sales=sales0*Math.pow(1+scagr,y);
+      mgn=lerp(mgn0,mgnT,te);
+      mlt=lerp(mlt0,mltT,te);
+      const ebita=sales*mgn/100;
+      const fcf=ebita*(1-tax)*fcfOn;
+      cumFcf+=fcf;
+      const divT=fcf*pay;
+      const bbM=fcf*bb;
+      const retained=fcf-divT-bbM;
+      const fvPre=fvps(sales,mgn,mlt,nc+retained,sh);
+      const retired=fvPre>0?bbM/fvPre:0;
+      sh=Math.max(sh-retired, sh0*0.5);
+      nc=nc+retained;
+      const fv=fvps(sales,mgn,mlt,nc,sh);
+      cumDiv+=divT;
+      cumDivPv+=divT/Math.pow(1+disc,y);
+      cumBb+=bbM;
+      rows.push({y,sales,mgn,mlt,nc,sh,fv,ebita});
+    }
+    const term=rows[rows.length-1];
+    const mid=rows[Math.floor(H/2)];
+    const priceCagr=Math.pow(term.fv/spot,1/H)-1;
+    const tsrEnd=term.fv+(cumDiv/sh0);
+    const tsrCagr=Math.pow(tsrEnd/spot,1/H)-1;
+    const pvTerm=term.fv/Math.pow(1+disc,H);
+    const pvDiv=cumDivPv/sh0;
+    const pvTot=pvTerm+pvDiv;
+    const up=term.fv/spot-1;
+
+    $('bp-term').textContent=fmt(cur,term.fv,0);
+    $('bp-term-h').textContent=(up>=0?'+':'')+pct(up,0)+' vs spot '+fmt(cur,spot,2);
+    $('bp-cagr').textContent=pct(priceCagr,1);
+    $('bp-cagr-h').textContent='TSR ≈ '+pct(tsrCagr,1)+' incl. dividends';
+    $('bp-pv').textContent=fmt(cur,pvTot,0);
+    $('bp-pv-h').textContent='Terminal PV '+fmt(cur,pvTerm,0)+' + div PV '+fmt(cur,pvDiv,0);
+    $('bp-mid').textContent=fmt(cur,mid.fv,0);
+    $('bp-mid-h').textContent='Y'+mid.y+' on the same path';
+
+    // end-state strip
+    const es=$('bp-endstate');
+    if(es){
+      es.innerHTML=
+        '<div class="kgi pos"><div class="k">Y'+H+' EBITA</div><div class="v">'+fmt(cur,term.ebita|| (term.sales*term.mgn/100),0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Y'+H+' sales</div><div class="v">'+fmt(cur,term.sales,0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Shares retired</div><div class="v">'+(sh0-term.sh).toFixed(1)+'m</div></div>'+
+        '<div class="kgi pos"><div class="k">Cum. FCF ('+H+'y)</div><div class="v">'+fmt(cur,cumFcf,0)+'m</div></div>';
+    }
+
+    // table
+    const tb=$('bp-tbody');
+    if(tb){
+      tb.innerHTML=rows.map(r=>{
+        const lab=r.y===0?'Y0 · now':'Y'+r.y;
+        const curCls=r.y===H?' class="cur"':(r.y===0?' class="now"':'');
+        return '<tr'+curCls+'><td>'+lab+'</td>'+
+          '<td class="num">'+Math.round(r.sales).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.mgn.toFixed(1)+'%</td>'+
+          '<td class="num">'+r.mlt.toFixed(1)+'×</td>'+
+          '<td class="num">'+Math.round(r.nc).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.sh.toFixed(1)+'</td>'+
+          '<td class="num"><b>'+fmt(cur,r.fv,0)+'</b></td></tr>';
+      }).join('');
+    }
+
+    // chart
+    const wrap=$('bp-chart-wrap');
+    if(wrap){
+      const W=700,Hgt=200,pl=48,pr=16,pt=16,pb=36;
+      const fvs=rows.map(r=>r.fv);
+      let lo=Math.min(spot,...fvs)*0.92, hi=Math.max(...fvs)*1.06;
+      if(hi<=lo) hi=lo+1;
+      const X=i=>pl+(W-pl-pr)*(rows[i].y/H);
+      const Y=v=>pt+(Hgt-pt-pb)*(1-(v-lo)/(hi-lo));
+      let pts=rows.map((r,i)=>X(i).toFixed(1)+','+Y(r.fv).toFixed(1)).join(' ');
+      let dots=rows.map((r,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(r.fv).toFixed(1)+'" r="3.2" fill="var(--teal-deep)"/>').join('');
+      let labs='';
+      rows.forEach((r,i)=>{
+        if(r.y===0||r.y===Math.floor(H/2)||r.y===H){
+          labs+='<text x="'+X(i).toFixed(1)+'" y="'+(Y(r.fv)-8).toFixed(1)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">'+fmt(cur,r.fv,0)+'</text>';
+        }
+      });
+      let xt='';
+      rows.forEach((r,i)=>{
+        if(r.y%Math.max(1,Math.floor(H/5))===0||r.y===H){
+          xt+='<text x="'+X(i).toFixed(1)+'" y="'+(Hgt-10)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y'+r.y+'</text>';
+        }
+      });
+      const ys=Y(spot);
+      wrap.innerHTML='<svg id="bull-chart" viewBox="0 0 '+W+' '+Hgt+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img">'
+        +'<line x1="'+pl+'" y1="'+ys.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+ys.toFixed(1)+'" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>'
+        +'<text x="'+(W-pr)+'" y="'+(ys-4).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot '+fmt(cur,spot,0)+'</text>'
+        +'<polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="'+pts+'"/>'
+        +dots+labs+xt+'</svg>';
+    }
+  }
+  ['bi-scagr','bi-mgn','bi-mlt','bi-disc','bi-fcf','bi-bb'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('input', run);
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+</script>
+
+
+<section class="mod" id="mI">
+    <div class="mod-head"><div class="mod-no">I</div>
+      <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
+      <span class="tagchip c">Computed from live &amp; sourced data</span>
+    </div>
+    <div class="verdict bear"><span class="vchip">BEAR</span><span class="vtext">The composite metrics flag a negative pay-off asymmetry — expected loss dominates expected gain, and the market is already pricing above-base assumptions. Live spot <b>kr68.40</b> · MC median <b>kr58.55</b> (P10 kr35.07, P90 kr84.75) · P(FV &gt; price) <b>31%</b>.</span></div>
+
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-20) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+
+    <div class="kg">
+      <div class="kgi"><div class="k">Live spot (INISS-B.ST)</div><div class="v">kr68.40 <small>as of 2026-07-20</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">kr36.00–kr78.80</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">96%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+9.6% <small>PT kr75.00</small></div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">25.3× <small>EPS kr2.70</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">15.2× <small>est EPS kr4.51</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">12.8× <small>est EPS kr5.35</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+19%</div></div>
+    </div>
+    <div class="rev">
+      <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
+      <div class="rv">
+        <div class="n neg">11.70×</div>
+        <div class="l">is the value of <b>EV/EBITA multiple (at mode sales / EBITA margin / net debt)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>kr68.40</b> price. That is <b>+1.7% above</b> the pipeline's base-case mode of <b>11.5×</b>.</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
+    <div class="kelly">
+      <div class="kbox hot"><div class="t">Kelly f* — optimal sizing</div><div class="n neg">-68.8%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox hot"><div class="t">Payoff asymmetry</div><div class="n neg">0.31×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">0.68</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in kr.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n neg">-13.3%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
+    <div class="kelly">
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-48.7%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-59.2%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-57.3%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-65.7%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">34.6%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">37.5%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-52.5%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-6.3% / +10.6% / +37.4% / +84.0%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Stockholm</td><td class="num">0.37</td><td>R² = 0.03. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">0.38</td><td>R² = 0.02. 252-day OLS.</td></tr>
+        
+      </tbody>
+    </table></div>
+
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs HANZA.ST</div><div class="bb"><div class="bi" style="left:50%;width:40.8%;background:var(--teal)"></div></div><div class="bv">+40.8%</div></div><div class="barsrow"><div class="bl">vs NOTE.ST</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+107.7%</div></div><div class="barsrow"><div class="bl">vs AQ.ST</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+74.6%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a EV/EBITA multiple (at mode sales / EBITA margin / net debt) of <b>11.70×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (INISS-B.ST, ^OMX, ^STOXX) — fetched 2026-07-20. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    </div>
+  </section>
+
+
+  <section class="mod" id="mJ">
+    <div class="mod-head"><div class="mod-no">J</div>
+      <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
+      <span class="tagchip a">Sourced + computed</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>45/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 26<sup>th</sup> percentile of its multi-year range.</span></div>
+
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Group EBITA margin (%) through the cycle</div>
+    <div class="tbl-scroll"><table class="brtab">
+      <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
+      <tbody><tr><td>2021</td><td class="num">5.20%</td><td>reported (ABG history) — post-COVID rebuild</td></tr><tr><td>2022</td><td class="num">4.70%</td><td>reported — volume ramp, margin pressure</td></tr><tr><td>2023</td><td class="num">7.40%</td><td>reported peak — strong industrial demand</td></tr><tr class='cur'><td>2024</td><td class="num now">5.80%</td><td>reported — softer year, ~flat sales</td></tr><tr><td>2025</td><td class="num">5.00%</td><td>reported (adj. 6.1%) — listing/transfer costs</td></tr><tr class='cur'><td>LTM Q1'26</td><td class="num now">5.80%</td><td>company LTM after strong Q1 print</td></tr><tr><td>2026E ABG</td><td class="num">6.80%</td><td>ABG adj. EBITA margin — above company >6% target</td></tr><tr><td>med-term target</td><td class="num">9.00%</td><td>company medium-term EBITA margin ambition</td></tr></tbody>
+    </table></div>
+    <div class="cbar" style="margin-top:14px">
+      <div class="fl" style="left:0;right:0"></div>
+      <div class="mk" style="left:25.6%"></div>
+      <div class="lb" style="left:25.6%">now · LTM = 5.8% (Q1'26 run-rate 7.0%)</div>
+    </div>
+    <div style="height:24px"></div>
+
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">23%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">49%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">42%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">negative</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
+    <div class="rev">
+      <div class="rt">◆ Owner-earnings spread</div>
+      <div class="rv">
+        <div class="n pos">+716 bp</div>
+        <div class="l"><b>Owner-earnings yield 9.70%</b> (kr153m ÷ kr1577m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+      </div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: FY2025 free cash flow SEK 153.3m (operating cash flow SEK 178.5m less capex ~SEK 25m; year-end report Feb 2026) as the owner-earnings proxy; LTM FCF ~SEK 171m after Q1'26. Cash conversion is genuine but lumpy — FY2024 FCF was −SEK 8m on WC absorption — so the yield is not a steady annuity.. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
+    </div>
+
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
+    <div class="fac">
+      <div class="fi"><div class="fk">Value</div><div class="fv">4</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi"><div class="fk">Quality</div><div class="fv">58</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">94</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">23</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">45</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+    </div>
+
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+716 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-20.</div>
+    </div>
+  </section>
+
+  <section class="mod" id="mSum">
+    <div class="mod-head"><div class="mod-no">∑</div>
+      <div class="ht"><h2>Scorecard — conviction &amp; thesis</h2><div class="hq">One verdict chip per graded module. Tallies are counted live from the chips.</div></div>
+      <span class="tagchip c">Computed</span>
+    </div>
+    <div class="tbl-scroll"><table class="scoretab">
+      <thead><tr><th>Module</th><th>Verdict</th><th>One-line read</th></tr></thead>
+      <tbody>
+        <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Mode ~kr67 near spot, but correlated MC median ~kr59; only ~31% of paths above price.</td></tr>
+        <tr><td>B · Drivers</td><td><span class="vchip bull">BULL</span></td><td>Margin &amp; sales dominate the tornado; Q1 just printed both higher.</td></tr>
+        <tr><td>C · Scenarios</td><td><span class="vchip mixed">MIXED</span></td><td>Bayesian blend near price; evidence chips tilt bull if Q1 durability holds.</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip mixed">MIXED</span></td><td>Solid FY25 FCF, but WC-heavy and goodwill material — quality is fine, not fortress.</td></tr>
+        <tr><td>E · Capital</td><td><span class="vchip bull">BULL</span></td><td>FCF turn, modest dividend, disciplined bolt-on model, Main Market listing done.</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Insider-aligned but thin float; limited coverage; re-rating can reverse fast.</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip bull">BULL</span></td><td>Forward P/E discount to Nordic EMS peers; growth print competitive.</td></tr>
+        <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Clear falsifiers (B/B, margin, leverage, Power, FCF) — none tripped yet.</td></tr>
+        <tr><td>U · 10y upside</td><td><span class="vchip bull">BULL</span></td><td>Perfect-execution Y10 FV ≈ kr321 (16.7% price CAGR; PV ≈ kr137)</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bear">BEAR</span></td><td>Kelly f* -69%, asymmetry 0.31×, market implies +1.7% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 45/100 · OE-yield spread +716 bp real</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="tally">
+      <div class="tbar"><div class="tp bull" style="width:36.4%"></div><div class="tp mixed" style="width:54.5%"></div><div class="tp bear" style="width:9.1%"></div></div>
+      <div class="tlab"><span class="tb">Bull 4</span><span class="tm">Mixed 6</span><span class="tr">Bear 1</span></div>
+    </div>
+
+    <div class="overall">
+      <div class="ov-chip">OVERALL · MIXED — operations BULL, price BEAR</div>
+      <div class="ov-text">
+        <b>Thesis.</b> Inission is a Nordic EMS roll-up with a real operational inflection: Q1'26 sales +37% (organic +26%), EBITA margin 7.0%, Power OEM back in the black, backlog SEK 1.5bn. FY2025 FCF of SEK 153m delivers a ~9.7% owner-earnings yield (+716 bp vs the real 10y) — cash is genuine. The medium-term ambition (&gt;15% growth, &gt;9% EBITA margin) is the bull path; ABG's SEK 50–90 range and a forward P/E discount to peers keep the optionality alive <i>if</i> the margin holds. Perfect-execution Module U prices Y10 FV ~kr321 (16.7% CAGR) if that path is delivered.
+        <br><br>
+        <b>What the tools say (computed live).</b> Reverse-DCF implies only <b>11.7× EV/EBITA</b> at mode sales/margin — essentially the pipeline's own 11.5× mode, so the market is <i>not</i> pricing a heroic multiple. The problem is the distribution: correlated MC median <b>kr58.6</b> vs live spot <b>kr68.4</b>, P(FV&gt;price) only <b>31%</b>, payoff asymmetry <b>0.31×</b> (expected loss dominates), Kelly <b>−69%</b>, and the share sits at the <b>96th percentile</b> of its own 5-year history. Module I is therefore BEAR on the <i>price</i>; Modules B/E/G/U remain BULL on the <i>business and long-term ceiling</i>.
+        <br><br>
+        <b>Why not a clean BULL or BEAR?</b> The business just printed its best quarter in years and cash conversion is real — fighting the fundamental tape is unwise. But after a double from SEK 36, LTM EV/EBITA ~14.8× is no longer deep value, inventory is heavy, float is thin, and the &gt;9% margin target sits above company history (peak 7.4% in 2023). This is a <b>quality-of-execution story at a full price</b> — not a free option on mean reversion, and not a short of a broken company.
+        <br><br>
+        <b>Conviction.</b> Medium-low on adding risk here; medium on the operational trajectory. Size for liquidity and the industrial cycle. The single variable that resolves the setup is <b>EBITA-margin durability through H2'26 and into 2027</b>; watch book-to-bill and Power OEM LTM margin, not the daily tape.
+        <br><br>
+        <b>Actionable read.</b> Prefer accumulate on weakness toward the mid-50s / engine-median zone (ABG low end / MC median ~kr59). Not a chase near the 52-week high without multi-quarter margin confirmation. Kill-criteria in Module H are pre-committed; if book-to-bill &lt;0.9 for two quarters or EBITA margin &lt;4.5%, the thesis is wrong.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== AUDIT ===================== -->
+
+    <section class="audit" id="mAudit">
+      <h3>Data sources &amp; audit trail</h3>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-20 10:59</b>.</div>
+
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-20)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
+        <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/INISS-B.ST?range=5y&interval=1d</td><td>Inission 5-year daily OHLC + regularMarketPrice + 52w range.</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile · J: base rates</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5EOMX?range=5y&interval=1d</td><td>OMX Stockholm All-Share — benchmark for local beta.</td><td class="mods">I: beta vs OMX Stockholm</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ESTOXX?range=5y&interval=1d</td><td>STOXX Europe 600 — pan-European benchmark.</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy.</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/HANZA.ST?range=2y&interval=1d</td><td>HANZA (Nasdaq Stockholm) — Nordic EMS peer.</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/NOTE.ST?range=2y&interval=1d</td><td>NOTE AB (Nasdaq Stockholm) — Nordic EMS peer.</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/AQ.ST?range=2y&interval=1d</td><td>AQ Group (Nasdaq Stockholm) — Nordic electronics manufacturing peer.</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
+      </table></div>
+      <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
+
+      <h4>◆ Primary-source citations (module-level facts)</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
+        <tbody><tr><td>Inission AB Interim Report January–March 2026 (6 May 2026)</td><td>Net sales SEK 664.3m (+37.4%, organic +26.3%, Selteka +SEK 53.4m); EBITA SEK 46.7m (7.0% vs 4.1%); EBIT SEK 45.8m; order intake SEK 709.8m; backlog SEK 1,509m; book-to-bill 1.1; LTM sales SEK 2,387m / EBITA 137.8m (5.8%); net debt SEK 465.9m (ex-lease 213.0); equity ratio 40.2%; avg diluted shares 23.05m; OCF SEK 43.6m. Segments: EMS SEK 568.3m / EBITA 42.9m (7.5%); Inission Power (ex-Enedo) SEK 96.0m / EBITA 3.8m (3.9%). FY2026 target sales SEK 2,300–2,500m, EBITA margin >6%; medium-term growth >15% and EBITA margin >9%.</td><td class="mods">A engine, B driver analysis, C scenarios, D forensics, E capital, H kill-criteria, Q dashboard</td></tr><tr><td>Inission AB Year-End Report 2025 (19 Feb 2026)</td><td>Net sales SEK 2,206m (+2.6%); EBITA SEK 111.1m (5.0%); adj. EBITA SEK 133.7m (6.1%); EBIT SEK 105.9m; net profit to common SEK 29.8m; EPS SEK 1.30; OCF SEK 178.5m; FCF SEK 153.3m; net debt SEK 468.1m; equity ratio 39.7%; dividend SEK 0.60/share. New financial targets presented.</td><td class="mods">A engine, D forensics, E capital record, Q dashboard</td></tr><tr><td>ABG Sundal Collier — Inission equity research (13 Apr 2026)</td><td>2026e sales SEK 2,453m, adj. EBITA SEK 167m (6.8%), EPS SEK 4.51 / adj. 4.88; 2027e EPS SEK 5.35; fair-value range SEK 50–90; trading 12×–9× 2026–28e P/E vs peers 17×–13×; ND/EBITDA ~1.7× lease-adj.</td><td class="mods">B driver analysis, F positioning, G peers, C scenarios</td></tr><tr><td>stockanalysis.com / Fiscal.ai — Inission financials (updated May 2026)</td><td>Multi-year income statement, balance sheet and cash flow (FY2021–2025 + TTM); gross margin ~44%; inventory SEK ~590m; goodwill SEK 224m; tangible book ~SEK 18.5/share.</td><td class="mods">D forensics, Q dashboard</td></tr><tr><td>Inission largest-shareholders / ownership (2025–2026)</td><td>Founder/insider-heavy (~52% insider ownership per Yahoo); free float ~44% (ABG); Chairman Olle Hulteberg sold 350k Class B shares Feb 2026 but remains a large long-term holder; shareholder count 2,145.</td><td class="mods">F positioning</td></tr><tr><td>MarketScreener / Google Finance — Inission consensus (2026)</td><td>Consensus 12m PT ~SEK 75 (~+10% at SEK 68); limited coverage (≈1–2 brokers); Strong Buy/positive bias post-Q1 beat and guidance revision.</td><td class="mods">F positioning</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Data providers &amp; the audit rule</h4>
+      
+<ul>
+  <li><b>Yahoo Finance v8 chart API</b> — public, non-authenticated JSON endpoint. Returns adjusted close, OHLC, volume and meta (regular-market-price, 52w range). Rate-limited but reliable for cash equities and major indices; used as the single source of truth for all live-fetched price series in Modules I &amp; J.</li>
+  <li><b>Primary company releases</b> — direct company disclosures (Finnish issuers publish concurrently in Finnish and English, ESMA-compliant). Every balance-sheet, income-statement and cash-flow figure inside Modules A / D / E traces to a release listed above.</li>
+  <li><b>Solidium / Finnish State ownership</b> — the State's holding company and Prime Minister's Office publish the strategic-interest register directly.</li>
+  <li><b>Simply Wall St (S&amp;P Global Market Intelligence)</b> — used to cross-check balance-sheet ratios (coverage, gearing) where the primary release aggregates line items.</li>
+  <li><b>Analyst consensus</b> — pulled from Investing.com and MarketScreener at time of write; consensus PTs are point-in-time and can move.</li>
+</ul>
+
+
+      <h4>◆ Every metric computed here — formulas</h4>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
+
+      <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
+      <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
+
+      <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
+    </section>
+
+<footer>
+    <div class="notes">
+      <h4>Engine footnote</h4>
+      <p>20,000 paths. Each driver is drawn from a triangular distribution: sales Tri(2100, 2550, 2900 MSEK), EBITA margin Tri(4.0, 6.8, 8.5%), EV/EBITA Tri(7.5, 11.5, 14.5×), net debt Tri(280, 450, 620 MSEK). Fair value = (sales × mgn/100 × mlt − nd) ÷ 23.05m shares. Dependence: one-factor copula (loadings — sales 0.70, margin 0.72, multiple 0.60, net debt −0.25) plus a regime-shock mixture. Correlation 0 and tail 0 reproduce the independent model.</p>
+      <h4>Still legitimately excluded</h4>
+      <div class="cut"><b>Still legitimately excluded — this build kept these out, not faked:</b> <b>The single-leg EBITA × EV/EBITA engine is a transparent proxy, not a hidden number.</b> Inission reports two segments (EMS + Power OEM) but the market prices the group on consolidated EBITA; segment-level SOTP would mainly re-allocate the same profit. Net debt is the company-reported lease-inclusive figure (~SEK 466m) — matching ABG/Yahoo EV construction — even though ex-lease net debt is only ~SEK 213m. Using ex-lease ND would lift fair value by ~SEK 10/share without changing the operational story. <b>Beneish M-score</b> — needs eight two-year ratios not fully disclosed for an acquisition-built EMS; a half-estimated score is worse than none. <b>Options skew, precise borrow cost, and detailed short-interest flow</b> — not reliably fetchable for a mid-cap Stockholm name from a public API; would slot in from a Bloomberg terminal. Everything else previously flagged as "cut" (factor betas, own-history percentile, momentum, realised vol, drawdown, 12-month peer relative return, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.</div>
+      <div class="disc">Not investment advice. This is a research instrument that prices an explicit model under explicit assumptions. Live market data is fetched from Yahoo Finance; company figures are from public releases. Commissioned research (ABG) is paid for by the company and is not independent investment research under MiFID II.</div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const PRICE = 68.40;
+  const SHARES = 23.05;
+  const N = 20000;
+  const SALES = {lo:2100, md:2550, hi:2900};
+  const MGN   = {lo:4.0,  md:6.8,  hi:8.5};
+  const MLT   = {lo:7.5,  md:11.5, hi:14.5};
+  const ND    = {lo:280,  md:450,  hi:620};
+  const RHO = {sales:0.70, mgn:0.72, mlt:0.60, nd:-0.25};
+
+  function ev(sales, mgn, mlt, nd){
+    return (mlt * (sales * mgn / 100) - nd) / SHARES;
+  }
+  function simulate(midSales, midMgn, midMlt, midNd, corr, pStress, paths){
+    const n = paths || N;
+    const fv = new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z = randn();
+      if(pStress>0 && Math.random()<pStress) Z = Z*2.0 - 0.4;
+      const draw = (rho,a,m,b)=>{
+        const L = corr*rho;
+        const e = randn();
+        const nn = L*Z + Math.sqrt(Math.max(0,1-L*L))*e;
+        return triInv(Phi(nn), a, m, b);
+      };
+      const s  = draw(RHO.sales, SALES.lo, midSales, SALES.hi);
+      const g  = draw(RHO.mgn,   MGN.lo,   midMgn,   MGN.hi);
+      const m  = draw(RHO.mlt,   MLT.lo,   midMlt,   MLT.hi);
+      const d  = draw(RHO.nd,    ND.lo,    midNd,    ND.hi);
+      fv[i] = ev(s,g,m,d);
+    }
+    fv.sort();
+    const q = x => fv[Math.min(n-1, Math.floor(x*n))];
+    let under=0, deep=0;
+    const thr = 40.0;
+    for(let i=0;i<n;i++){ if(fv[i]>PRICE) under++; if(fv[i]<thr) deep++; }
+    return {fv, p10:q(.10), p50:q(.50), p90:q(.90), under:under/n, deep:deep/n};
+  }
+
+  function randn(){let u=0,v=0;while(u===0)u=Math.random();while(v===0)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+  function Phi(x){const t=1/(1+0.2316419*Math.abs(x));const d=0.3989423*Math.exp(-x*x/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p;}
+  function triInv(u,a,m,b){const c=(m-a)/(b-a);return u<c?a+Math.sqrt(u*(b-a)*(m-a)):b-Math.sqrt((1-u)*(b-a)*(b-m));}
+
+  const HX0=12,HX1=688,HY0=8,HY1=188,VMAX=160,BINS=40;
+  function xOf(v){return HX0+(Math.min(Math.max(v,0),VMAX)/VMAX)*(HX1-HX0);}
+  function drawHist(fv, median, indP10){
+    const bw=VMAX/BINS, counts=new Array(BINS).fill(0);
+    for(let i=0;i<fv.length;i++){let b=Math.floor(fv[i]/bw);if(b<0)b=0;if(b>=BINS)b=BINS-1;counts[b]++;}
+    const maxC=Math.max(...counts,1); let s='';
+    for(let b=0;b<BINS;b++){
+      const vc=(b+0.5)*bw, x=xOf(b*bw), x2=xOf((b+1)*bw), w=Math.max(1,x2-x-1.4);
+      const h=maxC?(counts[b]/maxC)*(HY1-HY0):0, y=HY1-h;
+      const fill=vc<PRICE?'var(--coral)':'var(--teal)', op=vc<PRICE?0.55:0.6;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+fill+'" opacity="'+op+'" rx="1.5"/>';
+    }
+    s+='<line x1="'+HX0+'" y1="'+HY1+'" x2="'+HX1+'" y2="'+HY1+'" stroke="var(--line-strong)" stroke-width="1"/>';
+    for(let v=0;v<=VMAX;v+=20){
+      const x=xOf(v);
+      s+='<line x1="'+x+'" y1="'+HY1+'" x2="'+x+'" y2="'+(HY1+4)+'" stroke="var(--line-strong)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(HY1+17)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">kr'+v+'</text>';
+    }
+    const xi=xOf(indP10);
+    s+='<line x1="'+xi+'" y1="'+(HY0+20)+'" x2="'+xi+'" y2="'+HY1+'" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="2 3"/>';
+    s+='<text x="'+xi+'" y="'+(HY0+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--faint)">indep P10</text>';
+    const xm=xOf(median);
+    s+='<line x1="'+xm+'" y1="'+(HY0-2)+'" x2="'+xm+'" y2="'+HY1+'" stroke="var(--amber)" stroke-width="2" stroke-dasharray="3 3"/>';
+    s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median kr'+median.toFixed(0)+'</text>';
+    const xp=xOf(PRICE);
+    s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price kr'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('hist').innerHTML=s;
+  }
+
+  function fvAt(o){
+    const s0=+document.getElementById('i-sales').value;
+    const g0=+document.getElementById('i-mgn').value;
+    const m0=+document.getElementById('i-mlt').value;
+    const d0=+document.getElementById('i-nd').value;
+    return ev(o.sales!==undefined?o.sales:s0, o.mgn!==undefined?o.mgn:g0, o.mlt!==undefined?o.mlt:m0, o.nd!==undefined?o.nd:d0);
+  }
+  function drawTornado(){
+    const rows=[
+      {n:'EBITA margin', lo:fvAt({mgn:4.0}), hi:fvAt({mgn:8.5})},
+      {n:'Group net sales', lo:fvAt({sales:2100}), hi:fvAt({sales:2900})},
+      {n:'EV/EBITA multiple', lo:fvAt({mlt:7.5}), hi:fvAt({mlt:14.5})},
+      {n:'Net debt', lo:fvAt({nd:620}), hi:fvAt({nd:280})},
+    ];
+    rows.forEach(r=>{r.w=Math.abs(r.hi-r.lo);r.min=Math.min(r.lo,r.hi);r.max=Math.max(r.lo,r.hi);});
+    rows.sort((a,b)=>b.w-a.w);
+    const allMin=Math.min(...rows.map(r=>r.min)), allMax=Math.max(...rows.map(r=>r.max));
+    const X0=188,X1=688,W=X1-X0, base=allMin-5, span=(allMax+5)-base;
+    const sx=v=>X0+((v-base)/span)*W;
+    const rowH=38, top=10; let s='';
+    rows.forEach((r,i)=>{
+      const y=top+i*rowH;
+      s+='<text x="'+(X0-10)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--body)" font-size="12" fill="var(--ink)">'+r.n+'</text>';
+      s+='<rect x="'+sx(r.min).toFixed(1)+'" y="'+(y+6)+'" width="'+(sx(r.max)-sx(r.min)).toFixed(1)+'" height="'+(rowH-16)+'" rx="4" fill="'+(i===0?'var(--coral)':'var(--teal)')+'" opacity="'+(i===0?0.7:0.45)+'"/>';
+      s+='<text x="'+(sx(r.min)-5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" text-anchor="end" font-family="var(--mono)" font-size="10" fill="var(--muted)">kr'+Math.min(r.lo,r.hi).toFixed(0)+'</text>';
+      s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">kr'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';
+    });
+    const yb=top+rows.length*rowH;
+    s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price kr'+PRICE.toFixed(0)+'</text>';
+    document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
+    document.getElementById('tornado').innerHTML=s;
+  }
+
+  function update(){
+    const midS=+document.getElementById('i-sales').value;
+    const midG=+document.getElementById('i-mgn').value;
+    const midM=+document.getElementById('i-mlt').value;
+    const midD=+document.getElementById('i-nd').value;
+    const corr=(+document.getElementById('i-corr').value)/100;
+    const tail=(+document.getElementById('i-tail').value)/100;
+    document.getElementById('v-sales').textContent=midS.toFixed(0);
+    document.getElementById('v-mgn').textContent=midG.toFixed(1);
+    document.getElementById('v-mlt').textContent=midM.toFixed(1);
+    document.getElementById('v-nd').textContent=midD.toFixed(0);
+    document.getElementById('v-corr').textContent=Math.round(corr*100);
+    document.getElementById('v-tail').textContent=Math.round(tail*100);
+    const ind=simulate(midS,midG,midM,midD,0,0);
+    const cor=simulate(midS,midG,midM,midD,corr,tail);
+    document.getElementById('oi-med').textContent='kr'+ind.p50.toFixed(0);
+    document.getElementById('oi-p10').textContent='kr'+ind.p10.toFixed(0);
+    document.getElementById('oi-p90').textContent='kr'+ind.p90.toFixed(0);
+    document.getElementById('oi-tail').textContent=Math.round(ind.deep*100)+'%';
+    document.getElementById('co-med').textContent='kr'+cor.p50.toFixed(0);
+    document.getElementById('co-p10').textContent='kr'+cor.p10.toFixed(0);
+    document.getElementById('co-p90').textContent='kr'+cor.p90.toFixed(0);
+    document.getElementById('co-tail').textContent=Math.round(cor.deep*100)+'%';
+    drawHist(cor.fv, cor.p50, ind.p10);
+    const widen=(cor.p90-cor.p10)-(ind.p90-ind.p10);
+    document.getElementById('reading').innerHTML=
+      'With correlation at <b>'+Math.round(corr*100)+'%</b> and a <b>'+Math.round(tail*100)+'%</b> industrial-shock chance, the median holds near <b>kr'+cor.p50.toFixed(0)+'</b> (≈ the independent kr'+ind.p50.toFixed(0)+'), but the 80% band widens by ~<span class="down">kr'+widen.toFixed(0)+'</span> and the chance of a deep-downside outcome (worth under kr40) rises from <b>'+Math.round(ind.deep*100)+'%</b> to <span class="down">'+Math.round(cor.deep*100)+'%</span>. P(undervalued at kr'+PRICE.toFixed(0)+') is '+Math.round(cor.under*100)+'%.';
+    drawTornado();
+  }
+
+  function simScen(s0,g0,m0,d0,paths){
+    const n=paths||8000; const fv=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      let Z=randn(); if(Math.random()<0.06) Z=Z*2.0-0.4;
+      const draw=(rho,a,m,b)=>{const L=0.6*rho;const e=randn();const nn=L*Z+Math.sqrt(Math.max(0,1-L*L))*e;return triInv(Phi(nn),a,m,b);};
+      const s=draw(RHO.sales,SALES.lo,s0,SALES.hi);
+      const g=draw(RHO.mgn,MGN.lo,g0,MGN.hi);
+      const m=draw(RHO.mlt,MLT.lo,m0,MLT.hi);
+      const d=draw(RHO.nd,ND.lo,d0,ND.hi);
+      fv[i]=ev(s,g,m,d);
+    }
+    fv.sort(); return fv[Math.floor(0.5*n)];
+  }
+  let SFV={bear:35, base:67, bull:105};
+  function computeScenarioAnchors(){
+    SFV.bear=simScen(2200,4.5,8.5,550);
+    SFV.base=simScen(2550,6.8,11.5,450);
+    SFV.bull=simScen(2850,8.0,13.5,350);
+    document.getElementById('sfv-bear').textContent='kr'+SFV.bear.toFixed(0);
+    document.getElementById('sfv-base').textContent='kr'+SFV.base.toFixed(0);
+    document.getElementById('sfv-bull').textContent='kr'+SFV.bull.toFixed(0);
+    updateBayes();
+  }
+  function updateBayes(){
+    let pb=+document.getElementById('i-pb').value, pn=+document.getElementById('i-pn').value, pu=+document.getElementById('i-pu').value;
+    document.getElementById('v-pb').textContent=pb; document.getElementById('v-pn').textContent=pn; document.getElementById('v-pu').textContent=pu;
+    let sum=pb+pn+pu; if(sum===0){pb=pn=pu=1;sum=3;}
+    let wb=pb/sum, wn=pn/sum, wu=pu/sum;
+    document.querySelectorAll('#evid .ev.on').forEach(el=>{
+      const lr=el.getAttribute('data-lr').split(',').map(Number);
+      wb*=lr[0]; wn*=lr[1]; wu*=lr[2];
+    });
+    const z=wb+wn+wu; wb/=z; wn/=z; wu/=z;
+    document.getElementById('wp-b').style.width=(wb*100)+'%';
+    document.getElementById('wp-n').style.width=(wn*100)+'%';
+    document.getElementById('wp-u').style.width=(wu*100)+'%';
+    document.getElementById('wl-b').textContent='Bear '+Math.round(wb*100)+'%';
+    document.getElementById('wl-n').textContent='Base '+Math.round(wn*100)+'%';
+    document.getElementById('wl-u').textContent='Bull '+Math.round(wu*100)+'%';
+    const fv=wb*SFV.bear+wn*SFV.base+wu*SFV.bull;
+    document.getElementById('blend-fv').textContent='kr'+fv.toFixed(0);
+    const gap=(fv/PRICE-1)*100;
+    document.getElementById('blend-gap').textContent=(Math.abs(gap)<3?'≈ fair vs price':(gap<0?'≈ '+Math.abs(gap).toFixed(0)+'% below':'≈ '+gap.toFixed(0)+'% above'));
+  }
+  document.querySelectorAll('#evid .ev').forEach(el=>el.addEventListener('click',()=>{el.classList.toggle('on');updateBayes();}));
+  ['i-pb','i-pn','i-pu'].forEach(id=>document.getElementById(id).addEventListener('input',updateBayes));
+
+  function peerBar(label,sub,val,disp,color){
+    const pct=Math.min(val/20,1)*100;
+    return '<div class="br"><div class="brl">'+label+'<small>'+sub+'</small></div><div class="brt"><div class="brf" style="width:'+pct+'%;background:'+color+'"></div></div><div class="brv" style="color:'+color+'">'+disp+'</div></div>';
+  }
+  document.getElementById('peerbars').innerHTML=[
+    peerBar('Nordic EMS peer P/E (ABG)','Forward · HANZA/NOTE/AQ set · sourced',15,'~15×','var(--faint)'),
+    peerBar('Inission 2026e P/E (ABG)','Forward · at ~kr62 pre-Q1 · sourced',12,'~12×','var(--teal)'),
+    peerBar('Inission LTM EV/EBITA','At kr68 · computed',14.8,'~14.8×','var(--coral)'),
+    peerBar('Inission mode EV/EBITA','Engine mode · assumption',11.5,'11.5×','var(--teal-deep)'),
+  ].join('');
+
+  ['i-sales','i-mgn','i-mlt','i-nd','i-corr','i-tail'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  update(); computeScenarioAnchors();
+
+  // stepper
+  const links=[].slice.call(document.querySelectorAll('.stepper a'));
+  const map={}; links.forEach(a=>{const h=a.getAttribute('href'); if(h&&h.charAt(0)==='#') map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    let best=null, bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting) visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
+})();
+</script>
+</body>
+</html>

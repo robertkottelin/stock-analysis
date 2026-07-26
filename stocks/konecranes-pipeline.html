@@ -264,13 +264,160 @@
   .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
   .audit .refs cite{font-style:italic;color:var(--ink)}
 </style>
+
+<style id="ux-fixes">
+  /* ===== Shared UX / mobile fixes (all reports) ===== */
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+  }
+
+  /* Sticky stepper: contain horizontal scroll; never pan the page */
+  .stepper{
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid transparent;
+  }
+  .stepper a{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper a:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+  }
+
+  /* Anchor offset under sticky stepper (modules + audit) */
+  .mod,.audit,#mAudit{scroll-margin-top:76px}
+
+  /* Flex children must be allowed to shrink or long text overflows */
+  .mod-head .ht{min-width:0;flex:1 1 auto}
+  .verdict .vtext{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;word-break:break-word}
+  .cmprow{gap:10px}
+  .cmprow .ck{min-width:0;overflow-wrap:anywhere}
+  .cmprow .cv{flex:0 0 auto;max-width:48%;text-align:right;overflow-wrap:anywhere}
+  .ri .rd,.kci,.note,.reading,.synth,.overall .ov-text,.blend .bl,
+  .rev .rv .l,.rev .rv .m,.sc .scd,.lens .lb,p.body,.body{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .hl{white-space:normal;overflow-wrap:break-word}
+  .verdict .vtext{overflow-wrap:break-word;word-break:normal}
+
+  /* Tag chips: wrap under title on narrow screens instead of crushing h2 */
+  @media (max-width:560px){
+    .mod-head{flex-wrap:wrap;gap:10px 12px}
+    .mod-head .tagchip,.mod-head > .tagchip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:center;line-height:1.25}
+    .verdict{align-items:flex-start}
+    .verdict .vchip{margin-top:1px}
+    .keystat .ks{min-width:0;flex:1 1 calc(50% - 8px)}
+  }
+
+  /* Horizontal table scroll without page-level horizontal scroll */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    max-width:100%;
+    margin:0 0 4px;
+    padding-bottom:2px;
+  }
+  .tbl-scroll > table{margin-top:0}
+  th,td{overflow-wrap:anywhere}
+  td.num,td.mono{overflow-wrap:normal;word-break:normal}
+
+  /* Peer / bar rows: collapse fixed label columns on small phones */
+  @media (max-width:480px){
+    .br{grid-template-columns:minmax(0,1fr) 48px !important;gap:6px 8px}
+    .br .brt{grid-column:1 / -1;order:3;height:14px}
+    .br .brl{font-size:12px}
+    .br .brv{font-size:11px}
+    .barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}
+    .barsrow .bb{grid-column:1 / -1;order:3}
+    .barsrow .bl{font-size:10px}
+    .reactab .rr{grid-template-columns:1fr 56px !important;gap:6px 8px}
+    .reactab .rd{grid-column:1 / -1;order:3}
+    .ri{flex-direction:column;gap:4px}
+    .ri .rk{width:auto !important}
+  }
+
+  /* Module I/J grids: tighter on phones */
+  @media (max-width:480px){
+    .kg{grid-template-columns:1fr 1fr}
+    .kelly{grid-template-columns:1fr !important}
+    .fac{grid-template-columns:1fr 1fr !important}
+  }
+  @media (max-width:360px){
+    .kg{grid-template-columns:1fr}
+    .fac{grid-template-columns:1fr !important}
+    .kelly{grid-template-columns:1fr !important}
+  }
+
+  /* Scenario cards: kill forced min-heights that leave huge empty gaps on mobile */
+  @media (max-width:560px){
+    .scard .sd{min-height:0 !important}
+  }
+
+  /* Range inputs: larger touch targets on touch devices */
+  @media (pointer:coarse){
+    input[type=range]{height:8px}
+    input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+    input[type=range]::-moz-range-thumb{width:22px;height:22px}
+    .ev{padding:10px 14px;min-height:40px}
+    .stepper a{padding:9px 12px}
+  }
+
+  /* SVG charts scale */
+  .qcard svg,.mod svg:not([width]){max-width:100%;height:auto}
+  #hist,#tornado{max-width:100%}
+
+  /* Long mono audit URLs / tokens */
+  .audit table td.mono,.src{overflow-wrap:anywhere;word-break:break-word}
+
+  /* cbar labels (Module J) */
+  .cbar{margin-bottom:18px;overflow:visible}
+  .cbar .lb{max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+
+  .cut,.notes,.disc{overflow-wrap:anywhere}
+
+  /* Keep page width stable without breaking position:sticky
+     (overflow-x on body/wrap makes sticky fail in Chrome/Safari).
+     Wide tables are handled by .tbl-scroll wrappers. */
+  img,svg,video,canvas{max-width:100%}
+</style>
+
+
+<style id="bullcase-css">
+  /* Module U — perfect-execution bull path */
+  .bullpath{border:1.5px solid var(--teal);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:linear-gradient(180deg,#fff,var(--teal-wash));margin-top:8px}
+  .bullpath .bp-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .bullpath .bp-sub{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.45}
+  .bp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
+  @media(max-width:780px){.bp-kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.bp-kpis{grid-template-columns:1fr}}
+  .bp-kpis .k{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px 14px;min-width:0}
+  .bp-kpis .k .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .bp-kpis .k .val{font-family:var(--disp);font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--teal-deep);margin-top:3px;line-height:1.1}
+  .bp-kpis .k .val small{font-size:12px;font-weight:500;color:var(--muted);margin-left:4px}
+  .bp-kpis .k .hint{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.35}
+  .bp-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 22px;margin:8px 0 6px}
+  @media(max-width:560px){.bp-controls{grid-template-columns:1fr}}
+  .guard{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:12.5px;line-height:1.45;background:var(--surface)}
+  .guard .gdot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-top:6px}
+  .mile{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13px;line-height:1.45}
+  .mile .my{font-family:var(--mono);font-weight:600;color:var(--teal-deep);font-size:12px}
+  .mile .mt{color:var(--ink)}
+  #bull-chart{width:100%;height:auto;display:block;margin-top:8px}
+</style>
+
 </head>
 <body>
 <div class="wrap">
 
-  <div class="eyebrow">Research pipeline · strict-data · Konecranes Plc · HEL: KCR · built 2026-07-09</div>
-  <h1>Konecranes — the analyst's instrument panel
-    <span class="sub">A quality capital-goods compounder, valued through-cycle on EBITA margin × multiple, not a commodity spread. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline question this build answers: <b>which driver most predicts the share price?</b></span>
+  <div class="eyebrow">Research pipeline · strict-data · Konecranes Plc · HEL: KCR · built 2026-07-19</div>
+  <h1>Konecranes — the quality industrial compounder
+    <span class="sub">Fundamentals and macro place first — then the valuation engine. A service-heavy lifting and port-automation franchise (HEL: KCR), valued through-cycle on EBITA margin × multiple. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline sequence: <b>what is the business, is the franchise high-quality, then what is it worth under stress?</b></span>
   </h1>
 
   <div class="keystat">
@@ -291,7 +438,7 @@
   <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
     <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
       <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
-      <b style="color:var(--ink);font-weight:600">Built 2026-07-09 16:31</b>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-19 19:03</b>
     </span>
     <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
       Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
@@ -299,45 +446,185 @@
   </div>
 
   <div class="hero">
-    <div class="htag">◆ The most predictive driver — three converging lenses</div>
-    <h3>There is no single commodity-style driver. The master variable is the <b>durability of the record ~14% EBITA margin</b> — but the most <i>predictive</i> mover of the share price right now is <b>volume (order → sales conversion)</b>.</h3>
+    <div class="htag">◆ How to read this build — fundamentals first</div>
+    <h3>Start with <b>what the business is</b> and <b>where it sits in automation, logistics and energy</b>. Then read the books. Only after that should you touch the Monte-Carlo engine and the institutional layers.</h3>
     <div class="lenses">
       <div class="lens empir">
-        <div class="lt">Lens 1 — what moves the price (empirical)</div>
-        <div class="lh">Orders, volume &amp; guidance</div>
-        <div class="lb">The stock reacts to the demand cycle, not the margin. Feb 2026: record 14% margin and +12% orders, yet the stock fell ~10–14% on a soft order quarter + cautious guidance. Apr 2026: record Q1 margin, yet −7% on a ~5% sales decline.</div>
-      </div>
-      <div class="lens comp">
-        <div class="lt">Lens 2 — what moves fair value (computed)</div>
-        <div class="lh">The multiple, then the margin</div>
-        <div class="lb">The tornado (Module B) shows the EV/EBITA multiple is the single biggest lever on intrinsic value, with the EBITA margin close behind — together dwarfing revenue and net cash. The multiple is itself the market's verdict on margin durability.</div>
+        <div class="lt">Part 1 — Thesis &amp; macro</div>
+        <div class="lh">Module T</div>
+        <div class="lb">Business model, cash engines (Service vs Ports), and place in robotics, AI, computing/data, logistics and energy trends — without confusing Konecranes for a pure software story.</div>
       </div>
       <div class="lens owner">
-        <div class="lt">Lens 3 — what the largest owner says</div>
-        <div class="lh">Service growth + equipment margin</div>
-        <div class="lb">Solidium (11% holder, Finnish State) names Konecranes' value drivers as "continuous growth of the maintenance business" and "permanently raising the profitability of the new-equipment business."</div>
+        <div class="lt">Part 2 — Fundamentals</div>
+        <div class="lh">Modules Q · D · E · G · F</div>
+        <div class="lb">Fetched quality dashboard, forensic scores, capital allocation, peer multiples and ownership. The “is this a good business at a sane price?” block.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">Part 3 — Deeper analysis</div>
+        <div class="lh">Modules A–C · H · I · J</div>
+        <div class="lb">Correlated MC engine, driver tornado, Bayesian scenarios, kill-criteria, price-asymmetry and base-rate composites — the stress tests once you already understand the franchise.</div>
       </div>
     </div>
-    <div class="synth"><b>Synthesis.</b> The three reconcile: <b>volume is the leading domino.</b> The ~14% margin is already a self-help record (management says the "low-hanging fruit" is gone), so what decides whether it <i>holds</i> is operating leverage from volume — and whether the market awards a quality <i>multiple</i> depends on the same demand signal. So watch <b>order intake and book-to-bill</b>, not the margin headline. The constructive tell as of Q1'26: the order book is at a 3-year-high €3.2bn and book-to-bill is 1.2 — the leading indicator is green even as reported sales lag.</div>
+    <div class="synth"><b>Master read (spoiler for later modules).</b> The most <i>predictive</i> near-term mover of the share is still <b>volume (order → sales conversion)</b>; the most important <i>fundamental</i> variable through-cycle is <b>durability of the ~14% EBITA margin</b> on a net-cash balance sheet. Order book €3.2bn and book-to-bill 1.2 (Q1’26) are constructive; the tape has not fully re-rated it.</div>
   </div>
 
   <nav class="stepper" id="stepper">
+    <a href="#mThesis"><span class="n">T</span>Thesis &amp; macro</a>
+    <a href="#mQ"><span class="n">Q</span>Quality</a>
+    <a href="#mD"><span class="n">D</span>Forensics</a>
+    <a href="#mE"><span class="n">E</span>Capital record</a>
+    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mF"><span class="n">F</span>Positioning</a>
     <a href="#mA"><span class="n">A</span>Engine</a>
     <a href="#mB"><span class="n">B</span>Driver analysis</a>
     <a href="#mC"><span class="n">C</span>Scenarios + Bayes</a>
-    <a href="#mD"><span class="n">D</span>Forensics</a>
-    <a href="#mE"><span class="n">E</span>Capital record</a>
-    <a href="#mF"><span class="n">F</span>Positioning</a>
-    <a href="#mG"><span class="n">G</span>Peers</a>
+    <a href="#mU"><span class="n">U</span>10y upside</a>
     <a href="#mH"><span class="n">H</span>Kill-criteria</a>
-    <a href="#mQ"><span class="n">Q</span>Quality</a>
     <a href="#mI"><span class="n">I</span>Asymmetry</a>
     <a href="#mJ"><span class="n">J</span>Base rates</a>
     <a href="#mSum"><span class="n">∑</span>Scorecard</a>
     <a href="#mAudit"><span class="n">§</span>Audit</a>
   </nav>
 
-  <section class="mod" id="mA">
+<section class="mod" id="mThesis">
+    <div class="mod-head"><div class="mod-no">T</div>
+      <div class="ht"><h2>Business thesis &amp; macro place</h2><div class="hq">What Konecranes is, where the cash comes from, and how it sits in robotics · AI · data · energy · logistics trends.</div></div>
+      <span class="tagchip a">Sourced + judgment</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED · LEANS BULL</span><span class="vtext">A high-quality industrial compounder with a <b>service annuity</b> and a port/equipment cycle on top — not an AI pure-play, but a real infrastructure supplier to automation, global goods flow, and the energy build-out. The fundamentals (Modules Q · D · E · G · F) support quality; the tape is still pricing the cycle, not the secular stack.</span></div>
+
+    <p class="body"><b>What the company is.</b> Konecranes Plc (HEL: KCR) designs, manufactures and services lifting equipment for factories, process industries and ports. Two cash engines dominate the economics: <b>Industrial Equipment + Service</b> (process cranes, standard cranes, a large installed-base maintenance franchise at ~22% margin) and <b>Port Solutions</b> (ship-to-shore cranes, yard cranes, straddle carriers, software and automation for container terminals). FY2025 sales ≈ <b>€4.25bn</b>, comparable EBITA margin a record <b>~14%</b>, net cash <b>€185m</b>, ROCE <b>~21%</b>.</p>
+
+    <p class="body"><b>Why the share price still feels “cyclical.”</b> Equipment orders and port projects swing with global industrial production and container throughput. Service is stickier and higher-margin, but the market still marks the whole name to the order book and guidance tone (see Module B). That is the tension this report is built around: <i>quality books + secular automation exposure, trading like a mid-cycle capital-goods name.</i></p>
+
+    <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:18px 0 10px">◆ Place in the macro stack — five trend lenses</div>
+    <p class="body" style="margin-bottom:12px">Konecranes does not sell foundation models or GPUs. It sells the <b>physical layer</b> that moves steel, containers, turbines and factory components. The relevant question is which macro waves actually touch that layer — and with what intensity.</p>
+
+    <div class="lenses" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+      <div class="lens empir">
+        <div class="lt">1 · Robotics &amp; automation</div>
+        <div class="lh">Port + yard automation</div>
+        <div class="lb">Automated container terminals, remote-operated STS/RTG cranes, AGVs and software are the clearest robotics exposure. Capex cycles at big ports are lumpy, but once automated, the installed base deepens the service annuity. This is Konecranes’ most direct “robotics” call option — not humanoids, <b>industrial automation</b>.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">2 · AI (real, not narrative)</div>
+        <div class="lh">Predictive service &amp; ops software</div>
+        <div class="lb">AI here means condition monitoring, predictive maintenance on the installed crane base, and terminal operating optimisation — software that raises service attach and uptime, not a hyperscaler revenue line. Material for <b>margin durability</b> in Service; not a second valuation multiple by itself.</div>
+      </div>
+      <div class="lens owner">
+        <div class="lt">3 · Computing &amp; data centres</div>
+        <div class="lh">Indirect construction demand</div>
+        <div class="lb">Hyperscale and grid build-outs need heavy lift, industrial construction and process equipment. Konecranes is a secondary beneficiary (cranes on site, process industry customers), not a pure-play data-centre OEM. Treat as a <b>mild tailwind</b> to Industrial, not the thesis core.</div>
+      </div>
+      <div class="lens empir">
+        <div class="lt">4 · Data &amp; global logistics</div>
+        <div class="lh">Container trade &amp; e-commerce flow</div>
+        <div class="lb">Port Solutions lives on container throughput, fleet replacement and terminal productivity. Digitised logistics and e-commerce raise the bar on terminal efficiency — supporting automation spend — while trade volumes set the cycle. <b>Book-to-bill and order book</b> are still the near-term gauges.</div>
+      </div>
+      <div class="lens comp">
+        <div class="lt">5 · Energy transition</div>
+        <div class="lh">Wind, power &amp; process industry</div>
+        <div class="lb">Industrial cranes and lifting solutions serve wind (components/install support), power generation, and heavy process industries tied to the energy complex. A multi-year infrastructure cycle is a constructive backdrop for Industrial Equipment, again via <b>orders and service</b>, not commodity energy prices directly.</div>
+      </div>
+    </div>
+
+    <div class="synth" style="margin-top:16px"><b>Investment thesis (one paragraph).</b> Own Konecranes if you want a <b>cash-generative automation &amp; lifting franchise</b> with a fortress balance sheet, a growing service book, and optionality on port automation and industrial infrastructure — at a multiple still closer to “machinery median” than to quality compounders (Module G). Fade it if you need pure-play AI/software exposure, or if you believe the industrial/port cycle is rolling over hard enough to unwind the ~14% margin (Modules A–C). The constructive near-term tell remains <b>order book €3.2bn · book-to-bill 1.2</b> (Q1’26) against a de-rated tape.</div>
+
+    <div class="note b"><b>How to read the rest of this report.</b> The next modules are the <b>fundamentals block</b> — quality dashboard (Q), forensic scores (D), capital allocation (E), peers (G) and ownership (F). Only after that does the report drop into the valuation engine, driver tornado, scenarios, kill-criteria and institutional asymmetry layers. Start with the business and the books; then stress-test the price.
+      <div class="src">Business description and figures: Konecranes FY2025 &amp; Q1’26 releases; Solidium holdings framing. Macro mapping is analytic judgment layered on those sourced business lines — not a separate data vendor feed.</div>
+    </div>
+  </section>
+
+<section class="mod" id="mQ"><div class="mod-head"><div class="mod-no">Q</div><div class="ht"><h2>Fundamental quality &amp; valuation dashboard</h2><div class="hq">Profitability, cash, leverage, valuation, margins, growth and liquidity &mdash; from fetched annual financials (2022&ndash;2025).</div></div><span class="tagchip c">Fetched financials</span></div><p class="body">Every figure below is <b>fetched</b> from Yahoo&rsquo;s fundamentals-timeseries API (annual income statement, balance sheet, cash-flow) and, where a ratio, computed from those raw line items at build time &mdash; no assumptions except the explicitly-tagged PEG forward-growth input. A quality/valuation cross-check on the pipeline&rsquo;s own engine.</p><div class="mc-wrap" style="margin:6px 0 4px"><div class="mc-title">Share price vs earnings &mdash; does the tape track the fundamentals?</div><div class="mc-sub">Raw daily close (left) against trailing-twelve-month diluted EPS (right). Two scales, each normalised to fill the plot so the lines overlay.</div><div class="hist-leg"><span><span class="sw" style="background:var(--blue)"></span>Share price €&nbsp;&middot;&nbsp;left</span><span><span class="sw" style="background:var(--amber-deep)"></span>TTM diluted EPS €&nbsp;&middot;&nbsp;right</span></div><svg viewBox="0 0 720 300" style="width:100%;height:auto" role="img" aria-label="Share price versus trailing-twelve-month diluted EPS."><defs><clipPath id="peclip"><rect x="58" y="30" width="590" height="222"/></clipPath></defs>
+  <g stroke="var(--line)" stroke-width="1"><line x1="58" y1="252.0" x2="648" y2="252.0"/><line x1="58" y1="196.5" x2="648" y2="196.5"/><line x1="58" y1="141.0" x2="648" y2="141.0"/><line x1="58" y1="85.5" x2="648" y2="85.5"/><line x1="58" y1="30.0" x2="648" y2="30.0"/></g>
+  <line x1="58" y1="30" x2="58" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
+  <line x1="648" y1="30" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
+  <line x1="58" y1="252" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
+  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--blue-deep)"><text x="50" y="255.5" text-anchor="end">€0</text><text x="50" y="200.0" text-anchor="end">€10</text><text x="50" y="144.5" text-anchor="end">€20</text><text x="50" y="89.0" text-anchor="end">€30</text><text x="50" y="33.5" text-anchor="end">€40</text></g>
+  <g stroke="var(--amber-deep)" stroke-width="1"><line x1="648" y1="252.0" x2="653" y2="252.0"/><line x1="648" y1="207.6" x2="653" y2="207.6"/><line x1="648" y1="163.2" x2="653" y2="163.2"/><line x1="648" y1="118.8" x2="653" y2="118.8"/><line x1="648" y1="74.4" x2="653" y2="74.4"/><line x1="648" y1="30.0" x2="653" y2="30.0"/></g>
+  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--amber-deep)"><text x="658" y="255.5" text-anchor="start">0</text><text x="658" y="211.1" text-anchor="start">+1</text><text x="658" y="166.7" text-anchor="start">+2</text><text x="658" y="122.3" text-anchor="start">+3</text><text x="658" y="77.9" text-anchor="start">+4</text><text x="658" y="33.5" text-anchor="start">+5</text></g>
+  <g clip-path="url(#peclip)"><polyline points="58.9,197.1 62.2,193.4 64.0,193.6 66.8,196.1 69.5,195.0 72.3,196.9 75.1,196.0 76.9,196.0 79.7,193.7 82.5,193.8 85.2,192.4 88.0,191.1 89.9,192.3 92.6,197.0 95.4,195.8 98.2,196.4 100.9,194.0 104.6,194.1 107.4,190.9 109.2,190.5 112.0,189.6 115.2,184.2 118.0,180.9 120.8,187.3 124.0,185.2 126.8,186.5 128.6,186.8 131.4,185.4 134.2,183.4 136.9,184.6 140.2,185.1 142.9,184.5 144.8,186.0 147.6,184.7 150.3,185.3 153.1,188.1 155.9,190.9 157.7,193.5 160.5,193.6 163.3,195.3 166.0,196.3 168.8,194.2 170.6,192.2 173.4,193.4 176.2,194.7 179.0,194.9 181.7,195.2 183.6,193.8 186.3,195.6 189.1,191.8 191.9,194.0 194.7,196.1 196.5,197.6 199.3,193.7 202.0,192.9 204.8,188.8 207.6,187.3 209.4,186.8 212.2,184.8 215.4,183.3 218.2,182.6 221.0,179.6 224.7,178.1 227.9,179.4 230.7,179.7 233.4,179.5 235.3,180.1 238.0,177.9 240.8,178.3 243.6,168.3 246.4,168.6 248.2,163.1 251.0,162.4 253.7,163.5 256.5,163.4 259.3,161.0 261.1,160.0 263.9,159.1 266.7,159.9 270.4,160.0 273.1,161.0 275.9,162.1 278.7,162.8 280.5,161.3 283.8,159.8 287.0,153.6 289.8,151.3 292.5,153.6 295.3,152.1 298.1,154.7 299.9,155.9 302.7,150.7 305.4,152.5 308.7,154.0 311.5,152.0 314.2,151.3 316.1,149.0 318.8,150.3 321.6,151.6 324.4,133.1 327.1,145.0 329.0,138.9 331.8,139.7 334.5,139.2 337.3,137.4 340.1,134.2 341.9,145.3 344.7,146.5 347.5,135.9 350.2,131.8 353.0,127.3 354.8,126.1 357.6,130.6 360.4,130.9 363.2,130.2 365.9,135.4 367.8,134.4 370.5,129.1 373.3,130.3 376.1,136.4 378.9,134.1 380.7,133.5 383.5,128.8 386.7,129.9 389.5,135.9 393.6,137.5 398.7,135.4 401.5,138.1 403.3,137.4 406.1,142.9 408.9,143.9 411.6,143.8 414.4,131.9 416.2,123.4 419.0,120.7 421.8,120.9 424.6,129.1 427.3,125.0 429.2,126.1 431.9,120.1 434.7,119.3 437.5,142.1 440.3,158.0 442.1,156.9 444.9,153.9 448.6,144.3 451.8,141.8 454.6,139.5 457.3,130.8 460.1,126.8 462.9,126.1 466.1,123.7 468.0,123.1 470.7,123.4 473.5,130.7 476.7,129.9 479.5,128.9 482.3,126.8 484.1,125.1 486.9,124.4 489.7,121.5 492.4,121.4 495.2,118.2 497.0,113.7 499.8,115.6 502.6,116.2 505.3,117.7 508.1,116.0 510.0,116.8 512.7,110.1 515.5,117.9 518.3,119.1 521.0,124.4 522.9,119.3 525.7,124.1 528.4,126.5 531.2,120.3 534.0,94.0 535.8,93.6 538.6,99.3 541.4,96.0 544.1,101.8 546.9,99.0 548.7,88.7 551.5,86.3 554.3,86.1 557.1,85.0 559.8,81.2 564.9,79.0 568.1,73.1 570.9,70.2 573.7,72.8 576.4,64.8 579.2,63.3 581.1,83.0 583.8,82.9 586.6,70.3 589.4,65.3 592.1,71.6 594.0,79.9 596.8,80.5 599.5,83.4 602.3,88.3 605.1,95.0 608.8,93.7 611.5,82.4 613.4,75.4 616.1,83.2 618.9,107.4 622.1,95.9 624.9,104.5 628.1,103.7 630.9,95.2 632.8,94.4 635.5,97.8 638.3,106.7 641.1,98.0 644.3,101.4 647.1,104.6 648.0,103.5" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g>
+  <polyline points="58.0,225.8 184.0,111.3 226.5,98.4 268.5,94.4 310.5,70.8 353.0,53.1 395.5,46.4 437.0,38.4 479.0,38.0 564.0,177.6 605.5,178.9" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/>
+  <g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.6"><circle cx="58.0" cy="225.8" r="3.6"/><circle cx="184.0" cy="111.3" r="3.6"/><circle cx="226.5" cy="98.4" r="3.6"/><circle cx="268.5" cy="94.4" r="3.6"/><circle cx="310.5" cy="70.8" r="3.6"/><circle cx="353.0" cy="53.1" r="3.6"/><circle cx="395.5" cy="46.4" r="3.6"/><circle cx="437.0" cy="38.4" r="3.6"/><circle cx="479.0" cy="38.0" r="3.6"/><circle cx="564.0" cy="177.6" r="3.6"/><circle cx="605.5" cy="178.9" r="3.6"/></g>
+  <g font-family="IBM Plex Mono,monospace" font-size="9.5" font-weight="600" fill="var(--amber-deep)"><text x="58.0" y="217.8" text-anchor="middle" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">+0.59</text><text x="605.5" y="170.9" text-anchor="middle" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">+1.65</text></g>
+  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)" text-anchor="middle"><text x="58.5" y="272">2023</text><text x="227.0" y="272">2024</text><text x="395.9" y="272">2025</text><text x="564.4" y="272">2026</text></g>
+  <text x="8" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--blue-deep)">Share price €</text>
+  <text x="658" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--amber-deep)">TTM EPS €</text></svg><div class="reading" style="margin-top:12px"><b>How to read it.</b> Price and TTM diluted EPS on independent, normalised scales (2022&ndash;2026) &mdash; this reads <b>co-movement and lead/lag</b>, not levels. EPS moved +0.59&rarr;+1.65 € while price ended near €27. <span class='asm'>Scales normalised independently</span> &mdash; only shape and timing are meaningful.</div></div><div class="qgrid"><div class="qcard"><div class="qtt">① Return on equity (ROE)</div><div class="qsub">Net income &divide; equity &middot; quality signal</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0%</text><text x="39" y="121.0">10%</text><text x="39" y="73.0">20%</text><text x="39" y="25.0">30%</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="119.0" width="34.0" height="47.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="114.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">9.8</text><rect x="139.5" y="83.1" width="34.0" height="82.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="78.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">17.3</text><rect x="214.5" y="70.8" width="34.0" height="95.2" rx="2.5" fill="var(--teal)"/><text x="231.5" y="65.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">19.8</text><rect x="289.5" y="74.1" width="34.0" height="91.9" rx="2.5" fill="var(--teal)"/><text x="306.5" y="69.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">19.2</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>High &mdash; latest 19.2%.</b> Ranged 9.8%&ndash;19.8% over 2022&ndash;2025; fairly steady.</div></div><div class="qcard"><div class="qtt">② Free cash flow (€m)</div><div class="qsub">Bars = FCF &middot; <span style='color:var(--blue)'>line = operating CF</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">200</text><text x="39" y="97.0">400</text><text x="39" y="61.0">600</text><text x="39" y="25.0">800</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="162.0" width="34.0" height="4.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="157.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+22.0</text><rect x="139.5" y="75.1" width="34.0" height="90.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="70.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+504.9</text><rect x="214.5" y="90.0" width="34.0" height="76.0" rx="2.5" fill="var(--teal)"/><text x="231.5" y="85.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+422.4</text><rect x="289.5" y="72.4" width="34.0" height="93.6" rx="2.5" fill="var(--teal)"/><text x="306.5" y="67.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+520.1</text><polyline points="81.5,154.0 156.5,65.7 231.5,77.5 306.5,63.5" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" opacity="0.9"/><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Positive throughout, latest +520.1m.</b> Real cash generation every year in the window.</div></div><div class="qcard"><div class="qtt">③ Leverage &mdash; debt / equity</div><div class="qsub">Total debt &divide; equity &middot; resilience</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="137.2" x2="344" y2="137.2"/><line x1="44" y1="108.4" x2="344" y2="108.4"/><line x1="44" y1="79.6" x2="344" y2="79.6"/><line x1="44" y1="50.8" x2="344" y2="50.8"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="140.2">0.2</text><text x="39" y="111.4">0.4</text><text x="39" y="82.6">0.6</text><text x="39" y="53.8">0.8</text><text x="39" y="25.0">1</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="94.0" x2="344" y2="94.0" stroke="var(--amber-deep)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="91.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--amber-deep)" text-anchor="start">0.5 = moderate</text><rect x="64.5" y="54.8" width="34.0" height="111.2" rx="2.5" fill="var(--amber)"/><text x="81.5" y="49.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.77</text><rect x="139.5" y="79.8" width="34.0" height="86.2" rx="2.5" fill="var(--amber)"/><text x="156.5" y="74.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.60</text><rect x="214.5" y="96.6" width="34.0" height="69.4" rx="2.5" fill="var(--amber)"/><text x="231.5" y="91.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.48</text><rect x="289.5" y="133.6" width="34.0" height="32.4" rx="2.5" fill="var(--amber)"/><text x="306.5" y="128.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.23</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--ink)" font-weight="600">2025</text></g></svg><div class="qread"><b>Low and falling, latest 0.23.</b> Moved 0.77&rarr;0.23 across the window.</div></div><div class="qcard"><div class="qtt">④ Interest coverage</div><div class="qsub">EBIT &divide; interest expense</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="133.0">5&#215;</text><text x="39" y="97.0">10&#215;</text><text x="39" y="61.0">15&#215;</text><text x="39" y="25.0">20&#215;</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="158.8" x2="344" y2="158.8" stroke="var(--coral)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="155.8" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral)" text-anchor="start">1&#215; = danger</text><rect x="64.5" y="107.0" width="34.0" height="59.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="102.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">8.2&#215;</text><rect x="139.5" y="102.2" width="34.0" height="63.8" rx="2.5" fill="var(--teal)"/><text x="156.5" y="97.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">8.9&#215;</text><rect x="214.5" y="94.1" width="34.0" height="71.9" rx="2.5" fill="var(--teal)"/><text x="231.5" y="89.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">10.0&#215;</text><rect x="289.5" y="56.4" width="34.0" height="109.6" rx="2.5" fill="var(--teal)"/><text x="306.5" y="51.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">15.2&#215;</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Comfortable &mdash; latest 15.2&#215;.</b> Low point 8.2&#215;; above the 1&#215; danger line throughout.</div></div><div class="qcard"><div class="qtt">⑤ Price / earnings + PEG</div><div class="qsub">Year-end price &divide; diluted EPS</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="133.0">5&#215;</text><text x="39" y="97.0">10&#215;</text><text x="39" y="61.0">15&#215;</text><text x="39" y="25.0">20&#215;</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="49.0" width="34.0" height="117.0" rx="2.5" fill="var(--blue)"/><text x="81.5" y="44.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">16&#215;</text><rect x="139.5" y="81.0" width="34.0" height="85.0" rx="2.5" fill="var(--blue)"/><text x="156.5" y="76.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">12&#215;</text><rect x="214.5" y="70.8" width="34.0" height="95.2" rx="2.5" fill="var(--blue)"/><text x="231.5" y="65.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">13&#215;</text><rect x="289.5" y="31.6" width="34.0" height="134.4" rx="2.5" fill="var(--blue)"/><text x="306.5" y="26.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">19&#215;</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--ink)" font-weight="600">2025</text></g><line x1="44" y1="49.0" x2="344" y2="49.0" stroke="var(--coral-deep)" stroke-width="1" stroke-dasharray="1 2" opacity="0.8"/><text x="47" y="60.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral-deep)" text-anchor="start">now (TTM) 16&#215;</text></svg><div class="qread"><b>Valuation lens.</b> Year-end P/E ranged 12&#215;&ndash;19&#215; (loss years n/m). Trailing P/E now <b>16&#215;</b>; <span class='asm'>PEG</span> at an assumed +20% forward EPS growth &#8776; <b>0.81</b>.</div></div><div class="qcard"><div class="qtt">⑥ Profit margins</div><div class="qsub"><span style='color:var(--teal)'>gross</span> &middot; <span style='color:var(--blue)'>operating</span> &middot; <span style='color:var(--amber-deep)'>net</span> &divide; revenue</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0%</text><text x="39" y="133.0">20%</text><text x="39" y="97.0">40%</text><text x="39" y="61.0">60%</text><text x="39" y="25.0">80%</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><polyline points="81.5,67.0 156.5,68.7 231.5,66.1 306.5,63.6" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="67.0" r="3.2"/><circle cx="156.5" cy="68.7" r="3.2"/><circle cx="231.5" cy="66.1" r="3.2"/><circle cx="306.5" cy="63.6" r="3.2"/></g><polyline points="81.5,154.0 156.5,147.9 231.5,144.4 306.5,143.6" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--blue)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="154.0" r="3.2"/><circle cx="156.5" cy="147.9" r="3.2"/><circle cx="231.5" cy="144.4" r="3.2"/><circle cx="306.5" cy="143.6" r="3.2"/></g><polyline points="81.5,158.5 156.5,153.5 231.5,150.3 306.5,148.7" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="158.5" r="3.2"/><circle cx="156.5" cy="153.5" r="3.2"/><circle cx="231.5" cy="150.3" r="3.2"/><circle cx="306.5" cy="148.7" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Net margin latest 9.6%.</b> Expanding vs 4.2% at the start; healthy.</div></div><div class="qcard"><div class="qtt">⑦ EV/EBITDA + P/B</div><div class="qsub">Bars = EV/EBITDA &middot; <span style='color:var(--amber-deep)'>line = P/B (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="121.0">5&#215;</text><text x="39" y="73.0">10&#215;</text><text x="39" y="25.0">15&#215;</text></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0</text><text x="349" y="140.2">1</text><text x="349" y="111.4">2</text><text x="349" y="82.6">3</text><text x="349" y="53.8">4</text><text x="349" y="25.0">5</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="82.3" width="34.0" height="83.7" rx="2.5" fill="var(--blue)"/><text x="81.5" y="77.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">8.7&#215;</text><rect x="139.5" y="100.3" width="34.0" height="65.7" rx="2.5" fill="var(--blue)"/><text x="156.5" y="95.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">6.8&#215;</text><rect x="214.5" y="92.5" width="34.0" height="73.5" rx="2.5" fill="var(--blue)"/><text x="231.5" y="87.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">7.7&#215;</text><rect x="289.5" y="64.3" width="34.0" height="101.7" rx="2.5" fill="var(--blue)"/><text x="306.5" y="59.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">10.6&#215;</text><polyline points="81.5,120.0 156.5,107.3 231.5,90.6 306.5,62.9" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="120.0" r="3.2"/><circle cx="156.5" cy="107.3" r="3.2"/><circle cx="231.5" cy="90.6" r="3.2"/><circle cx="306.5" cy="62.9" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="123.0" text-anchor="start">1.6</text><text x="162.5" y="110.3" text-anchor="start">2.0</text><text x="237.5" y="93.6" text-anchor="start">2.6</text><text x="312.5" y="65.9" text-anchor="start">3.6</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Valuation, sector-aware.</b> EV/EBITDA 8.7&#215;&rarr;10.6&#215;, P/B latest 3.6&#215;.</div></div><div class="qcard"><div class="qtt">⑧ Revenue (€m) &amp; EPS</div><div class="qsub">Bars = revenue &middot; <span style='color:var(--amber-deep)'>line = diluted EPS (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="137.2" x2="344" y2="137.2"/><line x1="44" y1="108.4" x2="344" y2="108.4"/><line x1="44" y1="79.6" x2="344" y2="79.6"/><line x1="44" y1="50.8" x2="344" y2="50.8"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="140.2">1000</text><text x="39" y="111.4">2000</text><text x="39" y="82.6">3000</text><text x="39" y="53.8">4000</text><text x="39" y="25.0">5000</text></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">+0</text><text x="349" y="133.0">+0.5</text><text x="349" y="97.0">+1</text><text x="349" y="61.0">+1.5</text><text x="349" y="25.0">+2</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="69.4" width="34.0" height="96.6" rx="2.5" fill="var(--teal)"/><text x="81.5" y="64.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">3355.9</text><rect x="139.5" y="51.9" width="34.0" height="114.1" rx="2.5" fill="var(--teal)"/><text x="156.5" y="46.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">3962.6</text><rect x="214.5" y="44.4" width="34.0" height="121.6" rx="2.5" fill="var(--teal)"/><text x="231.5" y="39.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">4222.2</text><rect x="289.5" y="46.0" width="34.0" height="120.0" rx="2.5" fill="var(--teal)"/><text x="306.5" y="41.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">4165.0</text><polyline points="81.5,123.5 156.5,83.0 231.5,54.9 306.5,45.3" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="123.5" r="3.2"/><circle cx="156.5" cy="83.0" r="3.2"/><circle cx="231.5" cy="54.9" r="3.2"/><circle cx="306.5" cy="45.3" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="126.5" text-anchor="start">+0.59</text><text x="162.5" y="86.0" text-anchor="start">+1.15</text><text x="237.5" y="57.9" text-anchor="start">+1.54</text><text x="312.5" y="48.3" text-anchor="start">+1.68</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Revenue growing (+7.5%/yr).</b> €3355.9m&rarr;€4165.0m; EPS +0.59&rarr;+1.68.</div></div><div class="qcard"><div class="qtt">⑨ Liquidity &mdash; current &amp; quick</div><div class="qsub"><span style='color:var(--teal)'>current</span> &middot; <span style='color:var(--amber)'>quick</span> ratio</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">0.5</text><text x="39" y="97.0">1</text><text x="39" y="61.0">1.5</text><text x="39" y="25.0">2</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="94.0" x2="344" y2="94.0" stroke="var(--coral)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="91.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral)" text-anchor="start">1.0 = min safe</text><line x1="44" y1="22.0" x2="344" y2="22.0" stroke="var(--teal)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="19.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--teal)" text-anchor="start">2.0 = comfortable</text><rect x="68.5" y="50.8" width="12" height="115.2" rx="2" fill="var(--teal)"/><text x="75.5" y="46.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.60</text><rect x="82.5" y="96.9" width="12" height="69.1" rx="2" fill="var(--amber)"/><text x="88.5" y="92.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.96</text><rect x="143.5" y="66.2" width="12" height="99.8" rx="2" fill="var(--teal)"/><text x="150.5" y="62.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.39</text><rect x="157.5" y="102.8" width="12" height="63.2" rx="2" fill="var(--amber)"/><text x="163.5" y="98.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.88</text><rect x="218.5" y="67.7" width="12" height="98.3" rx="2" fill="var(--teal)"/><text x="225.5" y="63.7" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.37</text><rect x="232.5" y="100.3" width="12" height="65.7" rx="2" fill="var(--amber)"/><text x="238.5" y="96.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.91</text><rect x="293.5" y="61.9" width="12" height="104.1" rx="2" fill="var(--teal)"/><text x="300.5" y="57.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.45</text><rect x="307.5" y="97.4" width="12" height="68.6" rx="2" fill="var(--amber)"/><text x="313.5" y="93.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.95</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Adequate &mdash; current 1.45&#215;, quick 0.95&#215;.</b> Watch the gap.</div></div></div><div class="src">Source: Yahoo Finance fundamentals-timeseries (KCR.HE, annual) + year-end prices from the Yahoo v8 chart cache. Ratios computed at build time; PEG uses a labelled forward-EPS-growth assumption. Cards without a reliable fetched input for this issuer are omitted.</div></section>
+
+<section class="mod" id="mD">
+    <div class="mod-head"><div class="mod-no">D</div>
+      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">Computed from the actual FY2025 balance sheet.</div></div>
+      <span class="tagchip c">Computed from sourced data</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Pristine. <b>Net cash</b>, interest coverage 18×, ROCE ~21%, cash conversion &gt;100%, high-quality earnings. A financially excellent business — the risk is the cycle, never the books.</span></div>
+    <p class="body">Real reported figures: total assets €4.8bn, equity ≈ €1.97bn, total liabilities €2.9bn, current assets €2.7bn, current liabilities €2.0bn, gross debt €720m but <b>net cash €185m</b>, EBIT €521m, net profit €399.8m (2024: €368.4m), operating cash flow ≈ €0.5bn, net working capital cut to €284m.</p>
+    <div class="scores">
+      <div class="sc"><div class="scl"><span>Piotroski F</span><span class="tg c">computed</span></div><div class="scv">7<span class="un">/9</span></div><div class="scband good">Strong</div><div class="scd">+NI, +CFO, ΔROA up, CFO&gt;NI, lower leverage (now net cash), no dilution, higher margin. Loses the asset-turnover point (sales dipped ~1%). Current-ratio change unverifiable for 2024, so true score 7–8.</div></div>
+      <div class="sc"><div class="scl"><span>Altman Z</span><span class="tg c">computed</span></div><div class="scv">~3.2</div><div class="scband good">Safe zone</div><div class="scd">&gt;2.99 = safe. EBIT/TA 0.11, market-equity/liabilities 2.2, sales/TA 0.87 (depressed by ~€1bn customer advances on the project book). Retained-earnings term proxied by equity; conclusion robust.</div></div>
+      <div class="sc"><div class="scl"><span>Sloan accruals</span><span class="tg c">computed</span></div><div class="scv">~−3<span class="un">%</span></div><div class="scband good">High quality</div><div class="scd">(NI − CFO) ÷ assets, negative: cash flow exceeds net profit, conversion &gt;100%. Earnings are cash-backed, not accrual-inflated.</div></div>
+      <div class="sc"><div class="scl"><span>Interest coverage</span><span class="tg s">sourced</span></div><div class="scv">18.1<span class="un">×</span></div><div class="scband good">Fortress</div><div class="scd">EBIT €521m covers interest 18×, and the company sits in a net-cash position (gearing −7.8%). Essentially no balance-sheet risk.</div></div>
+      <div class="sc"><div class="scl"><span>ROCE</span><span class="tg s">sourced</span></div><div class="scv">20.7<span class="un">%</span></div><div class="scband good">Excellent</div><div class="scd">Reported 20.7%, comparable 22.1%; ROE 20.3%. High and rising returns on capital — the hallmark of the three-year self-help re-rating.</div></div>
+      <div class="sc"><div class="scl"><span>Net cash / gearing</span><span class="tg s">sourced</span></div><div class="scv">−7.8<span class="un">%</span></div><div class="scband good">Net cash</div><div class="scd">Net cash €185m at Q1'26 (€163m at YE'25). Working capital fell €94m YoY. The balance sheet is, if anything, under-levered.</div></div>
+    </div>
+    <div class="note b"><b>The one approximation, flagged:</b> Altman's retained-earnings term isn't separately disclosed, so it's proxied by total equity (conservative). Beneish M was dropped — it needs eight two-year ratios not fully available, and a half-estimated score is worse than none.
+      <div class="src">Sources: Konecranes FY2025 financial statement release; S&amp;P Global Market Intelligence via Simply Wall St.</div>
+    </div>
+  </section>
+
+<section class="mod" id="mE">
+    <div class="mod-head"><div class="mod-no">E</div>
+      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">High-return and disciplined (ROCE ~21%, dividend +36%), but holding net cash with no clear deployment since the blocked Cargotec mega-merger — capital return is growing yet conservative relative to cash generation.</span></div>
+    <div class="rec">
+      <div class="ri"><div class="rk">Dividend</div><div class="rd"><b>€0.75/share post-split (€2.25 pre), +36% YoY</b> — payout 45% of earnings, 34% of cash. Well-covered and growing; ~2.7% yield.</div></div>
+      <div class="ri"><div class="rk">Bolt-on M&amp;A</div><div class="rd">A steady stream of small, accretive <b>service acquisitions</b> (Ex-Kcranes, Trimate, MEG, Polipastos) extending the high-margin maintenance footprint — the core of the owner's value thesis.</div></div>
+      <div class="ri"><div class="rk">Big M&amp;A</div><div class="rd">The 2020–22 <b>Cargotec merger was blocked</b> by UK/US regulators on competition grounds. Ambition is real, but large consolidation has proven hard — and the balance sheet has lacked a big use since.</div></div>
+      <div class="ri"><div class="rk">Buybacks</div><div class="rd">An AGM authorization exists; execution has been limited. With <b>net cash building</b> (gearing −7.8%), the balance sheet is arguably under-worked.</div></div>
+      <div class="ri"><div class="rk">Returns on capital</div><div class="rd"><b>ROCE 20.7% (comparable 22.1%)</b>, the product of the multi-year margin program — capital deployed at genuinely high incremental returns.</div></div>
+    </div>
+    <div class="note a"><b>Read (judgment, not data):</b> a high-return, disciplined operator that has compounded margins and grown the dividend, but holds a conservative net-cash balance sheet and lacks a clear large-scale use of capital since Cargotec fell through.
+      <div class="src">Sources: Konecranes FY2025 release &amp; AGM; Solidium; merger-history public record.</div>
+    </div>
+  </section>
+
+<section class="mod" id="mG">
+    <div class="mod-head"><div class="mod-no">G</div>
+      <div class="ht"><h2>Peer multiples</h2><div class="hq">Konecranes computed; comparables sourced.</div></div>
+      <span class="tagchip a">Computed + sourced</span>
+    </div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Trades at a clear <b>discount to quality peers</b> (P/E ~16× vs Atlas Copco ~33×) — re-rating optionality, and the tornado says the multiple is the #1 value lever. The discount is partly justified by Port Solutions cyclicality.</span></div>
+    <p class="body" style="font-size:13px">Konecranes is <b>computed</b> at EV/EBITA ~10.8× (EV €6.31bn ÷ comparable EBITA €588m) and P/E ~16.3× (€27.30 ÷ €1.68). Peers are <b>sourced</b>. It sits below the quality compounders and near the machinery median — the opposite of an expensive stock.</p>
+    <div class="bars" id="peerbars"></div>
+    <div class="note t"><b>Read:</b> on EV/EBITDA Konecranes (~9–11×) is well below Atlas Copco (~17×), above the cyclical KION (~7×), and roughly at the machinery-industry median (~11×). The bull case (Module C) is precisely closing the gap to the quality end as margin durability proves out; the de-rating risk is slipping toward the cyclical end. Either way, the <i>multiple</i> — the market's quality verdict — is the swing, which is why the demand/volume signal that drives it matters so much.
+      <div class="src">Sources: Atlas Copco, KION multiples via stockanalysis.com / GuruFocus / S&amp;P; machinery-industry median (GuruFocus). Konecranes computed from sourced inputs.</div>
+    </div>
+  </section>
+
+<section class="mod" id="mF">
+    <div class="mod-head"><div class="mod-no">F</div>
+      <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">Only what's actually fetchable.</div></div>
+      <span class="tagchip s">Sourced</span>
+    </div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Bullish sell-side (PT €34, +25%) and strong insider alignment vs negative price momentum and a high free float that makes the stock sentiment-driven. The crowd is cautious; analysts are not.</span></div>
+    <div class="tbl-scroll"><table style="margin-bottom:6px">
+      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>Anchor shareholder</td><td class="num">11%</td><td><b>Solidium</b> (Finnish State holding co), largest holder and nomination-board chair — a stable, long-term anchor, but well short of control.</td></tr>
+        <tr><td>Free float</td><td class="num">~89%</td><td>Widely held — Oras Invest 3.4%, Vanguard 3.3%, institutions ~45%, public ~35%. Unlike a state-controlled name, this trades on sentiment and flows; liquid and momentum-sensitive.</td></tr>
+        <tr><td>Insider alignment</td><td class="num">~€297m</td><td>Meaningful insider holdings — interests aligned with shareholders.</td></tr>
+        <tr><td>Sell-side view</td><td class="num">€34 PT</td><td>Consensus target ~+25% above price; mostly Buy/Accumulate, ~0 sells. Analysts see the de-rating as overdone.</td></tr>
+        <tr><td>Price momentum</td><td class="num">▼ Weak</td><td>Down ~13% from the year-end high on volume/guidance worry; short-term technicals negative. The market is voting against the sell-side for now.</td></tr>
+        <tr><td>52-week range</td><td class="num">€21–35</td><td>A wide band post-split — a reminder this is a cyclical that swings hard on the demand narrative.</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note c"><b>Cut, not faked:</b> short interest, insider transaction flow, options skew and borrow cost aren't reliably fetchable for a Nasdaq Helsinki name, so those rows are removed rather than guessed.
+      <div class="src">Sources: Simply Wall St ownership breakdown; Investing.com (consensus target, momentum); Solidium.</div>
+    </div>
+  </section>
+
+<section class="mod" id="mA">
     <div class="mod-head"><div class="mod-no">A</div>
       <div class="ht"><h2>Valuation engine — correlated &amp; fat-tailed</h2><div class="hq">Through-cycle EBITA margin × multiple, plus net cash.</div></div>
       <span class="tagchip c">Computed</span>
@@ -347,7 +634,7 @@
     <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The mid-cycle margin (does the record ~14% hold?) and the central multiple (does it earn a quality re-rating?) are <b>your</b> calls. Correlation and tail control how hard the drivers fall together in a downturn.</p>
     <div class="mc-wrap">
       <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
-      <div class="mc-sub">Fixed inputs (sourced): net cash ≈ €185m, 237.64m shares, price €27.30, sales ≈ €4.25bn (guided flat-to-up).</div>
+      <div class="mc-sub">Fixed inputs (sourced): net cash ≈ €185m, 237.64m shares, price €27.38 (live, 2026-07-19), sales ≈ €4.25bn (guided flat-to-up).</div>
       <div class="controls">
         <div class="ctrl">
           <label><span class="lab">Mid-cycle EBITA margin <span>% · assumption</span></span><span class="cval"><span id="v-mgn">14.0</span>%</span></label>
@@ -389,26 +676,26 @@
       <div class="hist-wrap">
         <div class="hist-leg">
           <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €27.30</span>
-          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €27.30</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €27.38</span>
           <span><span class="sw" style="background:var(--ink)"></span>price</span>
           <span><span class="sw" style="background:var(--amber)"></span>median</span>
           <span><span class="sw" style="background:var(--faint)"></span>indep P10</span>
         </div>
-        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
       </div>
       <div class="reading" id="reading"></div>
     </div>
     <div class="note c"><b>Why this matters.</b> Correlation barely moves the median but fattens the downside — appropriate for a cyclical whose drivers (margin, volume, multiple) all sag together in a downturn. The independent model understates how bad a real cycle turn would be.</div>
   </section>
 
-  <section class="mod" id="mB">
+<section class="mod" id="mB">
     <div class="mod-head"><div class="mod-no">B</div>
       <div class="ht"><h2>Driver analysis — what moves the stock</h2><div class="hq">The question this dashboard was built around.</div></div>
       <span class="tagchip a">Computed + sourced</span>
     </div>
     <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The answer hinges on one swing factor — <b>volume conversion</b> of the record backlog, which governs both margin durability and the re-rating. A diagnostic, not a direction: high dependence on a single cyclical variable.</span></div>
     <p class="body"><b>Lens 1 — fair-value sensitivity (computed tornado).</b> Each bar swings one driver P10→P90, others held at mode. The <b>EV/EBITA multiple</b> dominates, with the <b>EBITA margin</b> close behind; revenue and net cash are second-order.</p>
-    <svg id="tornado" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="tornado" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
     <p class="body" style="margin-top:18px"><b>Lens 2 — what actually moved the price (sourced).</b> The revealed evidence is unambiguous: record margins did not lift the stock; soft volume and cautious guidance sank it. The market trades the demand cycle.</p>
     <div class="reactab">
       <div class="rr"><div class="re">Feb 2026</div><div class="rd">Q4'25: record 14% margin, +12% orders, net cash, &gt;100% cash conversion — but Q4 orders −4.3% vs a strong comp + cautious 2026 guidance.</div><div class="rp">≈ −10 to −14%</div></div>
@@ -421,7 +708,7 @@
     </div>
   </section>
 
-  <section class="mod" id="mC">
+<section class="mod" id="mC">
     <div class="mod-head"><div class="mod-no">C</div>
       <div class="ht"><h2>Scenario probabilities + Bayesian updating</h2><div class="hq">Computed anchors; your odds.</div></div>
       <span class="tagchip a">Computed + your assumptions</span>
@@ -458,80 +745,247 @@
     </div>
   </section>
 
-  <section class="mod" id="mD">
-    <div class="mod-head"><div class="mod-no">D</div>
-      <div class="ht"><h2>Forensic &amp; earnings-quality scores</h2><div class="hq">Computed from the actual FY2025 balance sheet.</div></div>
-      <span class="tagchip c">Computed from sourced data</span>
+
+  <section class="mod" id="mU" style="border:1.5px solid var(--teal)">
+    <div class="mod-head"><div class="mod-no" style="color:var(--teal-deep)">U</div>
+      <div class="ht"><h2>Perfect-execution bull — the 10-year ceiling</h2><div class="hq">Industrial compounder + port automation, full cycle of execution. If everything goes right for 10 years, what is a realistic best-case stock price?</div></div>
+      <span class="tagchip a">Scenario tool · your assumptions</span>
     </div>
-    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Pristine. <b>Net cash</b>, interest coverage 18×, ROCE ~21%, cash conversion &gt;100%, high-quality earnings. A financially excellent business — the risk is the cycle, never the books.</span></div>
-    <p class="body">Real reported figures: total assets €4.8bn, equity ≈ €1.97bn, total liabilities €2.9bn, current assets €2.7bn, current liabilities €2.0bn, gross debt €720m but <b>net cash €185m</b>, EBIT €521m, net profit €399.8m (2024: €368.4m), operating cash flow ≈ €0.5bn, net working capital cut to €284m.</p>
-    <div class="scores">
-      <div class="sc"><div class="scl"><span>Piotroski F</span><span class="tg c">computed</span></div><div class="scv">7<span class="un">/9</span></div><div class="scband good">Strong</div><div class="scd">+NI, +CFO, ΔROA up, CFO&gt;NI, lower leverage (now net cash), no dilution, higher margin. Loses the asset-turnover point (sales dipped ~1%). Current-ratio change unverifiable for 2024, so true score 7–8.</div></div>
-      <div class="sc"><div class="scl"><span>Altman Z</span><span class="tg c">computed</span></div><div class="scv">~3.2</div><div class="scband good">Safe zone</div><div class="scd">&gt;2.99 = safe. EBIT/TA 0.11, market-equity/liabilities 2.2, sales/TA 0.87 (depressed by ~€1bn customer advances on the project book). Retained-earnings term proxied by equity; conclusion robust.</div></div>
-      <div class="sc"><div class="scl"><span>Sloan accruals</span><span class="tg c">computed</span></div><div class="scv">~−3<span class="un">%</span></div><div class="scband good">High quality</div><div class="scd">(NI − CFO) ÷ assets, negative: cash flow exceeds net profit, conversion &gt;100%. Earnings are cash-backed, not accrual-inflated.</div></div>
-      <div class="sc"><div class="scl"><span>Interest coverage</span><span class="tg s">sourced</span></div><div class="scv">18.1<span class="un">×</span></div><div class="scband good">Fortress</div><div class="scd">EBIT €521m covers interest 18×, and the company sits in a net-cash position (gearing −7.8%). Essentially no balance-sheet risk.</div></div>
-      <div class="sc"><div class="scl"><span>ROCE</span><span class="tg s">sourced</span></div><div class="scv">20.7<span class="un">%</span></div><div class="scband good">Excellent</div><div class="scd">Reported 20.7%, comparable 22.1%; ROE 20.3%. High and rising returns on capital — the hallmark of the three-year self-help re-rating.</div></div>
-      <div class="sc"><div class="scl"><span>Net cash / gearing</span><span class="tg s">sourced</span></div><div class="scv">−7.8<span class="un">%</span></div><div class="scband good">Net cash</div><div class="scd">Net cash €185m at Q1'26 (€163m at YE'25). Working capital fell €94m YoY. The balance sheet is, if anything, under-levered.</div></div>
+
+    <div class="verdict bull"><span class="vchip">BULL · CEILING</span><span class="vtext">Under the default perfect-execution path, year-10 fair value lands near <b>€82</b> — about <b>+199%</b> above today’s <b>€27.38</b>, a price CAGR of <b>11.6%</b> (total-shareholder-return ≈ <b>12.8%</b> incl. dividends). Discounted back at 9%, the PV of that terminal equity plus dividends is ≈ <b>€41</b> per share (+48% vs spot). Consensus PT €34 sits below this terminal — the street prices a cycle, not a decade of perfect execution.</span></div>
+
+    <p class="body"><b>What this module is — and is not.</b> Modules A–C underwrite a <i>through-cycle base</i>. This one is the opposite exercise: an explicit, end-to-end <b>everything-goes-right</b> path over 10 years — sales compound, margin reaches a defended peak, the market awards a quality multiple, free cash builds or buys back stock. Every driver below is an <b>assumption</b> you can move; the defaults are ambitious but deliberately short of fantasy (no Atlas-Copco multiple, no 20% sales CAGR). Konecranes' ceiling is a service-heavy industrial compounder whose port-automation and process-industry franchises grow mid-single digits, the ~14% EBITA margin edges into the mid-teens on mix, and the market re-rates toward quality peers — not a software multiple, and not a zero-cycle path.</p>
+
+    <div class="bullpath">
+      <div class="bp-title">◆ Live bull-path calculator — 10-year perfect execution</div>
+      <div class="bp-sub">Fair value each year = EV/EBITA multiple × (sales × EBITA margin) + net cash, ÷ diluted shares. Net cash and share count evolve from free-cash-flow: a slice pays the dividend, a slice buys back stock at that year’s fair value, the rest accrues to the balance sheet.</div>
+
+      <div class="bp-kpis" id="bp-kpis">
+        <div class="k"><div class="lab">Year-10 fair value</div><div class="val" id="bp-term">€82</div><div class="hint" id="bp-term-h">+199% vs spot €27.38</div></div>
+        <div class="k"><div class="lab">Price CAGR (10y)</div><div class="val" id="bp-cagr">11.6%</div><div class="hint" id="bp-cagr-h">TSR ≈ 12.8% incl. dividends</div></div>
+        <div class="k"><div class="lab">PV @ 9% disc.</div><div class="val" id="bp-pv">€41</div><div class="hint" id="bp-pv-h">Terminal PV €35 + div PV €6</div></div>
+        <div class="k"><div class="lab">Y5 checkpoint</div><div class="val" id="bp-mid">€49</div><div class="hint" id="bp-mid-h">Sales 5,555→7,260 €m by Y10</div></div>
+      </div>
+
+      <div class="bp-controls">
+        <div class="ctrl">
+          <label><span class="lab">Sales CAGR <span>% · assumption</span></span><span class="cval"><span id="bv-scagr">5.5</span>%</span></label>
+          <input type="range" id="bi-scagr" min="0" max="12" step="0.1" value="5.5">
+          <div class="tri">Perfect-execution revenue compounding over the horizon</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal EBITA/EBITDA margin <span>% · assumption</span></span><span class="cval"><span id="bv-mgn">15.5</span>%</span></label>
+          <input type="range" id="bi-mgn" min="8" max="20" step="0.1" value="15.5">
+          <div class="tri">Today ~14.0%; the terminal through-cycle margin you underwrite</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Terminal multiple <span>× · assumption</span></span><span class="cval"><span id="bv-mlt">14.0</span>×</span></label>
+          <input type="range" id="bi-mlt" min="7" max="20" step="0.1" value="14.0">
+          <div class="tri">Now ~11.0× · the terminal EV/EBITA(DA) the market grants</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Discount rate <span>% · assumption</span></span><span class="cval"><span id="bv-disc">9</span>%</span></label>
+          <input type="range" id="bi-disc" min="3" max="15" step="0.5" value="9">
+          <div class="tri">For PV of terminal equity + dividends only — not a WACC claim</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">FCF / EBITA after tax <span>% · assumption</span></span><span class="cval"><span id="bv-fcf">78</span>%</span></label>
+          <input type="range" id="bi-fcf" min="50" max="95" step="1" value="78">
+          <div class="tri">Cash conversion after tax haircut — capex-heavy names sit lower</div>
+        </div>
+        <div class="ctrl">
+          <label><span class="lab">Buyback share of FCF <span>% · assumption</span></span><span class="cval"><span id="bv-bb">20</span>%</span></label>
+          <input type="range" id="bi-bb" min="0" max="50" step="1" value="20">
+          <div class="tri">Executed at that year’s FV; rest of non-dividend FCF → net cash</div>
+        </div>
+      </div>
+
+      <div class="hist-wrap" id="bp-chart-wrap"><svg id="bull-chart" viewBox="0 0 700 200" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img" aria-label="Bull-case fair-value path">
+  <line x1="48" y1="158.7" x2="684" y2="158.7" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="684" y="154.7" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot €27</text>
+  <polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="48.0,156.5 111.6,149.9 175.2,141.5 238.8,131.3 302.4,119.2 366.0,105.6 429.6,90.6 493.2,74.6 556.8,58.3 620.4,42.4 684.0,27.8"/>
+  <circle cx="48.0" cy="156.5" r="3.2" fill="var(--teal-deep)"/><circle cx="111.6" cy="149.9" r="3.2" fill="var(--teal-deep)"/><circle cx="175.2" cy="141.5" r="3.2" fill="var(--teal-deep)"/><circle cx="238.8" cy="131.3" r="3.2" fill="var(--teal-deep)"/><circle cx="302.4" cy="119.2" r="3.2" fill="var(--teal-deep)"/><circle cx="366.0" cy="105.6" r="3.2" fill="var(--teal-deep)"/><circle cx="429.6" cy="90.6" r="3.2" fill="var(--teal-deep)"/><circle cx="493.2" cy="74.6" r="3.2" fill="var(--teal-deep)"/><circle cx="556.8" cy="58.3" r="3.2" fill="var(--teal-deep)"/><circle cx="620.4" cy="42.4" r="3.2" fill="var(--teal-deep)"/><circle cx="684.0" cy="27.8" r="3.2" fill="var(--teal-deep)"/>
+  <text x="48.0" y="148.5" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">€28</text><text x="366.0" y="97.6" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">€49</text><text x="684.0" y="19.8" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">€82</text>
+  <text x="48.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y0</text><text x="175.2" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y2</text><text x="302.4" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y4</text><text x="429.6" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y6</text><text x="556.8" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y8</text><text x="684.0" y="190" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y10</text>
+</svg></div>
+
+      <div class="tbl-scroll" style="margin-top:14px">
+        <table class="brtab" id="bp-table">
+          <thead><tr>
+            <th>Year</th>
+            <th style="text-align:right">Sales €m</th>
+            <th style="text-align:right">EBITA %</th>
+            <th style="text-align:right">EV/EBITA</th>
+            <th style="text-align:right">Net cash €m</th>
+            <th style="text-align:right">Shares m</th>
+            <th style="text-align:right">Fair value</th>
+          </tr></thead>
+          <tbody id="bp-tbody"><tr class='now'><td>Y0 · now</td><td class='num'>4,250</td><td class='num'>14.0%</td><td class='num'>11.0×</td><td class='num'>185</td><td class='num'>237.6</td><td class='num'><b>€28</b></td></tr><tr><td>Y1</td><td class='num'>4,484</td><td class='num'>14.0%</td><td class='num'>11.1×</td><td class='num'>319</td><td class='num'>235.1</td><td class='num'><b>€31</b></td></tr><tr><td>Y2</td><td class='num'>4,730</td><td class='num'>14.2%</td><td class='num'>11.3×</td><td class='num'>462</td><td class='num'>232.8</td><td class='num'><b>€35</b></td></tr><tr><td>Y3</td><td class='num'>4,991</td><td class='num'>14.3%</td><td class='num'>11.6×</td><td class='num'>614</td><td class='num'>230.5</td><td class='num'><b>€39</b></td></tr><tr><td>Y4</td><td class='num'>5,265</td><td class='num'>14.5%</td><td class='num'>12.1×</td><td class='num'>777</td><td class='num'>228.4</td><td class='num'><b>€44</b></td></tr><tr><td>Y5</td><td class='num'>5,555</td><td class='num'>14.8%</td><td class='num'>12.5×</td><td class='num'>951</td><td class='num'>226.3</td><td class='num'><b>€49</b></td></tr><tr><td>Y6</td><td class='num'>5,860</td><td class='num'>15.0%</td><td class='num'>12.9×</td><td class='num'>1,138</td><td class='num'>224.4</td><td class='num'><b>€56</b></td></tr><tr><td>Y7</td><td class='num'>6,182</td><td class='num'>15.2%</td><td class='num'>13.4×</td><td class='num'>1,338</td><td class='num'>222.5</td><td class='num'><b>€62</b></td></tr><tr><td>Y8</td><td class='num'>6,522</td><td class='num'>15.3%</td><td class='num'>13.7×</td><td class='num'>1,551</td><td class='num'>220.8</td><td class='num'><b>€69</b></td></tr><tr><td>Y9</td><td class='num'>6,881</td><td class='num'>15.5%</td><td class='num'>13.9×</td><td class='num'>1,777</td><td class='num'>219.0</td><td class='num'><b>€76</b></td></tr><tr class='cur'><td>Y10</td><td class='num'>7,260</td><td class='num'>15.5%</td><td class='num'>14.0×</td><td class='num'>2,017</td><td class='num'>217.3</td><td class='num'><b>€82</b></td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="kg" style="margin-top:14px" id="bp-endstate">
+        <div class="kgi pos"><div class="k">Y10 EBITA</div><div class="v">€1,125m</div></div>
+        <div class="kgi"><div class="k">Y10 sales</div><div class="v">€7,260m</div></div>
+        <div class="kgi"><div class="k">Shares retired</div><div class="v">20.3m</div></div>
+        <div class="kgi pos"><div class="k">Cum. FCF (10y)</div><div class="v">€5,234m</div></div>
+      </div>
     </div>
-    <div class="note b"><b>The one approximation, flagged:</b> Altman's retained-earnings term isn't separately disclosed, so it's proxied by total equity (conservative). Beneish M was dropped — it needs eight two-year ratios not fully available, and a half-estimated score is worse than none.
-      <div class="src">Sources: Konecranes FY2025 financial statement release; S&amp;P Global Market Intelligence via Simply Wall St.</div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin:20px 0 8px">◆ What “everything goes right” means (milestones)</div>
+    <div><div class='mile'><div class='my'>Y2</div><div class='mt'>Book-to-bill stays ≥ 1 and the service agreement base keeps compounding; margin holds ≥ 13.5% through any soft equipment year.</div></div><div class='mile'><div class='my'>Y5</div><div class='mt'>Port automation / software attach is a visible growth lane; group sales clearly above €5.5bn; EV/EBITA re-rates through ~12.5× as the market accepts margin durability.</div></div><div class='mile'><div class='my'>Y8</div><div class='mt'>Service is a larger share of the mix; comparable EBITA margin sustainably mid-teens; net cash or ongoing buybacks fund a rising dividend without leverage.</div></div><div class='mile'><div class='my'>Y10</div><div class='mt'>Through-cycle EBITA margin ~15.5%, sales ~€7bn, quality multiple ~14× — the default terminal state this calculator prices.</div></div></div>
+
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-deep);font-weight:600;margin:20px 0 8px">◆ Kill-switches — the path breaks if…</div>
+    <div style="display:flex;flex-direction:column;gap:8px"><div class='guard'><span class='gdot'></span><div>Industrial / port volume double-dips for several years and the 14% margin proves cyclical peak, not a floor.</div></div><div class='guard'><span class='gdot'></span><div>A large, value-destructive acquisition (or a blocked mega-deal distraction) absorbs the FCF that this path compounds.</div></div><div class='guard'><span class='gdot'></span><div>Structural share loss in Port Solutions automation to pure-play software/OEM rivals.</div></div><div class='guard'><span class='gdot'></span><div>Multiple never re-rates — the market permanently slots KCR with deep cyclicals (~7–9×) despite the service mix.</div></div></div>
+
+    <div class="note t" style="margin-top:16px"><b>How to use this number.</b> The year-10 fair value is a <i>ceiling under a named path</i>, not a target price and not a probability-weighted expectation. Compare it to Module C’s near-term bull (~scenario card) and to Module A’s P90: if even perfect execution only compounds at high-single-digit CAGR, the asymmetry lives elsewhere; if the ceiling is a multi-bagger with credible milestones, the right tail is economically real. Move the sliders until the path stops feeling honest — that boundary is the point of the tool.
+      <div class="src">Method: sales compound at assumed CAGR; margin and EV/EBITA ease from today to terminal via smoothstep; FCF = EBITA × (1 − tax) × conversion; split into dividend / buyback / cash; fair value = multiple × EBITA + net cash, ÷ shares Defaults from stocks/config.py → bull_case. Interactive path recomputed in-browser; Python reference engine in utils/bullcase.py.</div>
     </div>
   </section>
 
-  <section class="mod" id="mE">
-    <div class="mod-head"><div class="mod-no">E</div>
-      <div class="ht"><h2>Capital-allocation record</h2><div class="hq">The facts, not a graded opinion.</div></div>
-      <span class="tagchip s">Sourced</span>
-    </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">High-return and disciplined (ROCE ~21%, dividend +36%), but holding net cash with no clear deployment since the blocked Cargotec mega-merger — capital return is growing yet conservative relative to cash generation.</span></div>
-    <div class="rec">
-      <div class="ri"><div class="rk">Dividend</div><div class="rd"><b>€0.75/share post-split (€2.25 pre), +36% YoY</b> — payout 45% of earnings, 34% of cash. Well-covered and growing; ~2.7% yield.</div></div>
-      <div class="ri"><div class="rk">Bolt-on M&amp;A</div><div class="rd">A steady stream of small, accretive <b>service acquisitions</b> (Ex-Kcranes, Trimate, MEG, Polipastos) extending the high-margin maintenance footprint — the core of the owner's value thesis.</div></div>
-      <div class="ri"><div class="rk">Big M&amp;A</div><div class="rd">The 2020–22 <b>Cargotec merger was blocked</b> by UK/US regulators on competition grounds. Ambition is real, but large consolidation has proven hard — and the balance sheet has lacked a big use since.</div></div>
-      <div class="ri"><div class="rk">Buybacks</div><div class="rd">An AGM authorization exists; execution has been limited. With <b>net cash building</b> (gearing −7.8%), the balance sheet is arguably under-worked.</div></div>
-      <div class="ri"><div class="rk">Returns on capital</div><div class="rd"><b>ROCE 20.7% (comparable 22.1%)</b>, the product of the multi-year margin program — capital deployed at genuinely high incremental returns.</div></div>
-    </div>
-    <div class="note a"><b>Read (judgment, not data):</b> a high-return, disciplined operator that has compounded margins and grown the dividend, but holds a conservative net-cash balance sheet and lacks a clear large-scale use of capital since Cargotec fell through.
-      <div class="src">Sources: Konecranes FY2025 release &amp; AGM; Solidium; merger-history public record.</div>
-    </div>
-  </section>
+<script id="bullcase-js">
+(function(){
+  const D = {"sales0": 4250.0, "mgn0": 14.0, "mlt0": 11.0, "nc0": 185.0, "shares0": 237.64, "salesCagr": 5.5, "mgnTerm": 15.5, "mltTerm": 14.0, "tax": 22.0, "fcfOn": 78.0, "payout": 45.0, "buyback": 20.0, "discount": 9.0, "horizon": 10, "spot": 27.38, "cur": "\u20ac"};
+  const $ = (id) => document.getElementById(id);
+  function smoothstep(t){ t=Math.max(0,Math.min(1,t)); return t*t*(3-2*t); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+  function fvps(sales,mgn,mlt,nc,sh){ return sh>0 ? (mlt*(sales*mgn/100)+nc)/sh : 0; }
+  function fmt(cur,x,dp){ return cur + (dp===0?Math.round(x).toLocaleString('en-US'):x.toFixed(dp)); }
+  function pct(x,dp){ return (x*100).toFixed(dp)+'%'; }
 
-  <section class="mod" id="mF">
-    <div class="mod-head"><div class="mod-no">F</div>
-      <div class="ht"><h2>Positioning &amp; ownership</h2><div class="hq">Only what's actually fetchable.</div></div>
-      <span class="tagchip s">Sourced</span>
-    </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Bullish sell-side (PT €34, +25%) and strong insider alignment vs negative price momentum and a high free float that makes the stock sentiment-driven. The crowd is cautious; analysts are not.</span></div>
-    <table style="margin-bottom:6px">
-      <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
-      <tbody>
-        <tr><td>Anchor shareholder</td><td class="num">11%</td><td><b>Solidium</b> (Finnish State holding co), largest holder and nomination-board chair — a stable, long-term anchor, but well short of control.</td></tr>
-        <tr><td>Free float</td><td class="num">~89%</td><td>Widely held — Oras Invest 3.4%, Vanguard 3.3%, institutions ~45%, public ~35%. Unlike a state-controlled name, this trades on sentiment and flows; liquid and momentum-sensitive.</td></tr>
-        <tr><td>Insider alignment</td><td class="num">~€297m</td><td>Meaningful insider holdings — interests aligned with shareholders.</td></tr>
-        <tr><td>Sell-side view</td><td class="num">€34 PT</td><td>Consensus target ~+25% above price; mostly Buy/Accumulate, ~0 sells. Analysts see the de-rating as overdone.</td></tr>
-        <tr><td>Price momentum</td><td class="num">▼ Weak</td><td>Down ~13% from the year-end high on volume/guidance worry; short-term technicals negative. The market is voting against the sell-side for now.</td></tr>
-        <tr><td>52-week range</td><td class="num">€21–35</td><td>A wide band post-split — a reminder this is a cyclical that swings hard on the demand narrative.</td></tr>
-      </tbody>
-    </table>
-    <div class="note c"><b>Cut, not faked:</b> short interest, insider transaction flow, options skew and borrow cost aren't reliably fetchable for a Nasdaq Helsinki name, so those rows are removed rather than guessed.
-      <div class="src">Sources: Simply Wall St ownership breakdown; Investing.com (consensus target, momentum); Solidium.</div>
-    </div>
-  </section>
+  function run(){
+    if(!$('bi-scagr')) return;
+    const sales0=+D.sales0, mgn0=+D.mgn0, mlt0=+D.mlt0, nc0=+D.nc0, sh0=+D.shares0;
+    const scagr=($('bi-scagr').value)/100;
+    const mgnT=+$('bi-mgn').value;
+    const mltT=+$('bi-mlt').value;
+    const disc=($('bi-disc').value)/100;
+    const fcfOn=($('bi-fcf').value)/100;
+    const bb=($('bi-bb').value)/100;
+    const tax=D.tax/100;
+    const H=+D.horizon|0;
+    const spot=+D.spot, cur=D.cur;
+    // Dividend payout fixed from server default (buyback is the free slider)
+    const pay = D.payout/100;
 
-  <section class="mod" id="mG">
-    <div class="mod-head"><div class="mod-no">G</div>
-      <div class="ht"><h2>Peer multiples</h2><div class="hq">Konecranes computed; comparables sourced.</div></div>
-      <span class="tagchip a">Computed + sourced</span>
-    </div>
-    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">Trades at a clear <b>discount to quality peers</b> (P/E ~16× vs Atlas Copco ~33×) — re-rating optionality, and the tornado says the multiple is the #1 value lever. The discount is partly justified by Port Solutions cyclicality.</span></div>
-    <p class="body" style="font-size:13px">Konecranes is <b>computed</b> at EV/EBITA ~10.8× (EV €6.31bn ÷ comparable EBITA €588m) and P/E ~16.3× (€27.30 ÷ €1.68). Peers are <b>sourced</b>. It sits below the quality compounders and near the machinery median — the opposite of an expensive stock.</p>
-    <div class="bars" id="peerbars"></div>
-    <div class="note t"><b>Read:</b> on EV/EBITDA Konecranes (~9–11×) is well below Atlas Copco (~17×), above the cyclical KION (~7×), and roughly at the machinery-industry median (~11×). The bull case (Module C) is precisely closing the gap to the quality end as margin durability proves out; the de-rating risk is slipping toward the cyclical end. Either way, the <i>multiple</i> — the market's quality verdict — is the swing, which is why the demand/volume signal that drives it matters so much.
-      <div class="src">Sources: Atlas Copco, KION multiples via stockanalysis.com / GuruFocus / S&amp;P; machinery-industry median (GuruFocus). Konecranes computed from sourced inputs.</div>
-    </div>
-  </section>
+    $('bv-scagr').textContent=(scagr*100).toFixed(1);
+    $('bv-mgn').textContent=mgnT.toFixed(1);
+    $('bv-mlt').textContent=mltT.toFixed(1);
+    $('bv-disc').textContent=(disc*100).toFixed(0);
+    $('bv-fcf').textContent=(fcfOn*100).toFixed(0);
+    $('bv-bb').textContent=(bb*100).toFixed(0);
 
-  <section class="mod" id="mH">
+    let sales=sales0, mgn=mgn0, mlt=mlt0, nc=nc0, sh=sh0;
+    let cumDiv=0, cumDivPv=0, cumFcf=0, cumBb=0;
+    const rows=[];
+    rows.push({y:0,sales,mgn,mlt,nc,sh,fv:fvps(sales,mgn,mlt,nc,sh)});
+    for(let y=1;y<=H;y++){
+      const te=smoothstep(y/H);
+      sales=sales0*Math.pow(1+scagr,y);
+      mgn=lerp(mgn0,mgnT,te);
+      mlt=lerp(mlt0,mltT,te);
+      const ebita=sales*mgn/100;
+      const fcf=ebita*(1-tax)*fcfOn;
+      cumFcf+=fcf;
+      const divT=fcf*pay;
+      const bbM=fcf*bb;
+      const retained=fcf-divT-bbM;
+      const fvPre=fvps(sales,mgn,mlt,nc+retained,sh);
+      const retired=fvPre>0?bbM/fvPre:0;
+      sh=Math.max(sh-retired, sh0*0.5);
+      nc=nc+retained;
+      const fv=fvps(sales,mgn,mlt,nc,sh);
+      cumDiv+=divT;
+      cumDivPv+=divT/Math.pow(1+disc,y);
+      cumBb+=bbM;
+      rows.push({y,sales,mgn,mlt,nc,sh,fv,ebita});
+    }
+    const term=rows[rows.length-1];
+    const mid=rows[Math.floor(H/2)];
+    const priceCagr=Math.pow(term.fv/spot,1/H)-1;
+    const tsrEnd=term.fv+(cumDiv/sh0);
+    const tsrCagr=Math.pow(tsrEnd/spot,1/H)-1;
+    const pvTerm=term.fv/Math.pow(1+disc,H);
+    const pvDiv=cumDivPv/sh0;
+    const pvTot=pvTerm+pvDiv;
+    const up=term.fv/spot-1;
+
+    $('bp-term').textContent=fmt(cur,term.fv,0);
+    $('bp-term-h').textContent=(up>=0?'+':'')+pct(up,0)+' vs spot '+fmt(cur,spot,2);
+    $('bp-cagr').textContent=pct(priceCagr,1);
+    $('bp-cagr-h').textContent='TSR ≈ '+pct(tsrCagr,1)+' incl. dividends';
+    $('bp-pv').textContent=fmt(cur,pvTot,0);
+    $('bp-pv-h').textContent='Terminal PV '+fmt(cur,pvTerm,0)+' + div PV '+fmt(cur,pvDiv,0);
+    $('bp-mid').textContent=fmt(cur,mid.fv,0);
+    $('bp-mid-h').textContent='Y'+mid.y+' on the same path';
+
+    // end-state strip
+    const es=$('bp-endstate');
+    if(es){
+      es.innerHTML=
+        '<div class="kgi pos"><div class="k">Y'+H+' EBITA</div><div class="v">'+fmt(cur,term.ebita|| (term.sales*term.mgn/100),0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Y'+H+' sales</div><div class="v">'+fmt(cur,term.sales,0)+'m</div></div>'+
+        '<div class="kgi"><div class="k">Shares retired</div><div class="v">'+(sh0-term.sh).toFixed(1)+'m</div></div>'+
+        '<div class="kgi pos"><div class="k">Cum. FCF ('+H+'y)</div><div class="v">'+fmt(cur,cumFcf,0)+'m</div></div>';
+    }
+
+    // table
+    const tb=$('bp-tbody');
+    if(tb){
+      tb.innerHTML=rows.map(r=>{
+        const lab=r.y===0?'Y0 · now':'Y'+r.y;
+        const curCls=r.y===H?' class="cur"':(r.y===0?' class="now"':'');
+        return '<tr'+curCls+'><td>'+lab+'</td>'+
+          '<td class="num">'+Math.round(r.sales).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.mgn.toFixed(1)+'%</td>'+
+          '<td class="num">'+r.mlt.toFixed(1)+'×</td>'+
+          '<td class="num">'+Math.round(r.nc).toLocaleString('en-US')+'</td>'+
+          '<td class="num">'+r.sh.toFixed(1)+'</td>'+
+          '<td class="num"><b>'+fmt(cur,r.fv,0)+'</b></td></tr>';
+      }).join('');
+    }
+
+    // chart
+    const wrap=$('bp-chart-wrap');
+    if(wrap){
+      const W=700,Hgt=200,pl=48,pr=16,pt=16,pb=36;
+      const fvs=rows.map(r=>r.fv);
+      let lo=Math.min(spot,...fvs)*0.92, hi=Math.max(...fvs)*1.06;
+      if(hi<=lo) hi=lo+1;
+      const X=i=>pl+(W-pl-pr)*(rows[i].y/H);
+      const Y=v=>pt+(Hgt-pt-pb)*(1-(v-lo)/(hi-lo));
+      let pts=rows.map((r,i)=>X(i).toFixed(1)+','+Y(r.fv).toFixed(1)).join(' ');
+      let dots=rows.map((r,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(r.fv).toFixed(1)+'" r="3.2" fill="var(--teal-deep)"/>').join('');
+      let labs='';
+      rows.forEach((r,i)=>{
+        if(r.y===0||r.y===Math.floor(H/2)||r.y===H){
+          labs+='<text x="'+X(i).toFixed(1)+'" y="'+(Y(r.fv)-8).toFixed(1)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--teal-deep)">'+fmt(cur,r.fv,0)+'</text>';
+        }
+      });
+      let xt='';
+      rows.forEach((r,i)=>{
+        if(r.y%Math.max(1,Math.floor(H/5))===0||r.y===H){
+          xt+='<text x="'+X(i).toFixed(1)+'" y="'+(Hgt-10)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" fill="var(--muted)">Y'+r.y+'</text>';
+        }
+      });
+      const ys=Y(spot);
+      wrap.innerHTML='<svg id="bull-chart" viewBox="0 0 '+W+' '+Hgt+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto" role="img">'
+        +'<line x1="'+pl+'" y1="'+ys.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+ys.toFixed(1)+'" stroke="var(--faint)" stroke-width="1.2" stroke-dasharray="4 3"/>'
+        +'<text x="'+(W-pr)+'" y="'+(ys-4).toFixed(1)+'" text-anchor="end" font-family="var(--mono)" font-size="9" fill="var(--faint)">spot '+fmt(cur,spot,0)+'</text>'
+        +'<polyline fill="none" stroke="var(--teal)" stroke-width="2.4" points="'+pts+'"/>'
+        +dots+labs+xt+'</svg>';
+    }
+  }
+  ['bi-scagr','bi-mgn','bi-mlt','bi-disc','bi-fcf','bi-bb'].forEach(id=>{
+    const el=$(id); if(el) el.addEventListener('input', run);
+  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+</script>
+
+
+<section class="mod" id="mH">
     <div class="mod-head"><div class="mod-no">H</div>
       <div class="ht"><h2>Kill-criteria &amp; decision journal</h2><div class="hq">Pre-committed exits — the discipline layer.</div></div>
       <span class="tagchip a">Your pre-commitments</span>
@@ -550,81 +1004,72 @@
   </section>
 
   
-  <section class="mod" id="mQ"><div class="mod-head"><div class="mod-no">Q</div><div class="ht"><h2>Fundamental quality &amp; valuation dashboard</h2><div class="hq">Profitability, cash, leverage, valuation, margins, growth and liquidity &mdash; from fetched annual financials (2022&ndash;2025).</div></div><span class="tagchip c">Fetched financials</span></div><p class="body">Every figure below is <b>fetched</b> from Yahoo&rsquo;s fundamentals-timeseries API (annual income statement, balance sheet, cash-flow) and, where a ratio, computed from those raw line items at build time &mdash; no assumptions except the explicitly-tagged PEG forward-growth input. A quality/valuation cross-check on the pipeline&rsquo;s own engine.</p><div class="mc-wrap" style="margin:6px 0 4px"><div class="mc-title">Share price vs earnings &mdash; does the tape track the fundamentals?</div><div class="mc-sub">Raw daily close (left) against trailing-twelve-month diluted EPS (right). Two scales, each normalised to fill the plot so the lines overlay.</div><div class="hist-leg"><span><span class="sw" style="background:var(--blue)"></span>Share price €&nbsp;&middot;&nbsp;left</span><span><span class="sw" style="background:var(--amber-deep)"></span>TTM diluted EPS €&nbsp;&middot;&nbsp;right</span></div><svg viewBox="0 0 720 300" style="width:100%;height:auto" role="img" aria-label="Share price versus trailing-twelve-month diluted EPS."><defs><clipPath id="peclip"><rect x="58" y="30" width="590" height="222"/></clipPath></defs>
-  <g stroke="var(--line)" stroke-width="1"><line x1="58" y1="252.0" x2="648" y2="252.0"/><line x1="58" y1="196.5" x2="648" y2="196.5"/><line x1="58" y1="141.0" x2="648" y2="141.0"/><line x1="58" y1="85.5" x2="648" y2="85.5"/><line x1="58" y1="30.0" x2="648" y2="30.0"/></g>
-  <line x1="58" y1="30" x2="58" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
-  <line x1="648" y1="30" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
-  <line x1="58" y1="252" x2="648" y2="252" stroke="var(--line-strong)" stroke-width="1.2"/>
-  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--blue-deep)"><text x="50" y="255.5" text-anchor="end">€0</text><text x="50" y="200.0" text-anchor="end">€10</text><text x="50" y="144.5" text-anchor="end">€20</text><text x="50" y="89.0" text-anchor="end">€30</text><text x="50" y="33.5" text-anchor="end">€40</text></g>
-  <g stroke="var(--amber-deep)" stroke-width="1"><line x1="648" y1="252.0" x2="653" y2="252.0"/><line x1="648" y1="207.6" x2="653" y2="207.6"/><line x1="648" y1="163.2" x2="653" y2="163.2"/><line x1="648" y1="118.8" x2="653" y2="118.8"/><line x1="648" y1="74.4" x2="653" y2="74.4"/><line x1="648" y1="30.0" x2="653" y2="30.0"/></g>
-  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--amber-deep)"><text x="658" y="255.5" text-anchor="start">0</text><text x="658" y="211.1" text-anchor="start">+1</text><text x="658" y="166.7" text-anchor="start">+2</text><text x="658" y="122.3" text-anchor="start">+3</text><text x="658" y="77.9" text-anchor="start">+4</text><text x="658" y="33.5" text-anchor="start">+5</text></g>
-  <g clip-path="url(#peclip)"><polyline points="58.9,197.1 62.2,193.4 64.0,193.6 66.8,196.1 69.5,195.0 72.3,196.9 75.1,196.0 76.9,196.0 79.7,193.7 82.5,193.8 85.2,192.4 88.0,191.1 89.9,192.3 92.6,197.0 95.4,195.8 98.2,196.4 100.9,194.0 104.6,194.1 107.4,190.9 109.2,190.5 112.0,189.6 115.2,184.2 118.0,180.9 120.8,187.3 124.0,185.2 126.8,186.5 128.6,186.8 131.4,185.4 134.2,183.4 136.9,184.6 140.2,185.1 142.9,184.5 144.8,186.0 147.6,184.7 150.3,185.3 153.1,188.1 155.9,190.9 157.7,193.5 160.5,193.6 163.3,195.3 166.0,196.3 168.8,194.2 170.6,192.2 173.4,193.4 176.2,194.7 179.0,194.9 181.7,195.2 183.6,193.8 186.3,195.6 189.1,191.8 191.9,194.0 194.7,196.1 196.5,197.6 199.3,193.7 202.0,192.9 204.8,188.8 207.6,187.3 209.4,186.8 212.2,184.8 215.4,183.3 218.2,182.6 221.0,179.6 224.7,178.1 227.9,179.4 230.7,179.7 233.4,179.5 235.3,180.1 238.0,177.9 240.8,178.3 243.6,168.3 246.4,168.6 248.2,163.1 251.0,162.4 253.7,163.5 256.5,163.4 259.3,161.0 261.1,160.0 263.9,159.1 266.7,159.9 270.4,160.0 273.1,161.0 275.9,162.1 278.7,162.8 280.5,161.3 283.8,159.8 287.0,153.6 289.8,151.3 292.5,153.6 295.3,152.1 298.1,154.7 299.9,155.9 302.7,150.7 305.4,152.5 308.7,154.0 311.5,152.0 314.2,151.3 316.1,149.0 318.8,150.3 321.6,151.6 324.4,133.1 327.1,145.0 329.0,138.9 331.8,139.7 334.5,139.2 337.3,137.4 340.1,134.2 341.9,145.3 344.7,146.5 347.5,135.9 350.2,131.8 353.0,127.3 354.8,126.1 357.6,130.6 360.4,130.9 363.2,130.2 365.9,135.4 367.8,134.4 370.5,129.1 373.3,130.3 376.1,136.4 378.9,134.1 380.7,133.5 383.5,128.8 386.7,129.9 389.5,135.9 393.6,137.5 398.7,135.4 401.5,138.1 403.3,137.4 406.1,142.9 408.9,143.9 411.6,143.8 414.4,131.9 416.2,123.4 419.0,120.7 421.8,120.9 424.6,129.1 427.3,125.0 429.2,126.1 431.9,120.1 434.7,119.3 437.5,142.1 440.3,158.0 442.1,156.9 444.9,153.9 448.6,144.3 451.8,141.8 454.6,139.5 457.3,130.8 460.1,126.8 462.9,126.1 466.1,123.7 468.0,123.1 470.7,123.4 473.5,130.7 476.7,129.9 479.5,128.9 482.3,126.8 484.1,125.1 486.9,124.4 489.7,121.5 492.4,121.4 495.2,118.2 497.0,113.7 499.8,115.6 502.6,116.2 505.3,117.7 508.1,116.0 510.0,116.8 512.7,110.1 515.5,117.9 518.3,119.1 521.0,124.4 522.9,119.3 525.7,124.1 528.4,126.5 531.2,120.3 534.0,94.0 535.8,93.6 538.6,99.3 541.4,96.0 544.1,101.8 546.9,99.0 548.7,88.7 551.5,86.3 554.3,86.1 557.1,85.0 559.8,81.2 564.9,79.0 568.1,73.1 570.9,70.2 573.7,72.8 576.4,64.8 579.2,63.3 581.1,83.0 583.8,82.9 586.6,70.3 589.4,65.3 592.1,71.6 594.0,79.9 596.8,80.5 599.5,83.4 602.3,88.3 605.1,95.0 608.8,93.7 611.5,82.4 613.4,75.4 616.1,83.2 618.9,107.4 622.1,95.9 624.9,104.5 628.1,103.7 630.9,95.2 632.8,94.4 635.5,97.8 638.3,106.7 641.1,98.0 644.3,101.4 647.1,104.6 648.0,103.5" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></g>
-  <polyline points="58.0,225.8 184.0,111.3 226.5,98.4 268.5,94.4 310.5,70.8 353.0,53.1 395.5,46.4 437.0,38.4 479.0,38.0 564.0,177.6 605.5,178.9" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/>
-  <g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.6"><circle cx="58.0" cy="225.8" r="3.6"/><circle cx="184.0" cy="111.3" r="3.6"/><circle cx="226.5" cy="98.4" r="3.6"/><circle cx="268.5" cy="94.4" r="3.6"/><circle cx="310.5" cy="70.8" r="3.6"/><circle cx="353.0" cy="53.1" r="3.6"/><circle cx="395.5" cy="46.4" r="3.6"/><circle cx="437.0" cy="38.4" r="3.6"/><circle cx="479.0" cy="38.0" r="3.6"/><circle cx="564.0" cy="177.6" r="3.6"/><circle cx="605.5" cy="178.9" r="3.6"/></g>
-  <g font-family="IBM Plex Mono,monospace" font-size="9.5" font-weight="600" fill="var(--amber-deep)"><text x="58.0" y="217.8" text-anchor="middle" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">+0.59</text><text x="605.5" y="170.9" text-anchor="middle" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6">+1.65</text></g>
-  <g font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)" text-anchor="middle"><text x="58.5" y="272">2023</text><text x="227.0" y="272">2024</text><text x="395.9" y="272">2025</text><text x="564.4" y="272">2026</text></g>
-  <text x="8" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--blue-deep)">Share price €</text>
-  <text x="658" y="20" text-anchor="start" font-family="IBM Plex Mono,monospace" font-size="10" font-weight="600" fill="var(--amber-deep)">TTM EPS €</text></svg><div class="reading" style="margin-top:12px"><b>How to read it.</b> Price and TTM diluted EPS on independent, normalised scales (2022&ndash;2026) &mdash; this reads <b>co-movement and lead/lag</b>, not levels. EPS moved +0.59&rarr;+1.65 € while price ended near €27. <span class='asm'>Scales normalised independently</span> &mdash; only shape and timing are meaningful.</div></div><div class="qgrid"><div class="qcard"><div class="qtt">① Return on equity (ROE)</div><div class="qsub">Net income &divide; equity &middot; quality signal</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0%</text><text x="39" y="121.0">10%</text><text x="39" y="73.0">20%</text><text x="39" y="25.0">30%</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="119.0" width="34.0" height="47.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="114.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">9.8</text><rect x="139.5" y="83.1" width="34.0" height="82.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="78.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">17.3</text><rect x="214.5" y="70.8" width="34.0" height="95.2" rx="2.5" fill="var(--teal)"/><text x="231.5" y="65.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">19.8</text><rect x="289.5" y="74.1" width="34.0" height="91.9" rx="2.5" fill="var(--teal)"/><text x="306.5" y="69.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">19.2</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>High &mdash; latest 19.2%.</b> Ranged 9.8%&ndash;19.8% over 2022&ndash;2025; fairly steady.</div></div><div class="qcard"><div class="qtt">② Free cash flow (€m)</div><div class="qsub">Bars = FCF &middot; <span style='color:var(--blue)'>line = operating CF</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">200</text><text x="39" y="97.0">400</text><text x="39" y="61.0">600</text><text x="39" y="25.0">800</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="162.0" width="34.0" height="4.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="157.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+22.0</text><rect x="139.5" y="75.1" width="34.0" height="90.9" rx="2.5" fill="var(--teal)"/><text x="156.5" y="70.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+504.9</text><rect x="214.5" y="90.0" width="34.0" height="76.0" rx="2.5" fill="var(--teal)"/><text x="231.5" y="85.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+422.4</text><rect x="289.5" y="72.4" width="34.0" height="93.6" rx="2.5" fill="var(--teal)"/><text x="306.5" y="67.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">+520.1</text><polyline points="81.5,154.0 156.5,65.7 231.5,77.5 306.5,63.5" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" opacity="0.9"/><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Positive throughout, latest +520.1m.</b> Real cash generation every year in the window.</div></div><div class="qcard"><div class="qtt">③ Leverage &mdash; debt / equity</div><div class="qsub">Total debt &divide; equity &middot; resilience</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="137.2" x2="344" y2="137.2"/><line x1="44" y1="108.4" x2="344" y2="108.4"/><line x1="44" y1="79.6" x2="344" y2="79.6"/><line x1="44" y1="50.8" x2="344" y2="50.8"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="140.2">0.2</text><text x="39" y="111.4">0.4</text><text x="39" y="82.6">0.6</text><text x="39" y="53.8">0.8</text><text x="39" y="25.0">1</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="94.0" x2="344" y2="94.0" stroke="var(--amber-deep)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="91.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--amber-deep)" text-anchor="start">0.5 = moderate</text><rect x="64.5" y="54.8" width="34.0" height="111.2" rx="2.5" fill="var(--amber)"/><text x="81.5" y="49.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.77</text><rect x="139.5" y="79.8" width="34.0" height="86.2" rx="2.5" fill="var(--amber)"/><text x="156.5" y="74.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.60</text><rect x="214.5" y="96.6" width="34.0" height="69.4" rx="2.5" fill="var(--amber)"/><text x="231.5" y="91.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.48</text><rect x="289.5" y="133.6" width="34.0" height="32.4" rx="2.5" fill="var(--amber)"/><text x="306.5" y="128.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--amber)">0.23</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--ink)" font-weight="600">2025</text></g></svg><div class="qread"><b>Low and falling, latest 0.23.</b> Moved 0.77&rarr;0.23 across the window.</div></div><div class="qcard"><div class="qtt">④ Interest coverage</div><div class="qsub">EBIT &divide; interest expense</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="133.0">5&#215;</text><text x="39" y="97.0">10&#215;</text><text x="39" y="61.0">15&#215;</text><text x="39" y="25.0">20&#215;</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="158.8" x2="344" y2="158.8" stroke="var(--coral)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="155.8" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral)" text-anchor="start">1&#215; = danger</text><rect x="64.5" y="107.0" width="34.0" height="59.0" rx="2.5" fill="var(--teal)"/><text x="81.5" y="102.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">8.2&#215;</text><rect x="139.5" y="102.2" width="34.0" height="63.8" rx="2.5" fill="var(--teal)"/><text x="156.5" y="97.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">8.9&#215;</text><rect x="214.5" y="94.1" width="34.0" height="71.9" rx="2.5" fill="var(--teal)"/><text x="231.5" y="89.1" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">10.0&#215;</text><rect x="289.5" y="56.4" width="34.0" height="109.6" rx="2.5" fill="var(--teal)"/><text x="306.5" y="51.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">15.2&#215;</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Comfortable &mdash; latest 15.2&#215;.</b> Low point 8.2&#215;; above the 1&#215; danger line throughout.</div></div><div class="qcard"><div class="qtt">⑤ Price / earnings + PEG</div><div class="qsub">Year-end price &divide; diluted EPS</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="133.0">5&#215;</text><text x="39" y="97.0">10&#215;</text><text x="39" y="61.0">15&#215;</text><text x="39" y="25.0">20&#215;</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="49.0" width="34.0" height="117.0" rx="2.5" fill="var(--blue)"/><text x="81.5" y="44.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">16&#215;</text><rect x="139.5" y="81.0" width="34.0" height="85.0" rx="2.5" fill="var(--blue)"/><text x="156.5" y="76.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">12&#215;</text><rect x="214.5" y="70.8" width="34.0" height="95.2" rx="2.5" fill="var(--blue)"/><text x="231.5" y="65.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">13&#215;</text><rect x="289.5" y="31.6" width="34.0" height="134.4" rx="2.5" fill="var(--blue)"/><text x="306.5" y="26.6" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">19&#215;</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--ink)" font-weight="600">2025</text></g><line x1="44" y1="49.0" x2="344" y2="49.0" stroke="var(--coral-deep)" stroke-width="1" stroke-dasharray="1 2" opacity="0.8"/><text x="47" y="60.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral-deep)" text-anchor="start">now (TTM) 16&#215;</text></svg><div class="qread"><b>Valuation lens.</b> Year-end P/E ranged 12&#215;&ndash;19&#215; (loss years n/m). Trailing P/E now <b>16&#215;</b>; <span class='asm'>PEG</span> at an assumed +20% forward EPS growth &#8776; <b>0.81</b>.</div></div><div class="qcard"><div class="qtt">⑥ Profit margins</div><div class="qsub"><span style='color:var(--teal)'>gross</span> &middot; <span style='color:var(--blue)'>operating</span> &middot; <span style='color:var(--amber-deep)'>net</span> &divide; revenue</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0%</text><text x="39" y="133.0">20%</text><text x="39" y="97.0">40%</text><text x="39" y="61.0">60%</text><text x="39" y="25.0">80%</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><polyline points="81.5,67.0 156.5,68.7 231.5,66.1 306.5,63.6" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--teal)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="67.0" r="3.2"/><circle cx="156.5" cy="68.7" r="3.2"/><circle cx="231.5" cy="66.1" r="3.2"/><circle cx="306.5" cy="63.6" r="3.2"/></g><polyline points="81.5,154.0 156.5,147.9 231.5,144.4 306.5,143.6" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--blue)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="154.0" r="3.2"/><circle cx="156.5" cy="147.9" r="3.2"/><circle cx="231.5" cy="144.4" r="3.2"/><circle cx="306.5" cy="143.6" r="3.2"/></g><polyline points="81.5,158.5 156.5,153.5 231.5,150.3 306.5,148.7" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="158.5" r="3.2"/><circle cx="156.5" cy="153.5" r="3.2"/><circle cx="231.5" cy="150.3" r="3.2"/><circle cx="306.5" cy="148.7" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Net margin latest 9.6%.</b> Expanding vs 4.2% at the start; healthy.</div></div><div class="qcard"><div class="qtt">⑦ EV/EBITDA + P/B</div><div class="qsub">Bars = EV/EBITDA &middot; <span style='color:var(--amber-deep)'>line = P/B (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="118.0" x2="344" y2="118.0"/><line x1="44" y1="70.0" x2="344" y2="70.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0&#215;</text><text x="39" y="121.0">5&#215;</text><text x="39" y="73.0">10&#215;</text><text x="39" y="25.0">15&#215;</text></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">0</text><text x="349" y="140.2">1</text><text x="349" y="111.4">2</text><text x="349" y="82.6">3</text><text x="349" y="53.8">4</text><text x="349" y="25.0">5</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="82.3" width="34.0" height="83.7" rx="2.5" fill="var(--blue)"/><text x="81.5" y="77.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">8.7&#215;</text><rect x="139.5" y="100.3" width="34.0" height="65.7" rx="2.5" fill="var(--blue)"/><text x="156.5" y="95.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">6.8&#215;</text><rect x="214.5" y="92.5" width="34.0" height="73.5" rx="2.5" fill="var(--blue)"/><text x="231.5" y="87.5" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">7.7&#215;</text><rect x="289.5" y="64.3" width="34.0" height="101.7" rx="2.5" fill="var(--blue)"/><text x="306.5" y="59.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--blue)">10.6&#215;</text><polyline points="81.5,120.0 156.5,107.3 231.5,90.6 306.5,62.9" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="120.0" r="3.2"/><circle cx="156.5" cy="107.3" r="3.2"/><circle cx="231.5" cy="90.6" r="3.2"/><circle cx="306.5" cy="62.9" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="123.0" text-anchor="start">1.6</text><text x="162.5" y="110.3" text-anchor="start">2.0</text><text x="237.5" y="93.6" text-anchor="start">2.6</text><text x="312.5" y="65.9" text-anchor="start">3.6</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Valuation, sector-aware.</b> EV/EBITDA 8.7&#215;&rarr;10.6&#215;, P/B latest 3.6&#215;.</div></div><div class="qcard"><div class="qtt">⑧ Revenue (€m) &amp; EPS</div><div class="qsub">Bars = revenue &middot; <span style='color:var(--amber-deep)'>line = diluted EPS (right)</span></div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="137.2" x2="344" y2="137.2"/><line x1="44" y1="108.4" x2="344" y2="108.4"/><line x1="44" y1="79.6" x2="344" y2="79.6"/><line x1="44" y1="50.8" x2="344" y2="50.8"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="140.2">1000</text><text x="39" y="111.4">2000</text><text x="39" y="82.6">3000</text><text x="39" y="53.8">4000</text><text x="39" y="25.0">5000</text></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--amber-deep)" text-anchor="start"><text x="349" y="169.0">+0</text><text x="349" y="133.0">+0.5</text><text x="349" y="97.0">+1</text><text x="349" y="61.0">+1.5</text><text x="349" y="25.0">+2</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><rect x="64.5" y="69.4" width="34.0" height="96.6" rx="2.5" fill="var(--teal)"/><text x="81.5" y="64.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">3355.9</text><rect x="139.5" y="51.9" width="34.0" height="114.1" rx="2.5" fill="var(--teal)"/><text x="156.5" y="46.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">3962.6</text><rect x="214.5" y="44.4" width="34.0" height="121.6" rx="2.5" fill="var(--teal)"/><text x="231.5" y="39.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">4222.2</text><rect x="289.5" y="46.0" width="34.0" height="120.0" rx="2.5" fill="var(--teal)"/><text x="306.5" y="41.0" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="var(--teal)">4165.0</text><polyline points="81.5,123.5 156.5,83.0 231.5,54.9 306.5,45.3" fill="none" stroke="var(--amber-deep)" stroke-width="2.2" stroke-linejoin="round"/><g fill="var(--amber-deep)" stroke="var(--surface)" stroke-width="1.5"><circle cx="81.5" cy="123.5" r="3.2"/><circle cx="156.5" cy="83.0" r="3.2"/><circle cx="231.5" cy="54.9" r="3.2"/><circle cx="306.5" cy="45.3" r="3.2"/></g><g font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)" paint-order="stroke" stroke="var(--surface-2)" stroke-width="2.6"><text x="87.5" y="126.5" text-anchor="start">+0.59</text><text x="162.5" y="86.0" text-anchor="start">+1.15</text><text x="237.5" y="57.9" text-anchor="start">+1.54</text><text x="312.5" y="48.3" text-anchor="start">+1.68</text></g><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Revenue growing (+7.5%/yr).</b> €3355.9m&rarr;€4165.0m; EPS +0.59&rarr;+1.68.</div></div><div class="qcard"><div class="qtt">⑨ Liquidity &mdash; current &amp; quick</div><div class="qsub"><span style='color:var(--teal)'>current</span> &middot; <span style='color:var(--amber)'>quick</span> ratio</div><svg viewBox="0 0 360 208" style="width:100%;height:auto" role="img"><g stroke="var(--line)" stroke-width="1"><line x1="44" y1="166.0" x2="344" y2="166.0"/><line x1="44" y1="130.0" x2="344" y2="130.0"/><line x1="44" y1="94.0" x2="344" y2="94.0"/><line x1="44" y1="58.0" x2="344" y2="58.0"/><line x1="44" y1="22.0" x2="344" y2="22.0"/></g><g font-family="IBM Plex Mono,monospace" font-size="9" fill="var(--faint)" text-anchor="end"><text x="39" y="169.0">0</text><text x="39" y="133.0">0.5</text><text x="39" y="97.0">1</text><text x="39" y="61.0">1.5</text><text x="39" y="25.0">2</text></g><line x1="44" y1="166" x2="344" y2="166.0" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="22" x2="44" y2="166" stroke="var(--line-strong)" stroke-width="1.1"/><line x1="44" y1="94.0" x2="344" y2="94.0" stroke="var(--coral)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="91.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--coral)" text-anchor="start">1.0 = min safe</text><line x1="44" y1="22.0" x2="344" y2="22.0" stroke="var(--teal)" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/><text x="47" y="19.0" font-family="IBM Plex Mono,monospace" font-size="8" fill="var(--teal)" text-anchor="start">2.0 = comfortable</text><rect x="68.5" y="50.8" width="12" height="115.2" rx="2" fill="var(--teal)"/><text x="75.5" y="46.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.60</text><rect x="82.5" y="96.9" width="12" height="69.1" rx="2" fill="var(--amber)"/><text x="88.5" y="92.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.96</text><rect x="143.5" y="66.2" width="12" height="99.8" rx="2" fill="var(--teal)"/><text x="150.5" y="62.2" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.39</text><rect x="157.5" y="102.8" width="12" height="63.2" rx="2" fill="var(--amber)"/><text x="163.5" y="98.8" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.88</text><rect x="218.5" y="67.7" width="12" height="98.3" rx="2" fill="var(--teal)"/><text x="225.5" y="63.7" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.37</text><rect x="232.5" y="100.3" width="12" height="65.7" rx="2" fill="var(--amber)"/><text x="238.5" y="96.3" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.91</text><rect x="293.5" y="61.9" width="12" height="104.1" rx="2" fill="var(--teal)"/><text x="300.5" y="57.9" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--teal-deep)">1.45</text><rect x="307.5" y="97.4" width="12" height="68.6" rx="2" fill="var(--amber)"/><text x="313.5" y="93.4" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" font-weight="600" fill="var(--amber-deep)">0.95</text><g font-family="IBM Plex Mono,monospace" font-size="9.5" text-anchor="middle"><text x="81.5" y="184" fill="var(--muted)" font-weight="500">2022</text><text x="156.5" y="184" fill="var(--muted)" font-weight="500">2023</text><text x="231.5" y="184" fill="var(--muted)" font-weight="500">2024</text><text x="306.5" y="184" fill="var(--muted)" font-weight="500">2025</text></g></svg><div class="qread"><b>Adequate &mdash; current 1.45&#215;, quick 0.95&#215;.</b> Watch the gap.</div></div></div><div class="src">Source: Yahoo Finance fundamentals-timeseries (KCR.HE, annual) + year-end prices from the Yahoo v8 chart cache. Ratios computed at build time; PEG uses a labelled forward-EPS-growth assumption. Cards without a reliable fetched input for this issuer are omitted.</div></section>
-
   <section class="mod" id="mI">
     <div class="mod-head"><div class="mod-no">I</div>
       <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
       <span class="tagchip c">Computed from live &amp; sourced data</span>
     </div>
-    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">The distribution, own-history and reverse-DCF all point to a favourable pay-off — a positive asymmetry the market has not fully priced. Live spot <b>€26.76</b> · MC median <b>€27.54</b> (P10 €21.51, P90 €34.31) · P(FV &gt; price) <b>56%</b>.</span></div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The pay-off distribution is broadly symmetric to price — no institutional edge without additional evidence. Live spot <b>€27.38</b> · MC median <b>€27.54</b> (P10 €21.51, P90 €34.31) · P(FV &gt; price) <b>51%</b>.</span></div>
 
-    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-09) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-19) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
 
     <div class="kg">
-      <div class="kgi"><div class="k">Live spot (KCR.HE)</div><div class="v">€26.76 <small>as of 2026-07-09</small></div></div>
-      <div class="kgi"><div class="k">52-week range</div><div class="v">€22.03–€34.57</div></div>
-      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">90%</div></div>
-      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+27.1% <small>PT €34.00</small></div></div>
+      <div class="kgi"><div class="k">Live spot (KCR.HE)</div><div class="v">€27.38 <small>as of 2026-07-19</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">€22.12–€34.57</div></div>
+      <div class="kgi neg"><div class="k">Price percentile · own 5y</div><div class="v">91%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+24.2% <small>PT €34.00</small></div></div>
     </div>
 
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">16.3× <small>EPS €1.68</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">15.0× <small>est EPS €1.83</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">13.6× <small>est EPS €2.01</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+10%</div></div>
+    </div>
     <div class="rev">
       <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
       <div class="rv">
-        <div class="n pos">10.39×</div>
-        <div class="l">is the value of <b>EV/EBITA multiple (at mode margin/sales/net-cash)</b> that reconciles the median MC fair value to today's <b>€26.76</b> price. That is <b>-5.6% below</b> the pipeline's base-case mode of <b>11.0×</b>.</div>
+        <div class="n pos">10.65×</div>
+        <div class="l">is the value of <b>EV/EBITA multiple (at mode margin/sales/net-cash)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>€27.38</b> price. That is <b>-3.2% below</b> the pipeline's base-case mode of <b>11.0×</b>.</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
     <div class="kelly">
-      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+22.2%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
-      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.65×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
-      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.28</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
-      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+3.7%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+8.5%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.20×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.15</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+1.3%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
     <div class="kelly">
-      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-19.6%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-26.5%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
-      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-25.0%</div><div class="d">Deep-tail loss threshold.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-30.7%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-21.4%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-28.1%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-26.7%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-32.2%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
-        <tr><td>Realised volatility 1y (ann.)</td><td class="num">39.5%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
-        <tr><td>Realised volatility 3y (ann.)</td><td class="num">34.2%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">39.9%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">34.3%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
         <tr><td>Max drawdown (5y)</td><td class="num">-49.5%</td><td>Peak-to-trough on adjusted close.</td></tr>
-        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-1.9% / -5.0% / -5.9% / +28.8%</td><td>Simple returns over trailing windows.</td></tr>
-        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">1.49</td><td>R² = 0.30. 252-day OLS.</td></tr>
-        <tr><td>Beta vs STOXX 600</td><td class="num">1.74</td><td>R² = 0.29. 252-day OLS.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-0.8% / -10.1% / -9.5% / +29.1%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">1.48</td><td>R² = 0.30. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">1.75</td><td>R² = 0.29. 252-day OLS.</td></tr>
         
       </tbody>
-    </table>
+    </table></div>
 
-    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs ATCO-A.ST</div><div class="bb"><div class="bi" style="left:50%;width:0.7%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-0.7%</div></div><div class="barsrow"><div class="bl">vs KGX.DE</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+45.2%</div></div></div>
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs ATCO-A.ST</div><div class="bb"><div class="bi" style="left:50%;width:3.7%;background:var(--teal)"></div></div><div class="bv">+3.7%</div></div><div class="barsrow"><div class="bl">vs KGX.DE</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;background:var(--teal)"></div></div><div class="bv">+47.4%</div></div></div>
 
-    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same distribution into a concrete driver value ("is a EV/EBITA multiple (at mode margin/sales/net-cash) of <b>10.39×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
-      <div class="src">Sources: Yahoo Finance v8 chart API (KCR.HE, ^OMXH25, ^STOXX) — fetched 2026-07-09. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a EV/EBITA multiple (at mode margin/sales/net-cash) of <b>10.65×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (KCR.HE, ^OMXH25, ^STOXX) — fetched 2026-07-19. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
     </div>
   </section>
 
@@ -634,27 +1079,27 @@
       <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
       <span class="tagchip a">Sourced + computed</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>45/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>44/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
 
     <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
 
     <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Comparable EBITA margin (%) through the cycle</div>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
-      <tbody><tr><td>2022</td><td class="num">10.50%</td><td>trailing self-help start</td></tr><tr><td>2023</td><td class="num">12.00%</td><td>programme mid-point</td></tr><tr><td>2024</td><td class="num">13.10%</td><td>reported (pipeline module A)</td></tr><tr class='cur'><td>2025</td><td class="num now">14.00%</td><td>reported record (pipeline module A)</td></tr><tr><td>trough risk</td><td class="num">11.00%</td><td>pipeline stated downside anchor</td></tr></tbody>
-    </table>
+      <tbody><tr><td>2022</td><td class="num">10.50%</td><td>trailing self-help start</td></tr><tr><td>2023</td><td class="num">12.00%</td><td>programme mid-point</td></tr><tr><td>2024</td><td class="num">13.10%</td><td>reported (pipeline module A)</td></tr><tr class='cur'><td>2025</td><td class="num now">13.80%</td><td>reported record — comparable EBITA €588m / €4.25bn sales (FY2025 release)</td></tr><tr><td>trough risk</td><td class="num">11.00%</td><td>pipeline stated downside anchor</td></tr></tbody>
+    </table></div>
     <div class="cbar" style="margin-top:14px">
       <div class="fl" style="left:0;right:0"></div>
       <div class="mk" style="left:100.0%"></div>
-      <div class="lb" style="left:100.0%">now · 2025 = 14.0%</div>
+      <div class="lb" style="left:100.0%">now · 2025 = 13.8% (record)</div>
     </div>
     <div style="height:24px"></div>
 
     <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
     <div class="kg">
       <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">18%</div></div>
-      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">16%</div></div>
-      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">78%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">15%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">80%</div></div>
       <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">positive</div></div>
     </div>
 
@@ -662,71 +1107,74 @@
     <div class="rev">
       <div class="rt">◆ Owner-earnings spread</div>
       <div class="rv">
-        <div class="n pos">+549 bp</div>
-        <div class="l"><b>Owner-earnings yield 7.86%</b> (€500m ÷ €6359m market cap) minus <b>real 10y ≈ 2.37%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
+        <div class="n pos">+514 bp</div>
+        <div class="l"><b>Owner-earnings yield 7.68%</b> (€500m ÷ €6507m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: operating CF ~€0.5bn (pipeline module D). ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
     <div class="fac">
-      <div class="fi"><div class="fk">Value</div><div class="fv">10</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi"><div class="fk">Value</div><div class="fv">9</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
       <div class="fi hot"><div class="fk">Quality</div><div class="fv">85</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
-      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">72</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
-      <div class="fi"><div class="fk">Low-vol</div><div class="fv">12</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
-      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">45</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+      <div class="fi hot"><div class="fk">Momentum</div><div class="fv">71</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">11</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">44</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
     </div>
 
-    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+549 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
-      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-09.</div>
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+514 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-19.</div>
     </div>
   </section>
 
   <section class="mod" id="mSum">
     <div class="mod-head"><div class="mod-no" style="color:var(--amber-deep)">∑</div>
-      <div class="ht"><h2>Scorecard — the ten reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base case.</div></div>
+      <div class="ht"><h2>Scorecard — the thirteen reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base case.</div></div>
     </div>
-    <table class="scoretab">
+    <div class="tbl-scroll"><table class="scoretab">
       <thead><tr><th>Module</th><th>Verdict</th><th>What drives it</th></tr></thead>
       <tbody>
+        <tr><td>T · Thesis &amp; macro</td><td><span class="vchip mixed">MIXED</span></td><td>Quality industrial + port automation franchise; secular stack is real but not pure-play AI — cycle still sets the tape</td></tr>
+        <tr><td>Q · Quality dashboard</td><td><span class="vchip mixed">MIXED</span></td><td>Fetched multi-year profitability, cash, leverage and valuation cross-check on the franchise</td></tr>
+        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Net cash, 18× coverage, ROCE ~21%, high quality</td></tr>
+        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Disciplined &amp; high-return, but cash sits idle relative to generation</td></tr>
+        <tr><td>G · Peers</td><td><span class="vchip bull">BULL</span></td><td>Discount to quality peers — re-rating optionality</td></tr>
+        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Bullish sell-side &amp; alignment vs weak momentum</td></tr>
         <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Median ~€28 vs €27.30; roughly fair, wide band</td></tr>
         <tr><td>B · Driver analysis</td><td><span class="vchip mixed">MIXED</span></td><td>Whole thesis rides one swing factor — volume conversion</td></tr>
         <tr><td>C · Scenarios + Bayes</td><td><span class="vchip mixed">MIXED</span></td><td>Weighted ~€28, mild positive skew; bull needs re-rating</td></tr>
-        <tr><td>D · Forensics</td><td><span class="vchip bull">BULL</span></td><td>Net cash, 18× coverage, ROCE ~21%, high quality</td></tr>
-        <tr><td>E · Capital record</td><td><span class="vchip mixed">MIXED</span></td><td>Disciplined &amp; high-return, but cash sits idle post-Cargotec</td></tr>
-        <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Bullish sell-side &amp; alignment vs weak momentum</td></tr>
-        <tr><td>G · Peers</td><td><span class="vchip bull">BULL</span></td><td>Discount to quality peers — re-rating optionality</td></tr>
+        <tr><td>U · 10y upside</td><td><span class="vchip bull">BULL</span></td><td>Perfect-execution Y10 FV ≈ €82 (11.6% price CAGR; PV ≈ €41)</td></tr>
         <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; triggers center on the order cycle</td></tr>
-        <tr><td>I · Asymmetry</td><td><span class="vchip bull">BULL</span></td><td>Kelly f* +22%, asymmetry 1.65×, market implies -5.6% vs pipeline mode</td></tr>
-        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 45/100 · OE-yield spread +549 bp real</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip mixed">MIXED</span></td><td>Kelly f* +9%, asymmetry 1.20×, market implies -3.2% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 44/100 · OE-yield spread +514 bp real</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <div class="tally">
-      <div class="tbar"><div class="tp bull" style="width:30.0%"></div><div class="tp mixed" style="width:70.0%"></div><div class="tp bear" style="width:0.0%"></div></div>
-      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">7 Mixed</span><span class="tr">0 Bear</span></div>
+      <div class="tbar"><div class="tp bull" style="width:23.1%"></div><div class="tp mixed" style="width:76.9%"></div><div class="tp bear" style="width:0.0%"></div></div>
+      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">10 Mixed</span><span class="tr">0 Bear</span></div>
     </div>
     <div class="overall">
       <span class="ov-chip">NET: MIXED — positive tilt</span>
-      <div class="ov-text"><b>A wonderful business at a fair-to-slightly-cheap price.</b> Two clear <b>bulls</b> — exceptional financial quality (D: net cash, ROCE ~21%, 18× coverage) and a valuation discount to quality peers (G) — with <b>no bears</b>; the rest is mixed because central fair value (~€27–28) sits right around the €27.30 price and everything routes through one variable. The contrast with Neste is sharp: there, a single commodity spread set the whole outcome and the stock looked slightly rich; here the franchise is higher-quality and cheaper relative to peers, but the upside is a <b>re-rating gated on volume</b> — converting the record €3.2bn backlog into the sales growth that sustains the record margin. You can own the quality at a fair price today; just know you're underwriting the order cycle, not the margin headline. Not a screaming buy, not expensive — quality-at-fair-price, with the demand signal currently green (book-to-bill 1.2) and the price not yet reflecting it.</div>
+      <div class="ov-text">A wonderful business at a fair-to-slightly-cheap price — read <b>thesis &amp; fundamentals first</b> (T · Q · D · E · G · F), stress-test with the engine (A–C), then size the <b>perfect-execution ceiling</b> in Module U (~€82 in Y10 under defaults, ~12% CAGR). Two clear near-term <b>bulls</b> on quality (D) and peer discount (G), plus the structural upside bull (U); <b>no bears</b>. Central fair value (~€27–28) sits around the €27.30 price and near-term tape still routes through volume — the macro stack is a multi-year backdrop, not a substitute for the order book.</div>
     </div>
   </section>
 
     <section class="audit" id="mAudit">
       <h3>Data sources &amp; audit trail</h3>
-      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-09 16:31</b>.</div>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-19 19:03</b>.</div>
 
-      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-09)</h4>
-      <table>
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-19)</h4>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
         <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/KCR.HE?range=5y&interval=1d</td><td>Konecranes 5-year daily OHLC + regularMarketPrice</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^OMXH25?range=5y&interval=1d</td><td>OMX Helsinki 25 index — benchmark for local beta</td><td class="mods">I: beta vs OMXH25</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^STOXX?range=5y&interval=1d</td><td>STOXX Europe 600 — pan-European benchmark</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/^TNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ATCO-A.ST?range=2y&interval=1d</td><td>Atlas Copco (quality peer) — 12-month relative performance</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/KGX.DE?range=2y&interval=1d</td><td>KION Group (cyclical peer)</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
-      </table>
+      </table></div>
       <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
 
       <h4>◆ Primary-source citations (module-level facts)</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
-        <tbody><tr><td>Konecranes FY2025 financial statement release</td><td>Sales €4.25bn, comparable EBITA €588m (13.8%), net cash €185m, ROCE 20.7% (comparable 22.1%), operating CF ~€0.5bn, net profit €399.8m, dividend €0.75/sh post-split (+36%)</td><td class="mods">A engine, D forensics, E capital record, G peers</td></tr><tr><td>Konecranes Q1 2026 interim report</td><td>Record 11.6% Q1 margin, order book at 3-yr high, book-to-bill 1.2, net sales −4.8%, net cash €185m</td><td class="mods">B driver analysis, H kill-criteria</td></tr><tr><td>Solidium (Finnish State holding co) holdings page</td><td>11.0% stake in Konecranes; largest holder; nomination-board chair</td><td class="mods">F positioning</td></tr><tr><td>Simply Wall St / S&amp;P Global Market Intelligence (Konecranes profile)</td><td>Balance-sheet items (total assets €4.8bn, equity €1.97bn, current assets €2.7bn, current liabilities €2.0bn); interest coverage 18×</td><td class="mods">D forensics</td></tr><tr><td>Investing.com — Konecranes news &amp; consensus</td><td>Consensus PT €34 (~+25% at build); reaction coverage for Feb'26 and Apr'26 releases</td><td class="mods">B driver analysis, F positioning</td></tr><tr><td>GuruFocus — machinery-industry EV/EBITDA median</td><td>Median ~11× used as multiple-band anchor; Atlas Copco ~17×, KION ~7×</td><td class="mods">A engine, G peers</td></tr></tbody>
-      </table>
+        <tbody><tr><td>Konecranes FY2025 financial statement release</td><td>Sales €4.25bn, comparable EBITA €588m (13.8%), net cash €185m, ROCE 20.7% (comparable 22.1%), operating CF ~€0.5bn, net profit €399.8m, dividend €0.75/sh post-split (+36%)</td><td class="mods">T thesis, Q quality, A engine, D forensics, E capital record, G peers</td></tr><tr><td>Konecranes Q1 2026 interim report</td><td>Record 11.6% Q1 margin, order book at 3-yr high, book-to-bill 1.2, net sales −4.8%, net cash €185m</td><td class="mods">T thesis, B driver analysis, H kill-criteria</td></tr><tr><td>Solidium (Finnish State holding co) holdings page</td><td>11.0% stake in Konecranes; largest holder; nomination-board chair; service + equipment profitability as stated value drivers</td><td class="mods">T thesis, F positioning</td></tr><tr><td>Simply Wall St / S&amp;P Global Market Intelligence (Konecranes profile)</td><td>Balance-sheet items (total assets €4.8bn, equity €1.97bn, current assets €2.7bn, current liabilities €2.0bn); interest coverage 18×</td><td class="mods">D forensics</td></tr><tr><td>Investing.com — Konecranes news &amp; consensus</td><td>Consensus PT €34 (~+25% at build); reaction coverage for Feb'26 and Apr'26 releases</td><td class="mods">B driver analysis, F positioning</td></tr><tr><td>GuruFocus — machinery-industry EV/EBITDA median</td><td>Median ~11× used as multiple-band anchor; Atlas Copco ~17×, KION ~7×</td><td class="mods">A engine, G peers</td></tr></tbody>
+      </table></div>
 
       <h4>◆ Data providers &amp; the audit rule</h4>
       
@@ -740,10 +1188,10 @@
 
 
       <h4>◆ Every metric computed here — formulas</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
-        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
-      </table>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
 
       <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
       <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
@@ -766,7 +1214,7 @@
 </div>
 
 <script>
-  const PRICE=27.30, SHARES=237.64, N=20000;
+  const PRICE=27.38, SHARES=237.64, N=20000;
   const MARG={lo:10.5,hi:16.0}, MULT={lo:7.5,hi:14.5}, SALES={lo:3950,md:4250,hi:4650}, NC={lo:50,md:185,hi:400};
   const RHO={mgn:0.75,sales:0.70,mlt:0.65,nc:0.20};
 
@@ -813,7 +1261,7 @@
     s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median €'+median.toFixed(0)+'</text>';
     const xp=xOf(PRICE);
     s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
-    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €27.30</text>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €27.38</text>';
     document.getElementById('hist').innerHTML=s;
   }
 
@@ -845,7 +1293,7 @@
       s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.max(r.lo,r.hi).toFixed(0)+'</text>';});
     const yb=top+rows.length*rowH;
     s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
-    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €27.30</text>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €27.38</text>';
     document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
     document.getElementById('tornado').innerHTML=s;
   }
@@ -932,9 +1380,54 @@
   update(); computeScenarioAnchors();
 
   const links=[].slice.call(document.querySelectorAll('.stepper a'));
-  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
-  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
-  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+  const map={};links.forEach(a=>{const h=a.getAttribute('href');if(h&&h.charAt(0)==='#')map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  /* Horizontal-only: never call scrollIntoView (it scrolls the page and fights sticky nav). */
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}
+      catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    /* Prefer the section whose top is nearest the activation band under the sticky nav. */
+    let best=null,bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting)visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  /* Keep the active chip centered when the user taps a stepper link. */
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
 </script>
 </body>
 </html>

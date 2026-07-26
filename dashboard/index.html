@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock Analysis — Universe Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1240px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,36px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,16px);margin-top:8px;max-width:720px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+  @media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .kpi .l{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kpi .v{font-family:var(--disp);font-weight:700;font-size:24px;margin-top:2px;color:var(--ink)}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(14px,2.5vw,22px);margin-bottom:16px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+  .toolbar label{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .toolbar input[type=search],.toolbar select{
+    font-family:var(--body);font-size:13px;padding:8px 11px;border:1px solid var(--line-strong);
+    border-radius:9px;background:var(--surface-2);color:var(--ink);min-width:140px
+  }
+  .toolbar input[type=search]{min-width:200px;flex:1}
+  .hint{font-size:12px;color:var(--muted);margin-left:auto}
+  .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+     color:var(--faint);padding:8px 9px;border-bottom:1px solid var(--line-strong);background:var(--surface-2);cursor:pointer;user-select:none;white-space:nowrap}
+  th:hover{color:var(--ink)}
+  th .arrow{opacity:.35;margin-left:3px}
+  th.sorted .arrow{opacity:1;color:var(--teal-deep)}
+  td{padding:10px 9px;border-bottom:1px dashed var(--line);vertical-align:middle}
+  td.num{text-align:right;font-family:var(--mono);font-weight:500;white-space:nowrap}
+  td.name .tkr{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:2px}
+  a.rlink{color:var(--blue-deep);font-weight:600;text-decoration:none}
+  a.rlink:hover{text-decoration:underline}
+  .missing{color:var(--coral-deep);font-weight:600}
+  .err{color:var(--amber-deep);cursor:help}
+  .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .vchip.bull{background:var(--teal)} .vchip.mixed{background:var(--amber-deep)} .vchip.bear{background:var(--coral)}
+  .btn{font-family:var(--mono);font-size:11px;font-weight:600;padding:6px 11px;border-radius:8px;border:1px solid var(--line-strong);
+        background:var(--surface-2);color:var(--ink);text-decoration:none;display:inline-block}
+  .btn:hover{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .mono{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  tr.hidden{display:none}
+  footer{margin-top:18px;font-size:12px;color:var(--faint);line-height:1.55}
+  footer code{font-family:var(--mono);font-size:11px;background:var(--surface);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+  .note{font-size:12.5px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Central analysis dashboard · strict-data toolkit · as of 2026-07-20 11:06 · <a href="screener.html" style="color:inherit">Nordic universe screener →</a></div>
+  <h1>Universe
+    <span class="sub">Navigate every registered stock report, screen on live metrics (Kelly, CVaR, composite, OE spread), and jump into the full pipeline HTML. Rebuild with <b>python refresh_all.py</b>.</span>
+  </h1>
+
+  <div class="kpis">
+    <div class="kpi"><div class="l">Names</div><div class="v">14</div></div>
+    <div class="kpi"><div class="l">Reports on disk</div><div class="v">14</div></div>
+    <div class="kpi"><div class="l">Module-I bull</div><div class="v" style="color:var(--teal-deep)">4</div></div>
+    <div class="kpi"><div class="l">Module-I bear</div><div class="v" style="color:var(--coral-deep)">6</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Filter name or ticker…" autocomplete="off">
+      <div>
+        <label for="vf">Verdict</label>
+        <select id="vf">
+          <option value="">All</option>
+          <option value="BULL">Bull</option>
+          <option value="MIXED">Mixed</option>
+          <option value="BEAR">Bear</option>
+        </select>
+      </div>
+      <div>
+        <label for="kf">Kelly</label>
+        <select id="kf">
+          <option value="">Any</option>
+          <option value="pos">Kelly &gt; 0</option>
+          <option value="neg">Kelly ≤ 0</option>
+        </select>
+      </div>
+      <span class="hint">Click column headers to sort · metrics from last export</span>
+    </div>
+    <div class="tbl-scroll">
+      <table id="utab">
+        <thead>
+          <tr>
+            <th data-k="name">Name <span class="arrow">↕</span></th>
+            <th data-k="spot" data-num>Spot <span class="arrow">↕</span></th>
+            <th data-k="mc_median" data-num>MC med <span class="arrow">↕</span></th>
+            <th data-k="kelly" data-num>Kelly <span class="arrow">↕</span></th>
+            <th data-k="asymmetry" data-num>Asym <span class="arrow">↕</span></th>
+            <th data-k="p_up" data-num>P(up) <span class="arrow">↕</span></th>
+            <th data-k="cvar10" data-num>CVaR10 <span class="arrow">↕</span></th>
+            <th data-k="composite" data-num>Comp <span class="arrow">↕</span></th>
+            <th data-k="oe_spread_bp" data-num>OE spr <span class="arrow">↕</span></th>
+            <th data-k="bull_y10_fv" data-num>Y10 bull <span class="arrow">↕</span></th>
+            <th data-k="verdict">I-verdict <span class="arrow">↕</span></th>
+            <th>Tally B/M/B</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          
+        <tr data-name="spacex" data-ticker="SPCX"
+            data-spot="123.99" data-mc_median="149.97"
+            data-kelly="0.6512" data-asymmetry="7.243"
+            data-p_up="0.7555" data-cvar10="-0.2645"
+            data-composite="0.6021" data-oe_spread_bp="-284.1"
+            data-bull_y10_fv="" data-verdict="BULL">
+          <td class="name"><a class="rlink" href="../stocks/spacex-analytics-pipeline.html">spacex</a><div class="tkr">SPCX</div></td>
+          <td class="num">$123.99</td>
+          <td class="num">$149.97</td>
+          <td class="num">+65.1%</td>
+          <td class="num">7.24×</td>
+          <td class="num">75.5%</td>
+          <td class="num">-26.5%</td>
+          <td class="num">60.2%</td>
+          <td class="num">-284 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bull">BULL</span></td>
+          <td class="num mono">1/11/2</td>
+          <td class="act"><a class="btn" href="../stocks/spacex-analytics-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="terveystalo" data-ticker="TTALO.HE"
+            data-spot="7.26" data-mc_median="8.28"
+            data-kelly="0.6304" data-asymmetry="6.136"
+            data-p_up="0.7531" data-cvar10="-0.1944"
+            data-composite="0.5057" data-oe_spread_bp="1660.0"
+            data-bull_y10_fv="" data-verdict="BULL">
+          <td class="name"><a class="rlink" href="../stocks/terveystalo-pipeline.html">terveystalo</a><div class="tkr">TTALO.HE</div></td>
+          <td class="num">€7.26</td>
+          <td class="num">€8.28</td>
+          <td class="num">+63.0%</td>
+          <td class="num">6.14×</td>
+          <td class="num">75.3%</td>
+          <td class="num">-19.4%</td>
+          <td class="num">50.6%</td>
+          <td class="num">+1660 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bull">BULL</span></td>
+          <td class="num mono">3/6/1</td>
+          <td class="act"><a class="btn" href="../stocks/terveystalo-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="mandatum" data-ticker="MANTA.HE"
+            data-spot="5.55" data-mc_median="5.79"
+            data-kelly="0.3454" data-asymmetry="2.282"
+            data-p_up="0.6148" data-cvar10="-0.1985"
+            data-composite="0.4896" data-oe_spread_bp="824.1"
+            data-bull_y10_fv="" data-verdict="BULL">
+          <td class="name"><a class="rlink" href="../stocks/mandatum-pipeline.html">mandatum</a><div class="tkr">MANTA.HE</div></td>
+          <td class="num">€5.55</td>
+          <td class="num">€5.79</td>
+          <td class="num">+34.5%</td>
+          <td class="num">2.28×</td>
+          <td class="num">61.5%</td>
+          <td class="num">-19.9%</td>
+          <td class="num">49.0%</td>
+          <td class="num">+824 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bull">BULL</span></td>
+          <td class="num mono">2/7/1</td>
+          <td class="act"><a class="btn" href="../stocks/mandatum-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="kesko" data-ticker="KESKOB.HE"
+            data-spot="19.86" data-mc_median="20.16"
+            data-kelly="0.1969" data-asymmetry="1.553"
+            data-p_up="0.5533" data-cvar10="-0.1725"
+            data-composite="0.482" data-oe_spread_bp="222.8"
+            data-bull_y10_fv="" data-verdict="BULL">
+          <td class="name"><a class="rlink" href="../stocks/kesko-pipeline.html">kesko</a><div class="tkr">KESKOB.HE</div></td>
+          <td class="num">€19.86</td>
+          <td class="num">€20.16</td>
+          <td class="num">+19.7%</td>
+          <td class="num">1.55×</td>
+          <td class="num">55.3%</td>
+          <td class="num">-17.2%</td>
+          <td class="num">48.2%</td>
+          <td class="num">+223 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bull">BULL</span></td>
+          <td class="num mono">2/8/0</td>
+          <td class="act"><a class="btn" href="../stocks/kesko-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="konecranes" data-ticker="KCR.HE"
+            data-spot="27.26" data-mc_median="27.54"
+            data-kelly="0.1128" data-asymmetry="1.276"
+            data-p_up="0.5216" data-cvar10="-0.278"
+            data-composite="0.4457" data-oe_spread_bp="517.7"
+            data-bull_y10_fv="81.76" data-verdict="MIXED">
+          <td class="name"><a class="rlink" href="../stocks/konecranes-pipeline.html">konecranes</a><div class="tkr">KCR.HE</div></td>
+          <td class="num">€27.26</td>
+          <td class="num">€27.54</td>
+          <td class="num">+11.3%</td>
+          <td class="num">1.28×</td>
+          <td class="num">52.2%</td>
+          <td class="num">-27.8%</td>
+          <td class="num">44.6%</td>
+          <td class="num">+518 bp</td>
+          <td class="num">€81.76</td>
+          <td><span class="vchip mixed">MIXED</span></td>
+          <td class="num mono">3/10/0</td>
+          <td class="act"><a class="btn" href="../stocks/konecranes-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="tesla" data-ticker="TSLA"
+            data-spot="380.84" data-mc_median="378.42"
+            data-kelly="0.0563" data-asymmetry="1.129"
+            data-p_up="0.4924" data-cvar10="-0.4852"
+            data-composite="0.3556" data-oe_spread_bp="-207.7"
+            data-bull_y10_fv="" data-verdict="MIXED">
+          <td class="name"><a class="rlink" href="../stocks/tesla-pipeline.html">tesla</a><div class="tkr">TSLA</div></td>
+          <td class="num">$380.84</td>
+          <td class="num">$378.42</td>
+          <td class="num">+5.6%</td>
+          <td class="num">1.13×</td>
+          <td class="num">49.2%</td>
+          <td class="num">-48.5%</td>
+          <td class="num">35.6%</td>
+          <td class="num">-208 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip mixed">MIXED</span></td>
+          <td class="num mono">0/11/3</td>
+          <td class="act"><a class="btn" href="../stocks/tesla-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="micron" data-ticker="MU"
+            data-spot="848.95" data-mc_median="826.63"
+            data-kelly="0.0002" data-asymmetry="1.0"
+            data-p_up="0.4625" data-cvar10="-0.4267"
+            data-composite="0.4324" data-oe_spread_bp="-174.4"
+            data-bull_y10_fv="1816.25" data-verdict="MIXED">
+          <td class="name"><a class="rlink" href="../stocks/micron-pipeline.html">micron</a><div class="tkr">MU</div></td>
+          <td class="num">$848.95</td>
+          <td class="num">$826.63</td>
+          <td class="num">+0.0%</td>
+          <td class="num">1.00×</td>
+          <td class="num">46.2%</td>
+          <td class="num">-42.7%</td>
+          <td class="num">43.2%</td>
+          <td class="num">-174 bp</td>
+          <td class="num">$1,816</td>
+          <td><span class="vchip mixed">MIXED</span></td>
+          <td class="num mono">3/10/0</td>
+          <td class="act"><a class="btn" href="../stocks/micron-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="orion" data-ticker="ORNBV.HE"
+            data-spot="74.5" data-mc_median="72.55"
+            data-kelly="-0.2658" data-asymmetry="0.604"
+            data-p_up="0.4052" data-cvar10="-0.1915"
+            data-composite="0.3965" data-oe_spread_bp="-45.9"
+            data-bull_y10_fv="" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/orion-pipeline.html">orion</a><div class="tkr">ORNBV.HE</div></td>
+          <td class="num">€74.50</td>
+          <td class="num">€72.55</td>
+          <td class="num">-26.6%</td>
+          <td class="num">0.60×</td>
+          <td class="num">40.5%</td>
+          <td class="num">-19.1%</td>
+          <td class="num">39.6%</td>
+          <td class="num">-46 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">3/5/4</td>
+          <td class="act"><a class="btn" href="../stocks/orion-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="sampo" data-ticker="SAMPO.HE"
+            data-spot="9.69" data-mc_median="9.06"
+            data-kelly="-0.5992" data-asymmetry="0.35"
+            data-p_up="0.3225" data-cvar10="-0.2815"
+            data-composite="0.5112" data-oe_spread_bp="291.0"
+            data-bull_y10_fv="" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/sampo-pipeline.html">sampo</a><div class="tkr">SAMPO.HE</div></td>
+          <td class="num">€9.69</td>
+          <td class="num">€9.06</td>
+          <td class="num">-59.9%</td>
+          <td class="num">0.35×</td>
+          <td class="num">32.2%</td>
+          <td class="num">-28.1%</td>
+          <td class="num">51.1%</td>
+          <td class="num">+291 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">2/7/1</td>
+          <td class="act"><a class="btn" href="../stocks/sampo-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="inission" data-ticker="INISS-B.ST"
+            data-spot="68.4" data-mc_median="58.55"
+            data-kelly="-0.6885" data-asymmetry="0.313"
+            data-p_up="0.3136" data-cvar10="-0.5922"
+            data-composite="0.4474" data-oe_spread_bp="716.3"
+            data-bull_y10_fv="320.64" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/inission-pipeline.html">inission</a><div class="tkr">INISS-B.ST</div></td>
+          <td class="num">kr68.40</td>
+          <td class="num">kr58.55</td>
+          <td class="num">-68.8%</td>
+          <td class="num">0.31×</td>
+          <td class="num">31.4%</td>
+          <td class="num">-59.2%</td>
+          <td class="num">44.7%</td>
+          <td class="num">+716 bp</td>
+          <td class="num">kr320.64</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">4/6/1</td>
+          <td class="act"><a class="btn" href="../stocks/inission-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="te" data-ticker="TEL"
+            data-spot="203.31" data-mc_median="182.98"
+            data-kelly="-0.8191" data-asymmetry="0.256"
+            data-p_up="0.2823" data-cvar10="-0.3682"
+            data-composite="0.4673" data-oe_spread_bp="276.3"
+            data-bull_y10_fv="555.63" data-verdict="MIXED">
+          <td class="name"><a class="rlink" href="../stocks/te-pipeline.html">te</a><div class="tkr">TEL</div></td>
+          <td class="num">$203.31</td>
+          <td class="num">$182.98</td>
+          <td class="num">-81.9%</td>
+          <td class="num">0.26×</td>
+          <td class="num">28.2%</td>
+          <td class="num">-36.8%</td>
+          <td class="num">46.7%</td>
+          <td class="num">+276 bp</td>
+          <td class="num">$555.63</td>
+          <td><span class="vchip mixed">MIXED</span></td>
+          <td class="num mono">4/7/0</td>
+          <td class="act"><a class="btn" href="../stocks/te-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="investor" data-ticker="INVE-B.ST"
+            data-spot="397.0" data-mc_median="371.07"
+            data-kelly="-1.1686" data-asymmetry="0.172"
+            data-p_up="0.2434" data-cvar10="-0.2136"
+            data-composite="0.5633" data-oe_spread_bp="-114.3"
+            data-bull_y10_fv="1225.89" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/investor-pipeline.html">investor</a><div class="tkr">INVE-B.ST</div></td>
+          <td class="num">kr397.00</td>
+          <td class="num">kr371.07</td>
+          <td class="num">-116.9%</td>
+          <td class="num">0.17×</td>
+          <td class="num">24.3%</td>
+          <td class="num">-21.4%</td>
+          <td class="num">56.3%</td>
+          <td class="num">-114 bp</td>
+          <td class="num">kr1,226</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">6/7/1</td>
+          <td class="act"><a class="btn" href="../stocks/investor-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="amazon" data-ticker="AMZN"
+            data-spot="247.23" data-mc_median="222.68"
+            data-kelly="-1.3052" data-asymmetry="0.143"
+            data-p_up="0.2173" data-cvar10="-0.307"
+            data-composite="0.4431" data-oe_spread_bp="-263.3"
+            data-bull_y10_fv="" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/amazon-pipeline.html">amazon</a><div class="tkr">AMZN</div></td>
+          <td class="num">$247.23</td>
+          <td class="num">$222.68</td>
+          <td class="num">-130.5%</td>
+          <td class="num">0.14×</td>
+          <td class="num">21.7%</td>
+          <td class="num">-30.7%</td>
+          <td class="num">44.3%</td>
+          <td class="num">-263 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">1/8/1</td>
+          <td class="act"><a class="btn" href="../stocks/amazon-pipeline.html">Open</a></td>
+        </tr>
+        <tr data-name="neste" data-ticker="NESTE.HE"
+            data-spot="33.14" data-mc_median="23.62"
+            data-kelly="-3.0897" data-asymmetry="0.023"
+            data-p_up="0.0737" data-cvar10="-0.594"
+            data-composite="0.5382" data-oe_spread_bp="43.6"
+            data-bull_y10_fv="" data-verdict="BEAR">
+          <td class="name"><a class="rlink" href="../stocks/neste-analytics-pipeline.html">neste</a><div class="tkr">NESTE.HE</div></td>
+          <td class="num">€33.14</td>
+          <td class="num">€23.62</td>
+          <td class="num">-309.0%</td>
+          <td class="num">0.02×</td>
+          <td class="num">7.4%</td>
+          <td class="num">-59.4%</td>
+          <td class="num">53.8%</td>
+          <td class="num">+44 bp</td>
+          <td class="num">—</td>
+          <td><span class="vchip bear">BEAR</span></td>
+          <td class="num mono">1/10/2</td>
+          <td class="act"><a class="btn" href="../stocks/neste-analytics-pipeline.html">Open</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><b>How to use.</b> This is the front door for the book. Numbers are recomputed whenever you run <code>python refresh_all.py</code> or <code>python utils/export_universe.py</code> (Yahoo + MC). Full thesis, fundamentals narrative and interactive engines live in each report. Screening CSVs: <code>data/metrics_latest.csv</code>.</div>
+  </div>
+
+  <footer>
+    Generated 2026-07-20 11:06 · 14 names in registry · open a report to drill into engines, Module I/J asymmetry, and (where configured) Module U 10y upside.<br>
+    Refresh CLI: <code>python refresh_all.py</code> · single name: <code>python utils/build_one.py &lt;name&gt;</code> · export only: <code>python utils/export_universe.py</code>
+  </footer>
+</div>
+<script>
+(function(){
+  const q = document.getElementById('q');
+  const vf = document.getElementById('vf');
+  const kf = document.getElementById('kf');
+  const tbody = document.querySelector('#utab tbody');
+  const rows = [].slice.call(tbody.querySelectorAll('tr'));
+
+  function applyFilter(){
+    const term = (q.value||'').trim().toLowerCase();
+    const verd = vf.value;
+    const kel = kf.value;
+    rows.forEach(tr => {
+      const hay = ((tr.getAttribute('data-name')||'') + ' ' + (tr.getAttribute('data-ticker')||'')).toLowerCase();
+      const v = tr.getAttribute('data-verdict')||'';
+      const k = parseFloat(tr.getAttribute('data-kelly'));
+      let ok = true;
+      if(term && hay.indexOf(term) < 0) ok = false;
+      if(verd && v !== verd) ok = false;
+      if(kel === 'pos' && !(k > 0)) ok = false;
+      if(kel === 'neg' && !(isNaN(k) || k <= 0)) ok = false;
+      tr.classList.toggle('hidden', !ok);
+    });
+  }
+  q.addEventListener('input', applyFilter);
+  vf.addEventListener('change', applyFilter);
+  kf.addEventListener('change', applyFilter);
+
+  let sortKey = 'kelly', sortDir = -1;
+  document.querySelectorAll('#utab th[data-k]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.getAttribute('data-k');
+      if(sortKey === k) sortDir *= -1;
+      else { sortKey = k; sortDir = (k === 'name' || k === 'verdict') ? 1 : -1; }
+      document.querySelectorAll('#utab th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      const num = th.hasAttribute('data-num');
+      const sorted = rows.slice().sort((a,b) => {
+        let av = a.getAttribute('data-' + k);
+        let bv = b.getAttribute('data-' + k);
+        if(num){
+          const pa = parseFloat(av), pb = parseFloat(bv);
+          const na = isNaN(pa), nb = isNaN(pb);
+          if(na && nb) return 0;
+          if(na) return 1;
+          if(nb) return -1;
+          return (pa - pb) * sortDir;
+        }
+        return String(av||'').localeCompare(String(bv||'')) * sortDir;
+      });
+      sorted.forEach(tr => tbody.appendChild(tr));
+    });
+  });
+})();
+</script>
+</body>
+</html>

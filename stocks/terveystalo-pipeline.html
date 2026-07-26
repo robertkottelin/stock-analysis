@@ -264,11 +264,134 @@
   .audit .refs{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:12.5px;line-height:1.6;margin-top:14px}
   .audit .refs cite{font-style:italic;color:var(--ink)}
 </style>
+
+<style id="ux-fixes">
+  /* ===== Shared UX / mobile fixes (all reports) ===== */
+  html{scroll-padding-top:76px}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+  }
+
+  /* Sticky stepper: contain horizontal scroll; never pan the page */
+  .stepper{
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    touch-action:pan-x;
+    scrollbar-width:thin;
+    border-bottom:1px solid transparent;
+  }
+  .stepper a{
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .stepper a:focus-visible{
+    outline:2px solid var(--blue);
+    outline-offset:2px;
+  }
+
+  /* Anchor offset under sticky stepper (modules + audit) */
+  .mod,.audit,#mAudit{scroll-margin-top:76px}
+
+  /* Flex children must be allowed to shrink or long text overflows */
+  .mod-head .ht{min-width:0;flex:1 1 auto}
+  .verdict .vtext{min-width:0;flex:1 1 auto;overflow-wrap:anywhere;word-break:break-word}
+  .cmprow{gap:10px}
+  .cmprow .ck{min-width:0;overflow-wrap:anywhere}
+  .cmprow .cv{flex:0 0 auto;max-width:48%;text-align:right;overflow-wrap:anywhere}
+  .ri .rd,.kci,.note,.reading,.synth,.overall .ov-text,.blend .bl,
+  .rev .rv .l,.rev .rv .m,.sc .scd,.lens .lb,p.body,.body{
+    overflow-wrap:break-word;word-break:normal
+  }
+  .hl{white-space:normal;overflow-wrap:break-word}
+  .verdict .vtext{overflow-wrap:break-word;word-break:normal}
+
+  /* Tag chips: wrap under title on narrow screens instead of crushing h2 */
+  @media (max-width:560px){
+    .mod-head{flex-wrap:wrap;gap:10px 12px}
+    .mod-head .tagchip,.mod-head > .tagchip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:center;line-height:1.25}
+    .verdict{align-items:flex-start}
+    .verdict .vchip{margin-top:1px}
+    .keystat .ks{min-width:0;flex:1 1 calc(50% - 8px)}
+  }
+
+  /* Horizontal table scroll without page-level horizontal scroll */
+  .tbl-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+    max-width:100%;
+    margin:0 0 4px;
+    padding-bottom:2px;
+  }
+  .tbl-scroll > table{margin-top:0}
+  th,td{overflow-wrap:anywhere}
+  td.num,td.mono{overflow-wrap:normal;word-break:normal}
+
+  /* Peer / bar rows: collapse fixed label columns on small phones */
+  @media (max-width:480px){
+    .br{grid-template-columns:minmax(0,1fr) 48px !important;gap:6px 8px}
+    .br .brt{grid-column:1 / -1;order:3;height:14px}
+    .br .brl{font-size:12px}
+    .br .brv{font-size:11px}
+    .barsrow{grid-template-columns:minmax(0,1fr) 52px;gap:6px}
+    .barsrow .bb{grid-column:1 / -1;order:3}
+    .barsrow .bl{font-size:10px}
+    .reactab .rr{grid-template-columns:1fr 56px !important;gap:6px 8px}
+    .reactab .rd{grid-column:1 / -1;order:3}
+    .ri{flex-direction:column;gap:4px}
+    .ri .rk{width:auto !important}
+  }
+
+  /* Module I/J grids: tighter on phones */
+  @media (max-width:480px){
+    .kg{grid-template-columns:1fr 1fr}
+    .kelly{grid-template-columns:1fr !important}
+    .fac{grid-template-columns:1fr 1fr !important}
+  }
+  @media (max-width:360px){
+    .kg{grid-template-columns:1fr}
+    .fac{grid-template-columns:1fr !important}
+    .kelly{grid-template-columns:1fr !important}
+  }
+
+  /* Scenario cards: kill forced min-heights that leave huge empty gaps on mobile */
+  @media (max-width:560px){
+    .scard .sd{min-height:0 !important}
+  }
+
+  /* Range inputs: larger touch targets on touch devices */
+  @media (pointer:coarse){
+    input[type=range]{height:8px}
+    input[type=range]::-webkit-slider-thumb{width:22px;height:22px}
+    input[type=range]::-moz-range-thumb{width:22px;height:22px}
+    .ev{padding:10px 14px;min-height:40px}
+    .stepper a{padding:9px 12px}
+  }
+
+  /* SVG charts scale */
+  .qcard svg,.mod svg:not([width]){max-width:100%;height:auto}
+  #hist,#tornado{max-width:100%}
+
+  /* Long mono audit URLs / tokens */
+  .audit table td.mono,.src{overflow-wrap:anywhere;word-break:break-word}
+
+  /* cbar labels (Module J) */
+  .cbar{margin-bottom:18px;overflow:visible}
+  .cbar .lb{max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+
+  .cut,.notes,.disc{overflow-wrap:anywhere}
+
+  /* Keep page width stable without breaking position:sticky
+     (overflow-x on body/wrap makes sticky fail in Chrome/Safari).
+     Wide tables are handled by .tbl-scroll wrappers. */
+  img,svg,video,canvas{max-width:100%}
+</style>
+
 </head>
 <body>
 <div class="wrap">
 
-  <div class="eyebrow">Research pipeline · strict-data · Terveystalo Oyj · HEL: TTALO · built 2026-07-15</div>
+  <div class="eyebrow">Research pipeline · strict-data · Terveystalo Oyj · HEL: TTALO · built 2026-07-19</div>
   <h1>Terveystalo — the analyst's instrument panel
     <span class="sub">Finland's largest private healthcare provider — a defensive clinic-and-occupational-health moat valued by a two-leg sum-of-the-parts: <b>Healthcare Services</b> on EV/EBIT, <b>Portfolio Businesses</b> (incl. Sweden) on EV/Sales, less net debt. Every figure is <b>sourced</b>, <b>computed</b> from sourced inputs, or an explicit <b>assumption</b> you set. The headline question this build answers: <b>with demand rolling over and a €574m eye-care acquisition in flight, what does the market already imply for the core?</b></span>
   </h1>
@@ -291,7 +414,7 @@
   <div class="buildstamp" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--muted)">
     <span style="background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 11px;display:inline-flex;align-items:center;gap:8px">
       <span style="width:8px;height:8px;border-radius:2px;background:var(--blue);display:inline-block"></span>
-      <b style="color:var(--ink);font-weight:600">Built 2026-07-15 07:59</b>
+      <b style="color:var(--ink);font-weight:600">Built 2026-07-19 19:03</b>
     </span>
     <span style="background:var(--teal-wash);border:1px solid var(--teal);border-radius:8px;padding:6px 11px;color:var(--teal-deep);font-weight:500">
       Modules I (price asymmetry) + J (base rates / factor composite) &middot; live spot &amp; betas fetched at build time
@@ -346,7 +469,7 @@
     <p class="body" style="font-size:12.5px;color:var(--muted)"><span class="asm">Your assumptions ↓</span> &nbsp;The Healthcare Services adjusted EBIT (does the demand downturn deepen or stabilise?) and the core EV/EBIT multiple (does the market re-rate the core toward the 11.5× paid for Silmäasema?) are <b>your</b> calls. Correlation and tail control how hard the two legs fall together in a demand shock.</p>
     <div class="mc-wrap">
       <div class="mc-title">◆ Correlated Monte-Carlo — 20,000 paths, live</div>
-      <div class="mc-sub">Fixed inputs (sourced): Portfolio Businesses revenue €248m at ~0.7× EV/Sales, central cost −€30m, net debt ex-lease €305.4m, 126.655m shares, price €8.20.</div>
+      <div class="mc-sub">Fixed inputs (sourced): Portfolio Businesses revenue €248m at ~0.7× EV/Sales, central cost −€30m, net debt ex-lease €305.4m, 126.655m shares, price €7.32 (live, 2026-07-19).</div>
       <div class="controls">
         <div class="ctrl">
           <label><span class="lab">Healthcare Services adjusted EBIT <span>€m · assumption</span></span><span class="cval">€<span id="v-hs">140</span>m</span></label>
@@ -388,12 +511,12 @@
       <div class="hist-wrap">
         <div class="hist-leg">
           <span><span class="sw" style="background:var(--coral);opacity:.55"></span>worth &lt; €8.20</span>
-          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €8.20</span>
+          <span><span class="sw" style="background:var(--teal);opacity:.6"></span>worth &gt; €7.32</span>
           <span><span class="sw" style="background:var(--ink)"></span>price</span>
           <span><span class="sw" style="background:var(--amber)"></span>median</span>
           <span><span class="sw" style="background:var(--faint)"></span>indep P10</span>
         </div>
-        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet"></svg>
+        <svg id="hist" viewBox="0 0 700 235" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
       </div>
       <div class="reading" id="reading"></div>
     </div>
@@ -407,7 +530,7 @@
     </div>
     <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The whole thesis rides one swing factor — <b>Healthcare Services demand</b>, which governs both intrinsic value and the re-rating. A diagnostic, not a direction: high dependence on Finnish occupational-health and private-pay volume, which is presently falling.</span></div>
     <p class="body"><b>Lens 1 — fair-value sensitivity (computed tornado).</b> Each bar swings one driver P10→P90, others held at mode. <b>Healthcare Services adjusted EBIT</b> dominates, with the <b>core EV/EBIT multiple</b> close behind; the Portfolio Businesses revenue and its EV/Sales multiple are second-order.</p>
-    <svg id="tornado" viewBox="0 0 700 220" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="tornado" viewBox="0 0 700 220" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto"></svg>
     <p class="body" style="margin-top:18px"><b>Lens 2 — what actually moved the earnings (sourced).</b> The revealed evidence is a two-act story: a margin transformation that lifted profit through 2025, then a demand shock that is now pulling revenue and profit down faster than efficiency can offset.</p>
     <div class="reactab">
       <div class="rr"><div class="re">2022 → 2024</div><div class="rd">Efficiency programme lifts the adjusted-EBITA margin 8.4% → 12.8% even as revenue grows; adjusted EBITA €97m → €171m. The re-rating fuel that never fully arrived.</div><div class="rp">€171m</div></div>
@@ -502,7 +625,7 @@
       <span class="tagchip s">Sourced</span>
     </div>
     <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">A stable, aligned Finnish institutional register and a mild-Buy sell-side (Inderes Accumulate, consensus PT ~€9.40, +15%) — but a new ~15.1% anchor (Coronaria) arriving via dilution, and a share near multi-year lows. Aligned owners, mixed near-term catalyst.</span></div>
-    <table style="margin-bottom:6px">
+    <div class="tbl-scroll"><table style="margin-bottom:6px">
       <thead><tr><th>Signal</th><th>Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
         <tr><td>Top holders</td><td class="num">~59%</td><td><b>Rettig, Varma, OP, Hartwall Capital, Ilmarinen and Elo</b> together hold ~59.3% — a concentrated, predominantly Finnish, long-horizon institutional register (industrial families + pension funds).</td></tr>
@@ -512,7 +635,7 @@
         <tr><td>Dividend appeal</td><td class="num">~7.8%</td><td>A ~7.8% proposed yield on a defensive healthcare name is a genuine domestic-income draw — supportive of the shareholder base, but flags market scepticism on growth.</td></tr>
         <tr><td>52-week range</td><td class="num">€7.40–12.32</td><td>The stock de-rated hard through 2026; it sits in the lower quarter of its own year — the value setup, and the sentiment problem, in one line.</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <div class="note c"><b>Cut, not faked:</b> short interest, insider transaction flow, options skew and borrow cost aren't reliably fetchable for a Nasdaq Helsinki name, so those rows are removed rather than guessed.
       <div class="src">Sources: Terveystalo largest-shareholders &amp; ownership register; Silmäasema acquisition release (Coronaria stake); Inderes / MarketScreener (consensus).</div>
     </div>
@@ -561,79 +684,91 @@
     <div class="src">Source: Terveystalo annual financial statements releases (revenue, adjusted EBITA &amp; margin, net debt/EBITDA); FY2025 release for the latest year. 2022 revenue and 2022&ndash;2023 leverage are derived/approximate and labelled. EV/EBITA and the engine value segments ex-lease (see Module A note).</div>
   </section>
 
+  
   <section class="mod" id="mI">
     <div class="mod-head"><div class="mod-no">I</div>
       <div class="ht"><h2>Price-asymmetry layer — the institutional edge check</h2><div class="hq">Reverse-DCF · payoff asymmetry · Kelly · CVaR · own-history percentile · live betas.</div></div>
       <span class="tagchip c">Computed from live &amp; sourced data</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">The pay-off distribution is broadly symmetric to price — no institutional edge without additional evidence. Live spot <b>€8.20</b> · MC median <b>€8.28</b> (P10 €6.42, P90 €10.08) · P(FV &gt; price) <b>52%</b>. A cheap reverse-DCF multiple is offset by a genuinely fat left tail (CVaR<sub>10</sub> −29%) from the live demand downturn.</span></div>
+    <div class="verdict bull"><span class="vchip">BULL</span><span class="vtext">The distribution, own-history and reverse-DCF all point to a favourable pay-off — a positive asymmetry the market has not fully priced. Live spot <b>€7.32</b> · MC median <b>€8.28</b> (P10 €6.42, P90 €10.08) · P(FV &gt; price) <b>74%</b>.</span></div>
 
-    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. The Monte-Carlo read-outs below are <b>computed</b> from the pipeline's own 20,000-path engine; the price-history regressions are fetched from the Yahoo v8 chart API at build time.</p>
+    <p class="body">The pipeline's own engine (Module A) is a distribution, not a point. This layer squeezes six institutional read-outs from that distribution and from real fetched price history so the buy/sell asymmetry becomes visible at a glance. Every number here is either <b>sourced</b> (Yahoo v8 chart API at build time, 2026-07-19) or <b>computed</b> from those inputs and the pipeline's own MC. No assumptions were added.</p>
 
     <div class="kg">
-      <div class="kgi"><div class="k">Live spot (TTALO.HE)</div><div class="v">€8.20 <small>as of 2026-07-15</small></div></div>
-      <div class="kgi"><div class="k">52-week range</div><div class="v">€7.40–€12.32</div></div>
-      <div class="kgi"><div class="k">Price percentile · own 5y</div><div class="v">n/a</div></div>
-      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+14.6% <small>PT €9.40</small></div></div>
+      <div class="kgi"><div class="k">Live spot (TTALO.HE)</div><div class="v">€7.32 <small>as of 2026-07-19</small></div></div>
+      <div class="kgi"><div class="k">52-week range</div><div class="v">€6.45–€10.92</div></div>
+      <div class="kgi pos"><div class="k">Price percentile · own 5y</div><div class="v">32%</div></div>
+      <div class="kgi"><div class="k">Consensus PT gap</div><div class="v">+28.4% <small>PT €9.40</small></div></div>
     </div>
 
+    <p class="body" style="margin-top:16px"><b>Forward P/E — the multiple on future earnings.</b> Live price ÷ the sourced consensus EPS estimate for the current and next fiscal year (≈ the next <b>12</b> and <b>24</b> months). A forward P/E <i>below</i> the trailing multiple means the market expects earnings to grow into the price; <i>above</i> means earnings are expected to fall.</p>
+    <div class="kg">
+      <div class="kgi"><div class="k">Trailing P/E (TTM)</div><div class="v">11.4× <small>EPS €0.64</small></div></div>
+      <div class="kgi"><div class="k">Forward P/E · ~12m (curr. FY)</div><div class="v">9.8× <small>est EPS €0.75</small></div></div>
+      <div class="kgi pos"><div class="k">Forward P/E · ~24m (next FY)</div><div class="v">9.6× <small>est EPS €0.76</small></div></div>
+      <div class="kgi pos"><div class="k">Est. EPS growth · 12→24m</div><div class="v">+1%</div></div>
+    </div>
     <div class="rev">
       <div class="rt">◆ Reverse-DCF — what is the market implying today?</div>
       <div class="rv">
-        <div class="n pos">8.59×</div>
-        <div class="l">is the value of <b>the Healthcare Services core EV/EBIT multiple</b> that reconciles the median MC fair value to today's <b>€8.20</b> price. That is <b>4.5% below</b> the pipeline's base-case mode of <b>9.00×</b> — and well below the <b>11.5×</b> the company just agreed to pay for Silmäasema.</div>
+        <div class="n pos">7.77×</div>
+        <div class="l">is the value of <b>Healthcare Services core EV/EBIT multiple (at mode HS-EBIT / portfolio / central)</b> that reconciles the pipeline's engine — every other driver held at its base-case mode — to today's <b>€7.32</b> price. That is <b>-13.7% below</b> the pipeline's base-case mode of <b>9.0×</b>.</div>
       </div>
       <div class="rv" style="margin-top:4px"><div class="m">Solved by holding every other driver at its pipeline mode and iterating the master-driver grid — an implied-expectations read, in the Mauboussin/Baupost sense. Buy when this implied value is lower than the base you underwrite; sell when it is higher.</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Pay-off distribution — from the pipeline's own MC (20,000 paths, live spot).</b> The distribution tells us how the up-side compares to the down-side in probability-weighted euros — the true "buy/sell asymmetry" a hedge fund would grade.</p>
     <div class="kelly">
-      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+6.0%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Small and positive — a real but modest edge; half-Kelly (~3%) is the institutional rule of thumb.</div></div>
-      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">1.13×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). Just above 1× = pay-off skew marginally in your favour.</div></div>
-      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.04</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
-      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+0.9%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
+      <div class="kbox good"><div class="t">Kelly f* — optimal sizing</div><div class="n pos">+60.5%</div><div class="d">Fraction of bank-roll a Kelly bettor would allocate <i>if</i> the MC engine were literally true. Positive = edge exists; negative = the market's price is dominant. Half-Kelly is the institutional rule of thumb.</div></div>
+      <div class="kbox good"><div class="t">Payoff asymmetry</div><div class="n pos">5.49×</div><div class="d">(P<sub>up</sub> × E[gain]) ÷ (P<sub>dn</sub> × E[loss]). &gt; 1× = pay-off skew in your favour.</div></div>
+      <div class="kbox"><div class="t">Win / loss ratio</div><div class="n">1.92</div><div class="d">E[gain | fv &gt; price] ÷ E[loss | fv &lt; price], in €.</div></div>
+      <div class="kbox"><div class="t">E[return to FV]</div><div class="n pos">+13.0%</div><div class="d">Simple mean of (fv/price − 1) across all paths.</div></div>
     </div>
 
-    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you. The fat left tail is the demand-downturn risk made explicit.</p>
+    <p class="body" style="margin-top:16px"><b>Downside quantification — VaR and CVaR (Expected Shortfall) from the same MC.</b> A regulator-grade risk read that the pipeline's original P10 alone doesn't give you.</p>
     <div class="kelly">
-      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">−21.7%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">−28.7%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat if demand keeps sliding.</div></div>
-      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">−27.3%</div><div class="d">Deep-tail loss threshold.</div></div>
-      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">−33.1%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>10%</sub> (loss threshold)</div><div class="n neg">-12.3%</div><div class="d">10% of MC paths lose at least this much versus price.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>10%</sub> (Expected Shortfall)</div><div class="n neg">-20.1%</div><div class="d">Average loss in the worst 10% of paths — the tail you actually eat.</div></div>
+      <div class="kbox"><div class="t">VaR<sub>5%</sub></div><div class="n neg">-18.6%</div><div class="d">Deep-tail loss threshold.</div></div>
+      <div class="kbox"><div class="t">CVaR<sub>5%</sub></div><div class="n neg">-25.0%</div><div class="d">Average loss in the worst 5% of paths.</div></div>
     </div>
 
-    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history.</b> The regressions the earlier version cut "because we couldn't download prices". <b>Note:</b> this build was generated in an environment whose egress policy blocks the Yahoo v8 chart endpoint, so the live-tape cells report <b>n/a</b> rather than a fabricated guess — they populate automatically on the next <code>refresh_all.py</code> run where Yahoo is reachable. The Monte-Carlo read-outs above need no network and are fully computed.</p>
-    <table class="brtab">
+    <p class="body" style="margin-top:16px"><b>Realised risk &amp; factor exposure — from fetched daily price history (1257 sessions available).</b> The regressions the earlier version cut "because we couldn't download prices" — now computed.</p>
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Signal</th><th style="text-align:right">Reading</th><th>Interpretation</th></tr></thead>
       <tbody>
-        <tr><td>Realised volatility 1y (ann.)</td><td class="num">n/a</td><td>SD of daily log-returns × √252, trailing 252 sessions — pending live fetch.</td></tr>
-        <tr><td>Realised volatility 3y (ann.)</td><td class="num">n/a</td><td>Same, trailing 756 sessions — pending live fetch.</td></tr>
-        <tr><td>Max drawdown (5y)</td><td class="num">n/a</td><td>Peak-to-trough on adjusted close — pending live fetch.</td></tr>
-        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">n/a</td><td>Simple returns over trailing windows — pending live fetch.</td></tr>
-        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">n/a</td><td>252-day OLS on daily log-returns — pending live fetch.</td></tr>
-        <tr><td>Beta vs STOXX 600</td><td class="num">n/a</td><td>252-day OLS on daily log-returns — pending live fetch.</td></tr>
+        <tr><td>Realised volatility 1y (ann.)</td><td class="num">25.7%</td><td>SD of daily log-returns × √252, trailing 252 sessions.</td></tr>
+        <tr><td>Realised volatility 3y (ann.)</td><td class="num">26.3%</td><td>Same, trailing 756 sessions — for regime comparison.</td></tr>
+        <tr><td>Max drawdown (5y)</td><td class="num">-49.7%</td><td>Peak-to-trough on adjusted close.</td></tr>
+        <tr><td>Momentum 1m / 3m / 6m / 12m</td><td class="num">-0.5% / -18.4% / -22.6% / -33.5%</td><td>Simple returns over trailing windows.</td></tr>
+        <tr><td>Beta vs OMX Helsinki 25</td><td class="num">0.17</td><td>R² = 0.01. 252-day OLS.</td></tr>
+        <tr><td>Beta vs STOXX 600</td><td class="num">0.27</td><td>R² = 0.02. 252-day OLS.</td></tr>
+        
       </tbody>
-    </table>
+    </table></div>
 
-    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both are marginally positive here, so the MC says there is a small edge — size below half-Kelly, always. The reverse-DCF line translates the same distribution into a concrete driver value ("is a Healthcare Services core multiple of <b>9.00×</b> defensible, when the company just paid 11.5× for Silmäasema?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you must be willing to absorb — a −29% expected shortfall — before the thesis is right.
-      <div class="src">Sources: Yahoo Finance v8 chart API (TTALO.HE, ^OMXH25, ^STOXX) — pending in this environment; MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths on 2026-07-15.</div>
+    <p class="body" style="margin-top:16px"><b>Relative performance vs peers (12m).</b> Positive bar = outperformed on total return.</p><div><div class="barsrow"><div class="bl">vs ATT.ST</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-107.4%</div></div><div class="barsrow"><div class="bl">vs AMBEA.ST</div><div class="bb"><div class="bi" style="left:50%;width:45.0%;transform:translateX(-100%);background:var(--coral)"></div></div><div class="bv">-57.1%</div></div></div>
+
+    <div class="note b"><b>How to read this module.</b> Use the Kelly f* and payoff asymmetry as a two-column decision matrix: both positive = the MC is telling you to lean in (size below Kelly, always); both negative = the MC is telling you the market has already reached — or over-shot — your base case. The reverse-DCF line above translates the same engine into a concrete driver value ("is a Healthcare Services core EV/EBIT multiple (at mode HS-EBIT / portfolio / central) of <b>7.77×</b> defensible?") so the buy/sell debate becomes a question about that single input, not the price. The VaR/CVaR block bounds the downside you have to be willing to absorb before the thesis is right.
+      <div class="src">Sources: Yahoo Finance v8 chart API (TTALO.HE, ^OMXH25, ^STOXX) — fetched 2026-07-19. MC engine identical to Module A; asymmetry, Kelly, CVaR and reverse-DCF computed from the same 20,000 paths.</div>
     </div>
   </section>
+
 
   <section class="mod" id="mJ">
     <div class="mod-head"><div class="mod-no">J</div>
       <div class="ht"><h2>Base rates &amp; factor composite — the empirical anchor</h2><div class="hq">Own-history distribution of the master variable · return base-rates from 5y prices · V/Q/M/L factor score · owner-earnings yield vs real rate.</div></div>
       <span class="tagchip a">Sourced + computed</span>
     </div>
-    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>53/100</b> across value, quality, momentum and low-vol factors (price-tape factors pending a live fetch, so held neutral). Base-rate anchor: the adjusted-EBITA margin is at the <b>100<sup>th</sup></b> percentile of its own multi-year range — a record high, exactly the level that historically mean-reverts.</span></div>
+    <div class="verdict mixed"><span class="vchip">MIXED</span><span class="vtext">Composite <b>50/100</b> across value, quality, momentum and low-vol factors. Base-rate anchor: current master variable is at the 100<sup>th</sup> percentile of its multi-year range.</span></div>
 
-    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference class is the company's own adjusted-EBITA margin through the cycle. It is empirical, not assumed — and it delivers the module's central caution: <b>you are underwriting a peak margin.</b></p>
+    <p class="body">Mauboussin's rule: every point estimate should be checked against the base rate of the reference class. Here the reference classes are the company's own history for the master variable and the stock's own fetched return history for the pay-off distribution. Both are empirical, not assumed.</p>
 
     <div style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin:16px 0 6px">◆ Reference class — Group adjusted EBITA margin (%) through the cycle</div>
-    <table class="brtab">
+    <div class="tbl-scroll"><table class="brtab">
       <thead><tr><th>Point</th><th style="text-align:right">Value</th><th>Note</th></tr></thead>
       <tbody><tr><td>2022</td><td class="num">8.40%</td><td>efficiency programme early days — reported</td></tr><tr><td>2023</td><td class="num">9.80%</td><td>operational-efficiency ramp — reported</td></tr><tr><td>2024</td><td class="num">12.80%</td><td>reported</td></tr><tr class='cur'><td>2025</td><td class="num now">14.00%</td><td>reported all-time record</td></tr><tr><td>2026E guidance</td><td class="num">11.50%</td><td>adj. EBIT 135-165m on ~1.25bn revenue — company guidance, midpoint-ish</td></tr><tr><td>cycle average</td><td class="num">11.30%</td><td>2022-2025 mean — the empirical reversion anchor</td></tr></tbody>
-    </table>
+    </table></div>
     <div class="cbar" style="margin-top:14px">
       <div class="fl" style="left:0;right:0"></div>
       <div class="mk" style="left:100.0%"></div>
@@ -641,35 +776,35 @@
     </div>
     <div style="height:24px"></div>
 
-    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices.</b> The empirical frequency of drawdowns and recoveries. <b>Pending in this environment</b> (Yahoo egress blocked); these populate on the next networked <code>refresh_all.py</code>.</p>
+    <p class="body" style="margin-top:8px"><b>Return base-rates — from fetched daily prices (1257 sessions).</b> The empirical frequency of drawdowns and recoveries, not a scenario tree.</p>
     <div class="kg">
-      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">n/a</div></div>
-      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">n/a</div></div>
-      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">n/a</div></div>
-      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">n/a</div></div>
+      <div class="kgi"><div class="k">P(quarterly drawdown &gt; 10%)</div><div class="v">22%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &lt; 0)</div><div class="v">49%</div></div>
+      <div class="kgi"><div class="k">P(12m rolling return &gt; +15%)</div><div class="v">32%</div></div>
+      <div class="kgi"><div class="k">Realised skew (crude)</div><div class="v">negative</div></div>
     </div>
 
     <p class="body" style="margin-top:16px"><b>Owner-earnings yield vs real 10y — the cross-asset asymmetry check (Buffett/Munger).</b> If the stock's real cash yield exceeds the real risk-free, you are paid to wait even if fair value is uncertain.</p>
     <div class="rev">
       <div class="rt">◆ Owner-earnings spread</div>
       <div class="rv">
-        <div class="n pos">+1475 bp</div>
-        <div class="l"><b>Owner-earnings yield 16.9%</b> (€176m ÷ €1039m market cap) minus <b>real 10y ≈ 2.2%</b> (^TNX proxy minus a 2.0% implied inflation).</div>
+        <div class="n pos">+1644 bp</div>
+        <div class="l"><b>Owner-earnings yield 18.98%</b> (€176m ÷ €927m market cap) minus <b>real 10y ≈ 2.54%</b> (^TNX at build time minus a 2.0% implied inflation).</div>
       </div>
-      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: FY2025 free cash flow EUR 176m (operating cash flow EUR 207m less EUR 31m capex; financial statements release 12 Feb 2026) as the owner-earnings proxy; under IFRS-16 this is before ~EUR 40m of annual lease-principal repayment, so the real cash yield is thinner than the headline figure implies. Under IFRS-16 the reported FCF is before ~€40m of lease-principal repayment, so the true spread is thinner than the headline — but still solidly positive.</div></div>
+      <div class="rv" style="margin-top:4px"><div class="m">Positive spread = paid to hold the stock over the risk-free real yield. Owner earnings from pipeline Module D: FY2025 free cash flow EUR 176m (operating cash flow EUR 207m less EUR 31m capex; financial statements release 12 Feb 2026) as the owner-earnings proxy; under IFRS-16 this is before ~EUR 40m of annual lease-principal repayment, so the real cash yield is thinner than the headline figure implies. ^TNX proxy is a US Treasury benchmark — a conservative substitute for Bund real yield, which is not reliably fetchable here. If you prefer the Bund view, subtract ~150 bp.</div></div>
     </div>
 
-    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Value, momentum and low-vol need the price tape (pending a live fetch, held at a neutral 50); quality is anchored to Module D.</p>
+    <p class="body" style="margin-top:16px"><b>Multi-factor composite (V · Q · M · L).</b> AQR-style style-factor score, each scaled 0–1. Simple mean, no proprietary weights.</p>
     <div class="fac">
-      <div class="fi"><div class="fk">Value</div><div class="fv">50</div><div class="fd">Inverse of price-percentile within own 5y — pending live fetch, held neutral.</div></div>
-      <div class="fi hot"><div class="fk">Quality</div><div class="fv">62</div><div class="fd">Aggregated from Module D forensics (ROE ~16%, cash conversion &gt;200%, positive FCF), less an acquisition-goodwill haircut.</div></div>
-      <div class="fi"><div class="fk">Momentum</div><div class="fv">50</div><div class="fd">12-1m return, logistic-scaled — pending live fetch, held neutral.</div></div>
-      <div class="fi"><div class="fk">Low-vol</div><div class="fv">50</div><div class="fd">1 − realised 1y vol / 45% — pending live fetch, held neutral.</div></div>
-      <div class="fi"><div class="fk">Composite</div><div class="fv">53</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
+      <div class="fi hot"><div class="fk">Value</div><div class="fv">68</div><div class="fd">Inverse of price-percentile within own 5y — cheap in own history.</div></div>
+      <div class="fi hot"><div class="fk">Quality</div><div class="fv">62</div><div class="fd">Aggregated from Module D forensic scores (Piotroski / Altman / ROCE / coverage).</div></div>
+      <div class="fi"><div class="fk">Momentum</div><div class="fv">27</div><div class="fd">12-1m return, logistic-scaled. Captures the classic Jegadeesh-Titman signal.</div></div>
+      <div class="fi"><div class="fk">Low-vol</div><div class="fv">43</div><div class="fd">1 − realised 1y vol / 45%. Low-vol has been an outperforming factor in Nordics.</div></div>
+      <div class="fi" style="border:1.5px solid var(--blue)"><div class="fk">Composite</div><div class="fv">50</div><div class="fd">Simple mean of the four. &gt;65 = broadly favourable factor stack.</div></div>
     </div>
 
-    <div class="note c"><b>How to read this module.</b> The reference-class table is the key caution: the adjusted-EBITA margin is at an all-time record, and 2026 guidance already implies it reverts — so the earnings you are valuing are near a peak, which is the empirical counterweight to the cheap cash multiple. The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+1475 bp</b> in real cash yield over the risk-free rate for holding this business, a genuine "paid to wait" cushion. A cheap cash multiple plus a peak-margin base rate is precisely the two-sided setup the scorecard nets to MIXED.
-      <div class="src">Sources: Terveystalo margin history (sourced); Yahoo v8 chart API for prices and ^TNX (pending in this environment); base-rates and price-tape factor scores populate on the next networked build; owner-earnings and quality computed from the FY2025 release on 2026-07-15.</div>
+    <div class="note c"><b>How to read this module.</b> The reference-class table answers "how unusual is today?" and the base-rate frequencies answer "how often does this stock lose 10% in a quarter, or spend a year in the red?" The owner-earnings spread is the cross-asset asymmetry — you are paid <b>+1644 bp</b> in real cash yield over the risk-free rate for holding this business. The factor composite is the systematic-style read of the same evidence; a high composite plus a positive owner-earnings spread plus a favourable Module-I asymmetry is the traditional trifecta hedge-fund PMs look for before sizing.
+      <div class="src">Sources: pipeline Module A base-case ranges &amp; Module D forensics (sourced); Yahoo v8 chart API for prices and ^TNX; base-rates and factor scores computed from those inputs on 2026-07-19.</div>
     </div>
   </section>
 
@@ -678,7 +813,7 @@
       <div class="ht"><h2>Scorecard — the ten reads</h2><div class="hq">Each verdict follows from that module's own data, struck at the base case.</div></div>
       <span class="tagchip a">Synthesis</span>
     </div>
-    <table class="scoretab">
+    <div class="tbl-scroll"><table class="scoretab">
       <thead><tr><th>Module</th><th>Verdict</th><th>One-line reason</th></tr></thead>
       <tbody>
         <tr><td>A · Engine</td><td><span class="vchip mixed">MIXED</span></td><td>Base median ≈ €8.3 vs €8.20 — fair, with a fat left tail from the demand downturn</td></tr>
@@ -689,13 +824,13 @@
         <tr><td>F · Positioning</td><td><span class="vchip mixed">MIXED</span></td><td>Aligned Finnish register, Inderes Accumulate (+15%), but dilution &amp; a de-rated tape</td></tr>
         <tr><td>G · Peers</td><td><span class="vchip bull">BULL</span></td><td>Core implied ~8.5× vs the 11.5× paid for Silmäasema and a quality premium to care peers</td></tr>
         <tr><td>H · Kill-criteria</td><td><span class="vchip mixed">MIXED</span></td><td>Process overlay; triggers center on demand, leverage and the deal closing</td></tr>
-        <tr><td>I · Asymmetry</td><td><span class="vchip mixed">MIXED</span></td><td>Kelly f* +6%, asymmetry 1.13×, market implies -4.5% vs pipeline mode</td></tr>
-        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 53/100 · OE-yield spread +1475 bp real · margin at a record (mean-revert risk)</td></tr>
+        <tr><td>I · Asymmetry</td><td><span class="vchip bull">BULL</span></td><td>Kelly f* +61%, asymmetry 5.49×, market implies -13.7% vs pipeline mode</td></tr>
+        <tr><td>J · Base rates</td><td><span class="vchip mixed">MIXED</span></td><td>Composite 50/100 · OE-yield spread +1644 bp real</td></tr>
       </tbody>
-    </table>
+    </table></div>
     <div class="tally">
-      <div class="tbar"><div class="tp bull" style="width:20.0%"></div><div class="tp mixed" style="width:70.0%"></div><div class="tp bear" style="width:10.0%"></div></div>
-      <div class="tlab"><span class="tb">2 Bull</span><span class="tm">7 Mixed</span><span class="tr">1 Bear</span></div>
+      <div class="tbar"><div class="tp bull" style="width:30.0%"></div><div class="tp mixed" style="width:60.0%"></div><div class="tp bear" style="width:10.0%"></div></div>
+      <div class="tlab"><span class="tb">3 Bull</span><span class="tm">6 Mixed</span><span class="tr">1 Bear</span></div>
     </div>
     <div class="overall">
       <div class="ov-chip">NET: MIXED — cheap &amp; cash-rich, into a live earnings downturn</div>
@@ -705,20 +840,20 @@
 
     <section class="audit" id="mAudit">
       <h3>Data sources &amp; audit trail</h3>
-      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-15 07:59</b>.</div>
+      <div class="lead">Every number in this report is either <b>sourced</b> (fetched from a specific, citable endpoint), <b>computed</b> from those sourced inputs, or an explicit <b>assumption</b> you set on the interactive controls. This appendix lists all three so any figure can be traced to its origin. Build stamp: <b>2026-07-19 19:03</b>.</div>
 
-      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-15)</h4>
-      <table>
+      <h4>◆ Live-fetched endpoints (Yahoo Finance v8 chart API, build time 2026-07-19)</h4>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Endpoint URL</th><th>What it delivers</th><th>Used in</th></tr></thead>
         <tbody><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/TTALO.HE?range=5y&interval=1d</td><td>Terveystalo 5-year daily OHLC + regularMarketPrice + 52w range.</td><td class="mods">I: realised vol / beta / momentum / drawdown / own-history percentile · J: base rates</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5EOMXH25?range=5y&interval=1d</td><td>OMX Helsinki 25 index — benchmark for local beta.</td><td class="mods">I: beta vs OMXH25</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ESTOXX?range=5y&interval=1d</td><td>STOXX Europe 600 — pan-European benchmark.</td><td class="mods">I: beta vs STOXX 600</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/%5ETNX?range=1mo&interval=1d</td><td>US 10-year Treasury yield — real-rate proxy.</td><td class="mods">J: owner-earnings yield vs real 10y</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/ATT.ST?range=2y&interval=1d</td><td>Attendo (Nasdaq Stockholm) — Nordic care-services peer.</td><td class="mods">I: peer-relative 12m</td></tr><tr><td class="mono">https://query1.finance.yahoo.com/v8/finance/chart/AMBEA.ST?range=2y&interval=1d</td><td>Ambea (Nasdaq Stockholm) — Nordic care-services peer.</td><td class="mods">I: peer-relative 12m</td></tr></tbody>
-      </table>
+      </table></div>
       <div class="fetchbox"><b>How the fetch works.</b> A single GET to each URL above returns an unauthenticated JSON payload containing daily timestamps, adjusted close, OHLC and volume. Series are aligned by timestamp before any beta or correlation regression. Payloads are cached in the local ./cache folder so repeated runs are idempotent. If Yahoo returns null for a session (holiday / suspension) that row is dropped from the regression, not filled.</div>
 
       <h4>◆ Primary-source citations (module-level facts)</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Source</th><th>Sourced facts used</th><th>Used in</th></tr></thead>
         <tbody><tr><td>Terveystalo Group Financial Statements Release 2025 (12 Feb 2026)</td><td>Revenue EUR 1,281m (-4.1%); adjusted EBITA EUR 179.3m (+4.8%, record 14.0% margin vs 12.8%); adjusted EBIT EUR 156.3m (12.2%, 2024: EUR 140.5m); EPS EUR 0.73 (+29%); operating cash flow EUR 207m, capex EUR 30.8m, FCF EUR 176m; net debt EUR 508m incl. leases / EUR 305.4m ex-IFRS-16; net debt/adj. EBITDA 2.0x; dividend proposal EUR 0.64 (88% payout); ~126.655m shares; ROE ~16.4%; >15,500 professionals. Segment: Healthcare Services adjusted EBIT EUR 154.6m (+7.6%, 15.0% margin)</td><td class="mods">A engine, D forensics, E capital record, Q dashboard</td></tr><tr><td>Terveystalo Group Interim Report January-March 2026 (Apr 2026)</td><td>Revenue EUR 308.2m (-11.2% YoY, 'exceptionally weak demand environment'); adjusted EBIT EUR 33.7m (-29.6%, 10.9% margin vs 13.8%); Healthcare Services revenue EUR 253.6m (-9.6%); FY2026 guidance adjusted EBIT EUR 135-165m (2025: EUR 156m), flagged 'rather below than above' the EUR 150m midpoint</td><td class="mods">B driver analysis, C scenarios, H kill-criteria</td></tr><tr><td>Inside information: Terveystalo to acquire Silmaasema (2026)</td><td>Share purchase agreement to buy Silmaasema (leading Finnish private eye-health provider); EV ~EUR 574m (EV/adj. EBIT 2025 11.5x) funded with EUR 275m cash + 36.5m new Terveystalo shares at EUR 8.20; Coronaria becomes largest shareholder at ~15.1%. Silmaasema 2025: revenue EUR 267m, adjusted EBIT EUR 37m, ~15% of the publicly-funded eye-health market</td><td class="mods">B driver analysis, C scenarios, F positioning, H kill-criteria</td></tr><tr><td>Terveystalo largest-shareholders & ownership register (2025-2026)</td><td>Rettig Investment, Varma, OP, Hartwall Capital (HC Holding), Ilmarinen and Elo together ~59.3% of shares; predominantly Finnish institutional. Post-Silmaasema, Coronaria the largest holder at ~15.1%</td><td class="mods">F positioning</td></tr><tr><td>stockanalysis.com / Simply Wall St — Terveystalo profile (2026)</td><td>ROE ~16.4%, ROIC ~10.5%; cash EUR 75m, gross debt EUR 581m (net EUR 506m incl. leases); Debt/Equity ~0.99; TTM revenue EUR 1.28bn, net profit EUR 92.6m, FCF EUR 176m — cross-checks on the reported ratios</td><td class="mods">D forensics, Q dashboard</td></tr><tr><td>Inderes / MarketScreener — Terveystalo consensus (2026)</td><td>Inderes 'Accumulate'; consensus 12m PT ~EUR 9.2-9.7 (blend EUR 9.40 used); Ambea EV/EBITDA ~8x, adjusted EBITA margin ~9.6% — Nordic care-services peer context</td><td class="mods">F positioning, G peers</td></tr></tbody>
-      </table>
+      </table></div>
 
       <h4>◆ Data providers &amp; the audit rule</h4>
       
@@ -732,10 +867,10 @@
 
 
       <h4>◆ Every metric computed here — formulas</h4>
-      <table>
+      <div class="tbl-scroll"><table>
         <thead><tr><th>Metric</th><th>Formula / definition</th></tr></thead>
-        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
-      </table>
+        <tbody><tr><td>MC engine (Module A, re-used)</td><td>Fair value per share = engine(driver draws) drawn from correlated triangulars with a one-factor copula and a regime-shock mixture. Exact formula per name is inside the pipeline's Module A footer.</td></tr><tr><td>Reverse-DCF (Module I)</td><td>Solve engine(driver=x, all others at mode) = spot for x, by 80-step grid search over the driver's pipeline range. Reports x, the implied value at mode, and the % gap vs pipeline mode.</td></tr><tr><td>Forward P/E (Module I)</td><td>Live spot &divide; the sourced consensus EPS estimate for the current fiscal year (&asymp; next 12 months) and the next fiscal year (&asymp; 24 months). Trailing P/E uses the reported TTM EPS. A non-positive EPS (loss year) renders as n/m.</td></tr><tr><td>Payoff-asymmetry ratio (Module I)</td><td>(P(FV&gt;price) × E[FV−price | FV&gt;price]) ÷ (P(FV&lt;price) × E[price−FV | FV&lt;price]). Values &gt; 1× = pay-off skew in your favour.</td></tr><tr><td>Win/loss ratio b (Module I)</td><td>b = E[gain | FV&gt;price] ÷ E[loss | FV&lt;price], both in the stock's price currency.</td></tr><tr><td>Kelly f* (Module I)</td><td>(b·p − q)/b, where p = P(FV&gt;price), q = 1−p. Fraction of bank-roll to size if the MC is truth. Half-Kelly (or lower) is the institutional convention.</td></tr><tr><td>VaR & CVaR (Module I)</td><td>VaR<sub>α</sub> = the α-quantile of (FV/price − 1) — the loss threshold. CVaR<sub>α</sub> = mean of the α% worst paths — Expected Shortfall.</td></tr><tr><td>Realised volatility (Module I)</td><td>SD of daily log-returns × √252, over trailing 1y (252 sessions) and 3y (756 sessions).</td></tr><tr><td>Beta (Module I)</td><td>OLS slope of daily stock log-returns on benchmark log-returns over trailing 252 sessions. R² reported alongside.</td></tr><tr><td>Max drawdown (Module I)</td><td>min<sub>t</sub>(P<sub>t</sub>/max(P<sub>s≤t</sub>) − 1) over 5-year adjusted closes.</td></tr><tr><td>Momentum 1/3/6/12m (Module I)</td><td>Simple return over trailing 21 / 63 / 126 / 252 sessions on adjusted close.</td></tr><tr><td>Own-history percentile (Module I)</td><td>Fraction of trailing 5-year daily closes ≤ current spot.</td></tr><tr><td>Peer 12m relative return (Module I)</td><td>Stock's 12m return minus peer's 12m return, both simple returns on adjusted close.</td></tr><tr><td>Return base rates (Module J)</td><td>Empirical frequencies over the 5-year rolling windows: P(63-day return &lt; −10%), P(252-day return &lt; 0), P(252-day return &gt; +15%).</td></tr><tr><td>Factor composite V/Q/M/L (Module J)</td><td>V = 1 − price-percentile in own 5y history; Q = quality anchor from Module D (Piotroski / Altman / ROCE); M = logistic-scaled (12m − 1m) return; L = 1 − (1y realised vol / 45%). Simple mean × 100.</td></tr><tr><td>Owner-earnings yield − real rate (Module J)</td><td>OE yield = pipeline Module D FCF / market cap; real rate = ^TNX (fetched at build) minus a 2.0% implied inflation. Spread in bp.</td></tr></tbody>
+      </table></div>
 
       <h4>◆ Methodology references (peer-reviewed / practitioner)</h4>
       <div class="refs"><ul><li><cite>Kelly, J. L. (1956) — A New Interpretation of Information Rate.</cite> Bell System Tech. Journal, 35: 917–926 — origin of the Kelly criterion.</li><li><cite>Thorp, E. O. (1969) — Optimal Gambling Systems for Favourable Games.</cite> Rev. Int. Stat. Inst., 37 — practitioner formulation used in Module I.</li><li><cite>Mauboussin, M. J. &amp; Rappaport, A. (2001; 2021) — Expectations Investing.</cite> Columbia Business School — the reverse-DCF / implied-expectations framework applied in Module I.</li><li><cite>Rockafellar, R. T. &amp; Uryasev, S. (2000) — Optimization of Conditional Value-at-Risk.</cite> Journal of Risk, 2(3): 21–41 — CVaR / Expected Shortfall used in Module I.</li><li><cite>Piotroski, J. D. (2000) — Value Investing: The Use of Historical Financial Statement Information.</cite> Journal of Accounting Research, 38 — F-score used in Module D.</li><li><cite>Altman, E. I. (1968) — Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy.</cite> Journal of Finance, 23(4) — Z-score used in Module D.</li><li><cite>Sloan, R. G. (1996) — Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?.</cite> Accounting Review, 71(3) — accruals measure used in Module D.</li><li><cite>Jegadeesh, N. &amp; Titman, S. (1993) — Returns to Buying Winners and Selling Losers.</cite> Journal of Finance, 48 — momentum factor used in Module J.</li><li><cite>Fama, E. &amp; French, K. (1993) — Common Risk Factors in the Returns on Stocks and Bonds.</cite> Journal of Financial Economics, 33 — value factor rationale used in Module J.</li><li><cite>Frazzini, A. &amp; Pedersen, L. H. (2014) — Betting Against Beta.</cite> Journal of Financial Economics, 111 — low-vol factor used in Module J.</li></ul></div>
@@ -743,8 +878,7 @@
       <div class="fetchbox" style="border-left-color:var(--amber)"><b>Auditor's checklist.</b> To verify any number end-to-end: (1) re-hit the endpoint URL and confirm the same OHLC series comes back, (2) apply the formula from the metric table above, (3) cross-check the balance-sheet inputs against the primary-source citation. The framework code lives under <code>utils/</code>; the stock-specific data (drivers, ranges, endpoints, primary sources) lives under <code>stocks/config.py</code>. Re-running <code>python refresh_all.py</code> from the project root regenerates every computed value from a fresh Yahoo fetch.</div>
     </section>
 
-
-  <footer>
+<footer>
     <div class="notes">
       <h4>How the engine computes (Module A)</h4>
       <p>20,000 paths. Each driver is drawn from a triangular distribution: Healthcare Services adjusted EBIT (bounds 116–158 €m, your mode), core EV/EBIT multiple (bounds 6.3–11.0×, your mode), Portfolio Businesses revenue Tri(210, 248, 282 €m), Portfolio EV/Sales Tri(0.32, 0.70, 1.08×). Fair value = HS + Portfolio − ~€30m capitalised central cost − €305.4m net debt (ex-lease), ÷ 126.655m shares. Dependence: a one-factor copula (loadings — HS EBIT 0.66, core multiple 0.64, Portfolio revenue 0.48, Portfolio multiple 0.43, scaled by your correlation knob) plus a regime-shock mixture (your tail knob sets the demand-downturn probability). Correlation 0 and tail 0 reproduce the independent model. Tornado, scenario anchors and the Bayesian posterior are all computed live. The Silmäasema acquisition is deliberately excluded from the base engine.</p>
@@ -759,7 +893,7 @@
 </div>
 
 <script>
-  const PRICE=8.20, SHARES=126.655, N=20000;
+  const PRICE=7.32, SHARES=126.655, N=20000;
   const HS={lo:116,hi:158}, HSM={lo:6.3,hi:11.0}, PB={lo:210,hi:282}, PBM={lo:0.32,hi:1.08};
   const RHO={hs:0.66,hsm:0.64,pb:0.48,pbm:0.43};
   const NETDEBT=305.4, CENTRAL=30;
@@ -808,7 +942,7 @@
     s+='<text x="'+xm+'" y="'+(HY0+8)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--amber-deep)">median €'+median.toFixed(2)+'</text>';
     const xp=xOf(PRICE);
     s+='<line x1="'+xp+'" y1="'+(HY0-2)+'" x2="'+xp+'" y2="'+HY1+'" stroke="var(--ink)" stroke-width="2"/>';
-    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €8.20</text>';
+    s+='<text x="'+xp+'" y="'+(HY1+30)+'" text-anchor="middle" font-family="var(--mono)" font-size="10.5" font-weight="600" fill="var(--ink)">price €7.32</text>';
     document.getElementById('hist').innerHTML=s;
   }
 
@@ -840,7 +974,7 @@
       s+='<text x="'+(sx(r.max)+5).toFixed(1)+'" y="'+(y+rowH/2+4)+'" font-family="var(--mono)" font-size="10" fill="var(--muted)">€'+Math.max(r.lo,r.hi).toFixed(2)+'</text>';});
     const yb=top+rows.length*rowH;
     s+='<line x1="'+sx(PRICE).toFixed(1)+'" y1="'+top+'" x2="'+sx(PRICE).toFixed(1)+'" y2="'+yb+'" stroke="var(--ink)" stroke-width="1.5"/>';
-    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €8.20</text>';
+    s+='<text x="'+sx(PRICE).toFixed(1)+'" y="'+(yb+15)+'" text-anchor="middle" font-family="var(--mono)" font-size="10" font-weight="600" fill="var(--ink)">price €7.32</text>';
     document.getElementById('tornado').setAttribute('viewBox','0 0 700 '+(yb+26));
     document.getElementById('tornado').innerHTML=s;
   }
@@ -927,9 +1061,54 @@
   update(); computeScenarioAnchors();
 
   const links=[].slice.call(document.querySelectorAll('.stepper a'));
-  const map={};links.forEach(a=>map[a.getAttribute('href').slice(1)]=a);
-  const obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(l=>l.classList.remove('active'));const a=map[e.target.id];if(a){a.classList.add('active');a.scrollIntoView({block:'nearest',inline:'center'});}}});},{rootMargin:'-45% 0px -50% 0px',threshold:0});
-  document.querySelectorAll('.mod').forEach(s=>obs.observe(s));
+  const map={};links.forEach(a=>{const h=a.getAttribute('href');if(h&&h.charAt(0)==='#')map[h.slice(1)]=a;});
+  const stepperEl=document.querySelector('.stepper');
+  /* Horizontal-only: never call scrollIntoView (it scrolls the page and fights sticky nav). */
+  function centerStep(a){
+    if(!stepperEl||!a)return;
+    const left=a.offsetLeft-(stepperEl.clientWidth-a.clientWidth)/2;
+    const max=Math.max(0,stepperEl.scrollWidth-stepperEl.clientWidth);
+    const target=Math.max(0,Math.min(max,left));
+    if(typeof stepperEl.scrollTo==='function'){
+      try{stepperEl.scrollTo({left:target,behavior:'smooth'});}
+      catch(err){stepperEl.scrollLeft=target;}
+    }else{stepperEl.scrollLeft=target;}
+  }
+  let activeStepId=null;
+  const visibleMods=new Set();
+  function syncActiveStep(){
+    /* Prefer the section whose top is nearest the activation band under the sticky nav. */
+    let best=null,bestDist=Infinity;
+    const band=window.innerHeight*0.38;
+    visibleMods.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      const dist=Math.abs(r.top-band);
+      if(dist<bestDist){bestDist=dist;best=el;}
+    });
+    if(!best)return;
+    const id=best.id;
+    if(id===activeStepId)return;
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    const a=map[id];
+    if(a){a.classList.add('active');centerStep(a);}
+  }
+  const obs=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting)visibleMods.add(e.target);
+      else visibleMods.delete(e.target);
+    });
+    syncActiveStep();
+  },{rootMargin:'-35% 0px -50% 0px',threshold:[0,0.1,0.25]});
+  document.querySelectorAll('.mod, .audit').forEach(s=>obs.observe(s));
+  /* Keep the active chip centered when the user taps a stepper link. */
+  links.forEach(a=>a.addEventListener('click',function(){
+    const id=(a.getAttribute('href')||'').slice(1);
+    activeStepId=id;
+    links.forEach(l=>l.classList.remove('active'));
+    a.classList.add('active');
+    centerStep(a);
+  }));
 </script>
 </body>
 </html>

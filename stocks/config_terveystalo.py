@@ -91,6 +91,7 @@ TERVEYSTALO_CONFIG: dict[str, Any] = {
     "shares_m":       _SHARES_M,
     "consensus_pt":   9.40,            # blend of Inderes Accumulate / MarketScreener (range 9.2-9.7)
     "eps_ttm":        0.64,            # FY2025 EPS 0.73 stepped down through the weak Q1'26
+    "eps_fwd_12m":    0.75, "eps_fwd_24m": 0.76,   # consensus curr./next-FY EPS (Yahoo, build-time)
 
     # ---- Module A engine ----
     "engine": _make_terveystalo_engine(),
@@ -243,5 +244,6 @@ TERVEYSTALO_CONFIG: dict[str, Any] = {
     # scored. Verdicts net to broadly MIXED: a cheap cash multiple and a positive
     # reverse-DCF vs the Silmaasema deal price, against a record-high margin due to
     # mean-revert and a cut 2026 outlook.
-    "tally": {"bull": 2, "mixed": 7, "bear": 1},
+    # tallies.py counts the live chips on the page; this is only the fallback.
+    "tally": {"bull": 3, "mixed": 6, "bear": 1},
 }

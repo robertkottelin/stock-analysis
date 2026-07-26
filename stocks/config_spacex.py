@@ -99,6 +99,10 @@ SPACEX_CONFIG = {
     "shares_m":       _SHARES_M,
     "consensus_pt":   187.80,         # Investing.com consensus, 2026-07-01
     "eps_ttm":        -2.94,          # TTM GAAP; keeps P/E off (negative)
+    # Forward P/E deliberately omitted (no eps_fwd_12m / eps_fwd_24m): SpaceX is
+    # pre-IPO and this report values the private entity via a five-leg SOTP, so a
+    # consensus forward EPS on the traded proxy vehicle is not on the same basis
+    # as the modelled economics — the Module-I forward-P/E block self-absents.
 
     # ---- Module A engine ----
     "engine": _spacex_engine,
@@ -245,7 +249,7 @@ SPACEX_CONFIG = {
         "the leg is re-calibrated, not re-derived. All of these slot straight into stocks/config.py as the tape and "
         "filings mature."
     ),
-    "tally": {"bull": 0, "mixed": 12, "bear": 2},
+    "tally": {"bull": 1, "mixed": 11, "bear": 2},
 
     "strictbar_replacement": (
         '<div class="strictbar"><b>What this build adds.</b> A five-leg sum-of-the-parts — <b>Starlink</b>, '
@@ -256,8 +260,8 @@ SPACEX_CONFIG = {
         'realised vol, betas vs S&amp;P 500 / Nasdaq-100 / Tesla, own-history percentile) and <b>J — Base rates &amp; '
         'factor composite</b>. Plus hand-authored <b>K — priced-in decomposition</b>, <b>L — Starlink unit-economics</b>, '
         '<b>M — frontier optionality</b> and <b>N — orbital datacenters</b> (the space-based-compute leg, gated on the '
-        'Starship $/kg collapse, decomposed into GW × revenue/GW × capture). SpaceX listed <b>2026-06-12</b> — only '
-        '~4 weeks of tape exist, so every long-window metric honestly '
+        'Starship $/kg collapse, decomposed into GW × revenue/GW × capture). SpaceX listed <b>2026-06-12</b> — while the '
+        'post-IPO tape is shorter than a metric\'s window, that metric honestly '
         'reports <b>n/a</b> rather than a backfilled guess; re-run <code>python refresh_all.py</code> weekly and the n/a '
         'cells fill themselves in as history accrues. Balance-sheet facts are from the S-1/424B4; nothing is asserted from '
         'memory.</div>'

@@ -12,6 +12,8 @@ Schema per stock:
   shares_m            Diluted shares outstanding (millions)
   consensus_pt        Consensus analyst target price
   eps_ttm             Trailing 12-month EPS
+  eps_fwd_12m         Consensus EPS estimate, current fiscal year (~12m forward P/E)
+  eps_fwd_24m         Consensus EPS estimate, next fiscal year (~24m forward P/E)
   engine              Callable(driver_draws) -> per-share fair value
   drivers             {driver_name: {"lo","md","hi","rho"}} for the MC
   peers               List of Yahoo peer tickers used for 12m relative return
@@ -81,7 +83,7 @@ def _make_orion_engine() -> Callable[[dict], float]:
     EBIT is disclosed -- both halves are valued on EV/Sales, not EV/EBIT,
     which is why each half gets its own explicit multiple driver.
     """
-    shares, netdebt = 140.69, 131.0  # interest-bearing net liabilities per Q1'26 interim report (31 Mar 2026)
+    shares, netdebt = 140.69, 131.0  # interest-bearing net liabilities per Q1'26 interim (31 Mar 2026); H1'26 BS not yet wired
     def engine(d):
         innovative_medicines = d["nub"] * d["nmlt"]
         rest_of_orion = d["base"] * d["bmlt"]
@@ -127,6 +129,7 @@ STOCKS: dict[str, dict[str, Any]] = {
         "shares_m": 237.64,
         "consensus_pt": 34.0,
         "eps_ttm": 1.68,
+        "eps_fwd_12m": 1.83, "eps_fwd_24m": 2.01,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_konecranes_engine(),
         "drivers": {
             "mgn":   {"lo": 10.5, "md": 14.0, "hi": 16.0, "rho": 0.75},
@@ -148,11 +151,11 @@ STOCKS: dict[str, dict[str, Any]] = {
                 ("2022", 10.5, "trailing self-help start"),
                 ("2023", 12.0, "programme mid-point"),
                 ("2024", 13.1, "reported (pipeline module A)"),
-                ("2025", 14.0, "reported record (pipeline module A)"),
+                ("2025", 13.8, "reported record — comparable EBITA €588m / €4.25bn sales (FY2025 release)"),
                 ("trough risk", 11.0, "pipeline stated downside anchor"),
             ],
-            "current_label": "2025 = 14.0%",
-            "current_value": 14.0,
+            "current_label": "2025 = 13.8% (record)",
+            "current_value": 13.8,
             "reversion_mid": 12.5,
         },
         "oe_anchor_m": 500.0,
@@ -177,16 +180,18 @@ STOCKS: dict[str, dict[str, Any]] = {
              "KION Group (cyclical peer)",
              "I: peer-relative 12m"),
         ],
+        # Report reading order (fundamentals-first): T thesis/macro → Q quality → D forensics →
+        # E capital → G peers → F positioning → A–C engine/drivers/scenarios → H → I/J → ∑ → audit.
         "primary_sources": [
             ("Konecranes FY2025 financial statement release",
              "Sales €4.25bn, comparable EBITA €588m (13.8%), net cash €185m, ROCE 20.7% (comparable 22.1%), operating CF ~€0.5bn, net profit €399.8m, dividend €0.75/sh post-split (+36%)",
-             "A engine, D forensics, E capital record, G peers"),
+             "T thesis, Q quality, A engine, D forensics, E capital record, G peers"),
             ("Konecranes Q1 2026 interim report",
              "Record 11.6% Q1 margin, order book at 3-yr high, book-to-bill 1.2, net sales −4.8%, net cash €185m",
-             "B driver analysis, H kill-criteria"),
+             "T thesis, B driver analysis, H kill-criteria"),
             ("Solidium (Finnish State holding co) holdings page",
-             "11.0% stake in Konecranes; largest holder; nomination-board chair",
-             "F positioning"),
+             "11.0% stake in Konecranes; largest holder; nomination-board chair; service + equipment profitability as stated value drivers",
+             "T thesis, F positioning"),
             ("Simply Wall St / S&amp;P Global Market Intelligence (Konecranes profile)",
              "Balance-sheet items (total assets €4.8bn, equity €1.97bn, current assets €2.7bn, current liabilities €2.0bn); interest coverage 18×",
              "D forensics"),
@@ -204,16 +209,67 @@ STOCKS: dict[str, dict[str, Any]] = {
             'Everything else previously flagged as "cut" (factor betas, positioning realised-vol, own-history percentile, 12-month peer relative return, base-rate frequencies, owner-earnings yield vs real rate) is now <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.'
         ),
         "strictbar_replacement": None,
-        "tally": {"bull": 3, "mixed": 7, "bear": 0},
+        # T·Q·D·E·G·F·A·B·C·U·H·I·J = 13 reads (U = perfect-execution 10y bull path).
+        # tallies.py counts the live chips on the page; this is only the fallback.
+        "tally": {"bull": 3, "mixed": 10, "bear": 0},
+        # ------------------------------------------------------------------
+        # Perfect-execution / 10-year bull path (utils/bullcase.py → Module U)
+        # Ambitious but short of fantasy: mid-teens margin, quality multiple
+        # below Atlas, mid-single-digit sales CAGR, strong cash conversion.
+        # ------------------------------------------------------------------
+        "bull_case": {
+            "horizon_years": 10,
+            "label": "Industrial compounder + port automation, full cycle of execution",
+            "narrative": (
+                "Konecranes' ceiling is a service-heavy industrial compounder whose port-automation "
+                "and process-industry franchises grow mid-single digits, the ~14% EBITA margin edges "
+                "into the mid-teens on mix, and the market re-rates toward quality peers — not a "
+                "software multiple, and not a zero-cycle path."
+            ),
+            "method_note": (
+                "sales compound at assumed CAGR; margin and EV/EBITA ease from today to terminal via "
+                "smoothstep; FCF = EBITA × (1 − tax) × conversion; split into dividend / buyback / cash; "
+                "fair value = multiple × EBITA + net cash, ÷ shares"
+            ),
+            "path": {
+                "sales_0": 4250.0,       # €m, FY guided / pipeline mode
+                "mgn_0": 14.0,           # % comparable EBITA
+                "mlt_0": 11.0,           # × EV/EBITA (today-ish)
+                "nc_0": 185.0,           # €m net cash
+                "shares_0": 237.64,      # m shares
+                "sales_cagr": 0.055,     # 5.5% — service + automation mix
+                "mgn_term": 15.5,        # % peak defended through-cycle
+                "mlt_term": 14.0,        # × quality industrial, below Atlas ~17×
+                "tax_rate": 0.22,
+                "fcf_on_ebita": 0.78,    # after-tax cash conversion
+                "payout_ratio": 0.45,    # of FCF → dividends
+                "buyback_ratio": 0.20,   # of FCF → buybacks at FV
+                "discount_rate": 0.09,   # for PV of terminal + divs
+                "buyback_at_fv": True,
+            },
+            "milestones": [
+                {"year": 2, "text": "Book-to-bill stays ≥ 1 and the service agreement base keeps compounding; margin holds ≥ 13.5% through any soft equipment year."},
+                {"year": 5, "text": "Port automation / software attach is a visible growth lane; group sales clearly above €5.5bn; EV/EBITA re-rates through ~12.5× as the market accepts margin durability."},
+                {"year": 8, "text": "Service is a larger share of the mix; comparable EBITA margin sustainably mid-teens; net cash or ongoing buybacks fund a rising dividend without leverage."},
+                {"year": 10, "text": "Through-cycle EBITA margin ~15.5%, sales ~€7bn, quality multiple ~14× — the default terminal state this calculator prices."},
+            ],
+            "guards": [
+                "Industrial / port volume double-dips for several years and the 14% margin proves cyclical peak, not a floor.",
+                "A large, value-destructive acquisition (or a blocked mega-deal distraction) absorbs the FCF that this path compounds.",
+                "Structural share loss in Port Solutions automation to pure-play software/OEM rivals.",
+                "Multiple never re-rates — the market permanently slots KCR with deep cyclicals (~7–9×) despite the service mix.",
+            ],
+        },
     },
 
     "neste": {
         "ticker": "NESTE.HE",
         "html_file": "neste-analytics-pipeline.html",
-        "pipeline_price": 27.0,
+        "pipeline_price": 32.27,
         "shares_m": 769.21,
-        "consensus_pt": 25.69,
+        "consensus_pt": 29.85,
         "eps_ttm": 0.18,
+        "eps_fwd_12m": 2.74, "eps_fwd_24m": 2.10,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_neste_engine(),
         "drivers": {
             "mgn":  {"lo": 370, "md": 630, "hi": 770, "rho": 0.78},
@@ -300,7 +356,7 @@ STOCKS: dict[str, dict[str, Any]] = {
             '<b>J — Base rates &amp; factor composite</b> (reference-class distribution of the master driver, empirical return base-rates from 5y prices, V/Q/M/L factor composite, owner-earnings yield vs real 10y). '
             'Previously "cut, not faked" items (factor betas, macro/Brent regression, price-history percentile, momentum, realised vol, drawdown, base-rate frequencies) are now included where the data was available — see footer for the still-legitimate exclusions. Ownership stays at the official 44.2% state anchor; peer multiples remain live.</div>'
         ),
-        "tally": {"bull": 1, "mixed": 7, "bear": 2},
+        "tally": {"bull": 1, "mixed": 10, "bear": 2},
     },
 
     "sampo": {
@@ -310,10 +366,16 @@ STOCKS: dict[str, dict[str, Any]] = {
         "shares_m": 2650.0,
         "consensus_pt": 10.5,
         "eps_ttm": 0.62,
+        "eps_fwd_12m": 0.54, "eps_fwd_24m": 0.61,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_sampo_engine(),
         "drivers": {
             "ir":  {"lo": 8.6,  "md": 9.0,  "hi": 9.5,  "rho": 0.35},
-            "cr":  {"lo": 81.0, "md": 84.0, "hi": 88.0, "rho": 0.70},
+            # cr loads NEGATIVELY on the common factor: a good regime lowers the
+            # combined ratio while lifting investment income and the multiple.
+            # The pipeline's own JS engine draws cr inverted (inv=true) for the
+            # same reason — a positive rho here would have good states worsen
+            # underwriting, understating both tails.
+            "cr":  {"lo": 81.0, "md": 84.0, "hi": 88.0, "rho": -0.70},
             "inv": {"lo": 450,  "md": 650,  "hi": 850,  "rho": 0.55},
             "pe":  {"lo": 11.5, "md": 14.5, "hi": 19.0, "rho": 0.65},
         },
@@ -388,7 +450,7 @@ STOCKS: dict[str, dict[str, Any]] = {
             'Everything else previously flagged as "cut" (factor &amp; macro betas, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is now <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.'
         ),
         "strictbar_replacement": None,
-        "tally": {"bull": 2, "mixed": 8, "bear": 0},
+        "tally": {"bull": 2, "mixed": 7, "bear": 1},
     },
 
     "mandatum": {
@@ -398,6 +460,7 @@ STOCKS: dict[str, dict[str, Any]] = {
         "shares_m": 503.0,
         "consensus_pt": 5.50,
         "eps_ttm": 0.35,
+        "eps_fwd_12m": 0.24, "eps_fwd_24m": 0.32,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_mandatum_engine(),
         "drivers": {
             "clp": {"lo":  78, "md":  92, "hi":  118, "rho": 0.65},
@@ -471,17 +534,19 @@ STOCKS: dict[str, dict[str, Any]] = {
     "orion": {
         "ticker": "ORNBV.HE",
         "html_file": "orion-pipeline.html",
-        "pipeline_price": 66.95,
+        "pipeline_price": 77.40,
         "shares_m": 140.69,
         "consensus_pt": 75.13,
         "eps_ttm": 3.76,
+        "eps_fwd_12m": 3.91, "eps_fwd_24m": 4.61,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_orion_engine(),
         "drivers": {
-            "nub":  {"lo":  700, "md":  900, "hi": 1050, "rho": 0.75},
+            # nub md re-marked post H1'26: H1 Nubeqa €381.8m / ~39% FY phasing (2025 H1/FY ≈38%) → ~€980m
+            "nub":  {"lo":  850, "md":  980, "hi": 1200, "rho": 0.75},
             "nmlt": {"lo":  5.5, "md":  7.0, "hi":  9.0, "rho": 0.55},
-            "base": {"lo": 1030, "md": 1110, "hi": 1200, "rho": 0.25},
+            "base": {"lo": 1030, "md": 1100, "hi": 1180, "rho": 0.25},  # H1 base ~€547m ×2 ≈ €1,095m
             "bmlt": {"lo":  1.8, "md":  2.6, "hi":  3.5, "rho": 0.20},
-            "pipe": {"lo":    0, "md":  150, "hi":  500, "rho": 0.15},
+            "pipe": {"lo":    0, "md":  180, "hi":  550, "rho": 0.15},  # ODM-212 TEADES clean safety + orphan designations
         },
         "reverse_dcf_target": "nub",
         "reverse_dcf_label":  "Orion-booked Nubeqa® net sales run-rate (royalties + product sales, at mode multiple/base/pipeline)",
@@ -494,16 +559,18 @@ STOCKS: dict[str, dict[str, Any]] = {
             "variable": "Orion-booked Nubeqa® net sales (€m, royalties + product sales)",
             "unit": "€m",
             "series": [
-                ("2024",                    368.3, "FY2024 reported — royalties + product sales to Bayer"),
-                ("Q1'26 ×4 (tier trough)",   580.0, "Q1'26 print (€145.0m: royalties €95m + product sales €50m) annualised — understates the FY because royalty tiers reset each January (CEO, Q1'26 call)"),
+                ("2024",                     368.3, "FY2024 reported — royalties + product sales to Bayer"),
                 ("2025",                     609.8, "FY2025 reported — royalties €432.5m + product sales €177.3m"),
-                ("Q4'25 run-rate ×4",        850.4, "Q4'25 print (€212.6m) annualised — computed, not a forecast"),
-                ("2026 sell-side consensus", 915.0, "≈+50% YoY per analyst consensus cited on the Q1'26 call — estimate, not company guidance"),
-                ("2030 company ambition",   1000.0, "Orion's stated \"potential to exceed €1bn by the end of the decade\" (14 Jan 2026)"),
+                ("Q1'26",                    145.0, "royalties €95m + product sales €50m (+~50% YoY)"),
+                ("Q2'26",                    236.8, "H1 total €381.8m − Q1; max royalty tier reached in Q2 (CFO)"),
+                ("H1'26",                    381.8, "sourced H1 print — +64.9% YoY"),
+                ("2026e H1-implied",         980.0, "H1 €381.8m ÷ ~39% FY phasing (2025 H1/FY ≈38%) — computed, not guidance"),
+                ("2030–32 peak (base)",     1400.0, "Module N base path — Orion-booked peak before patent pressure"),
+                ("2032 peak (perfect)",     1900.0, "Module N perfect envelope — all labels/China/earlier-line work; outer scenario not central case"),
             ],
-            "current_label": "2025 = €609.8m · Q1'26 print €145m (+~50% YoY)",
-            "current_value": 609.8,
-            "reversion_mid": 800.0,
+            "current_label": "H1'26 = €381.8m · FY26e ≈ €980m · perfect peak €1.9bn → FV ~€150–160",
+            "current_value": 980.0,
+            "reversion_mid": 1000.0,
         },
         "oe_anchor_m": 218.2,
         "oe_note": "cash flow from operating + investing activities +€218.2m FY2025 (pipeline module — sourced)",
@@ -531,30 +598,30 @@ STOCKS: dict[str, dict[str, Any]] = {
              "I: peer-relative 12m"),
         ],
         "primary_sources": [
+            ("Orion Group Half-Year Financial Report 1–6/2026 (17 Jul 2026) &amp; earnings materials",
+             "Q2 net sales €521.6m (+25.2%), OP €176.6m (+68.8%, 33.9% margin), EPS €1.00; H1 net sales €939.3m (+21.8%), OP €291.3m (+59.6%); Nubeqa® Q2 €236.8m / H1 €381.8m (+64.9%); Innovative Medicines Q2 €241.6m / H1 €392.0m; max royalty tier reached in Q2 (royalties ≈€77m, product sales ≈€160m); FY2026 guidance raised to net sales €2.00–2.10bn / OP €650–750m; Q3 manufacturing maintenance; US pharma tariffs from Oct 2026 (small 2026, larger 2027 risk)",
+             "A engine, P post-print, N Nubeqa path, C scenarios"),
             ("Orion Group Financial Statement Release 1–12/2025 (12 Feb 2026)",
              "Net sales €1,889.5m (+22.5%), operating profit €631.6m (+51.6%), EPS €3.56, dividend €1.80 proposed; balance sheet (assets €2,009.8m, equity €1,284.5m, interest-bearing net liabilities €144.4m, equity ratio 64.1%, gearing 11.2%, ROE 43.7%, ROCE 43.8%); net-sales split by business division (Innovative Medicines €812.7m, Branded Products €314.6m, Generics &amp; Consumer Health €552.8m, Animal Health €140.9m, Fermion €68.7m); Nubeqa® split (royalties €432.5m / product sales €177.3m); Bayer/MSD/Tenax licensing terms; shares 141,134,278; market cap €8,944.0m",
              "A engine, D forensics, E capital record, F positioning"),
             ("Orion Group Interim Report 1–3/2026 (23 Apr 2026)",
-             "Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Innovative Medicines division +~54%; FY2026 outlook raised to €1.95–2.10bn net sales / €600–750m operating profit; interest-bearing net liabilities €131.0m (31 Mar 2026); EPS €0.64 (Q1'25: €0.44); DASL-HiCaP darolutamide read-out expected 2028",
-             "B driver analysis, C scenarios, P Q2 playbook"),
-            ("Orion Q1'26 earnings call — CEO Liisa Hurme / CFO René Lindell (23 Apr 2026, transcript via Investing.com)",
-             "Nubeqa® booked in Q1'26: royalties €95m + tablet sales to Bayer €50m ≈ €145m (+~50% YoY); royalty tiers reset each January — Q1 is recognised at the lowest tier, quarterly prints ramp mechanically through the year, so Q1×4 understates the FY; sell-side consensus of ~+50% FY26 Nubeqa growth was put to management on the call (\"Bayer is also optimistic on the full year… and so are we\"); FY26 operating-profit guidance raised from €550–750m to €600–750m; higher tablet deliveries expected over the rest of 2026; shares fell 6.2% on results day on generics price-erosion concerns",
-             "P Q2 playbook, C scenarios"),
-            ("Orion stock exchange release (3 Jul 2026)",
-             "Half-Year Financial Report January–June 2026 publishes Friday 17 Jul 2026 ≈ 12:00 EEST; webcast &amp; analyst call 14:00 EEST",
-             "P Q2 playbook"),
+             "Q1 2026 net sales €417.7m (+17.8%), operating profit €114.8m (+47.3%, 27.5% margin); Nubeqa® ≈€145m (royalties €95m + product sales €50m); interest-bearing net liabilities €131.0m (31 Mar 2026); DASL-HiCaP darolutamide read-out expected 2028",
+             "B driver analysis, C scenarios, N Nubeqa path"),
+            ("Orion Q2'26 earnings call — CEO Liisa Hurme / CFO René Lindell (17 Jul 2026, via Investing.com slides coverage)",
+             "Nubeqa® reached maximum royalty tier in Q2 — future quarters driven by in-market sales growth, not further tier steps; product deliveries lumpy (Q3 maintenance, Q4 full capacity); ODM-212 TEADES Phase 1 clean safety, TEADCO started, orphan designations US/EU for mesothelioma; US tariffs on innovative pharma from Oct 2026",
+             "P post-print, N Nubeqa path, H kill-criteria"),
             ("Bayer media release, Feb 2022 (ASCO GU / ARASENS data) &amp; FDA approval releases 2024–2025",
              "Nubeqa® global peak-sales estimate raised to &gt;€3bn (from &gt;€1bn); average total royalty rate to Orion ~20–25% of in-market sales including product sales to Bayer, tiered upward as sales grow; mHSPC label expansion (ADT+docetaxel 2022, ADT-only EU 2025/US 2025, China NMPA 2026)",
-             "A engine, C scenarios"),
+             "A engine, C scenarios, N Nubeqa path"),
             ("Jefferies research note via Investing.com (30 Jan 2026)",
              "Downgrade to Hold from Buy — \"Nubeqa upside is priced in\"; worldwide Nubeqa peak-sales estimate raised to €4.6bn (from €4.2bn); risk-reward called neutral over 12 months despite the estimate upgrade",
-             "F positioning, G peers"),
-            ("Yahoo Finance v8 quote (17 Jul 2026 morning, pre-release) &amp; Vara Research consensus via Orion IR (upd. 17 Jul 2026)",
-             "Spot €66.95 pre-H1-release (−4.4% vs the 28 Jun €70.00 anchor; €72.00 on 3 Jul, €69.65 on 10 Jul), 52-week range €56.50–75.30; Vara Research 8-analyst consensus PT €75.13 (prev. €75.86), recommendations 6 positive / 1 neutral / 1 negative",
-             "F positioning, P Q2 playbook"),
+             "F positioning, G peers, N Nubeqa path"),
+            ("Yahoo Finance v8 quote (18 Jul 2026) &amp; Vara Research consensus via Orion IR (upd. 17 Jul 2026)",
+             "Post-print close €77.40 (+12.6% on results day from ~€68.75); 52-week range €56.50–€78.20; Vara Research 8-analyst consensus PT €75.13 pre-revision",
+             "F positioning, I asymmetry"),
             ("DrugPatentWatch / Grokipedia darolutamide patent trackers",
              "US patent estate (9 filings, none expired) points to generic entry ≈2038–2042; EU core compound patents ~2027–2030 with per-country SPC extensions pushing effective exclusivity into the mid-2030s in most member states",
-             "H kill-criteria"),
+             "H kill-criteria, N Nubeqa path"),
             ("Fiscal.ai &amp; Investing.com Pro — Recordati (BIT:REC) EV/EBITDA (28 Jun 2026)",
              "Fiscal.ai: trailing EV/EBITDA 13.27&times; for FY2025; Investing.com Pro's own build (EV €11.94bn ÷ EBITDA €871.7m) computes to 13.7&times; — two independent aggregators converge on ≈13–14&times;. Genmab's multiple was checked against the same two providers plus Yahoo Finance and StockAnalysis.com and excluded: the four disagreed materially (≈11&times;–16&times;) with inconsistent per-share bases, likely reflecting Genmab's April 2026 share-capital reduction working through TTM figures at different speeds across providers",
              "G peers"),
@@ -567,7 +634,7 @@ STOCKS: dict[str, dict[str, Any]] = {
             'Everything else previously flagged as "cut" (factor &amp; FX betas, price-history percentile, momentum, realised vol, drawdown, peer 12m relative, base-rate frequencies, owner-earnings yield vs real rate) is <b>included</b> in Modules I &amp; J and computed live from the Yahoo Finance v8 chart API.'
         ),
         "strictbar_replacement": None,
-        "tally": {"bull": 2, "mixed": 8, "bear": 0},
+        "tally": {"bull": 3, "mixed": 5, "bear": 4},
     },
 
     "kesko": {
@@ -577,6 +644,7 @@ STOCKS: dict[str, dict[str, Any]] = {
         "shares_m": 398.08,
         "consensus_pt": 20.83,
         "eps_ttm": 1.03,
+        "eps_fwd_12m": 1.17, "eps_fwd_24m": 1.31,   # consensus curr./next-FY EPS (Yahoo, build-time)
         "engine": _make_kesko_engine(),
         "drivers": {
             "gp":   {"lo":  380, "md":  418, "hi":  455, "rho": 0.35},
@@ -682,6 +750,31 @@ STOCKS["tesla"] = TESLA_CONFIG
 # demand downturn carried as explicit drivers/scenarios.
 from stocks.config_terveystalo import TERVEYSTALO_CONFIG  # noqa: E402
 STOCKS["terveystalo"] = TERVEYSTALO_CONFIG
+
+# Micron Technology, Inc. (NASDAQ: MU) — same pattern. Through-cycle EBITDA × EV/EBITDA
+# + net cash memory-semiconductor engine, with the AI/HBM super-cycle and the memory
+# down-cycle both carried explicitly. Config in stocks/config_micron.py.
+from stocks.config_micron import MICRON_CONFIG  # noqa: E402
+STOCKS["micron"] = MICRON_CONFIG
+
+# Investor AB (Nasdaq Stockholm: INVE-B.ST) — industrial holding company (Wallenberg).
+# Three-leg adjusted-NAV engine (Listed Companies + Patricia Industries + EQT) ×
+# (1 − holdco discount). Config in stocks/config_investor.py; data-heavy report
+# emitted by stocks/_investor_build.py.
+from stocks.config_investor import INVESTOR_CONFIG  # noqa: E402
+STOCKS["investor"] = INVESTOR_CONFIG
+
+# Inission AB (Nasdaq Stockholm: INISS-B.ST) — Nordic EMS roll-up + power-electronics
+# OEM. Single-leg sales × EBITA-margin × EV/EBITA − net debt engine. Config in
+# stocks/config_inission.py.
+from stocks.config_inission import INISSION_CONFIG  # noqa: E402
+STOCKS["inission"] = INISSION_CONFIG
+
+# TE Connectivity plc (NYSE: TEL) — global connectors/sensors industrial compounder.
+# Single-leg sales × EBIT-margin × EV/EBIT − net debt; 10y horizon first-principles.
+# Config in stocks/config_te.py.
+from stocks.config_te import TE_CONFIG  # noqa: E402
+STOCKS["te"] = TE_CONFIG
 
 
 # -------------------- Framework-wide (data-provider notes) --------------------

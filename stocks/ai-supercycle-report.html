@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Supercycle — First-Principles Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1ED; --surface:#FFFFFF; --surface-2:#F7F9F6;
+    --line:#E1E5DE; --line-strong:#CBD2C9;
+    --ink:#13201C; --muted:#5E6E66; --faint:#8B988F;
+    --teal:#0F9E8B; --teal-deep:#0A5C53; --teal-wash:#E4F4F0;
+    --blue:#2E6F9E; --blue-deep:#1C4A6E; --blue-wash:#E2EDF6;
+    --coral:#D2603A; --coral-deep:#9A3F22; --coral-wash:#F8E7DF;
+    --amber:#C99A2E; --amber-deep:#86631A; --amber-wash:#F6ECCF;
+    --radius:14px;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace;
+    --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+    --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+  .wrap{max-width:1080px;margin:0 auto}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .eyebrow::before{content:"";width:26px;height:1.5px;background:var(--teal);display:inline-block}
+  h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,5vw,38px);line-height:1.05}
+  h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(14px,2.3vw,17px);margin-top:8px;letter-spacing:-.01em;max-width:800px}
+  .keystat{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .ks{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;min-width:92px}
+  .ks .kl{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .ks .kv{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:2px}
+  .ks .kv small{font-size:11px;color:var(--muted);font-weight:400}
+  .legend{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .lg{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:5px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;color:var(--muted)}
+  .lg .d{width:8px;height:8px;border-radius:2px}
+  .lg.sourced .d{background:var(--teal)} .lg.computed .d{background:var(--blue)} .lg.assumed .d{background:var(--amber)}
+  .hero{margin-top:18px;background:linear-gradient(180deg,#fff,var(--surface-2));border:1.5px solid var(--blue);border-radius:var(--radius);padding:clamp(16px,3vw,24px)}
+  .hero .htag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:8px}
+  .hero h3{font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.15}
+  .hero h3 b{color:var(--blue-deep)}
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  @media(max-width:680px){.lenses{grid-template-columns:1fr}}
+  .lens{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+  .lens .lt{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+  .lens .lh{font-family:var(--disp);font-weight:600;font-size:14px;margin-bottom:5px}
+  .lens.empir .lh{color:var(--coral-deep)} .lens.comp .lh{color:var(--blue-deep)} .lens.owner .lh{color:var(--teal-deep)}
+  .lens .lb{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .synth{margin-top:14px;background:var(--blue-wash);border-radius:11px;padding:13px 15px;font-size:13.5px;line-height:1.55}
+  .synth b{color:var(--blue-deep)}
+  .stepper{position:sticky;top:0;z-index:20;margin:18px -4px;padding:10px 4px;background:rgba(238,241,237,.93);backdrop-filter:blur(8px);display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}
+  .stepper a{flex:0 0 auto;font-family:var(--mono);font-size:11px;font-weight:500;color:var(--muted);text-decoration:none;padding:7px 11px;border:1px solid var(--line-strong);border-radius:20px;background:var(--surface);white-space:nowrap;transition:all .15s}
+  .stepper a .n{color:var(--teal);font-weight:600;margin-right:5px}
+  .stepper a.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .stepper a.active .n{color:#7FE0CE}
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(16px,3vw,26px);margin-bottom:16px;scroll-margin-top:62px}
+  .mod-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+  .mod-no{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--teal);line-height:1;flex:0 0 auto;width:34px}
+  .mod-head .ht{flex:1}
+  .mod-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);letter-spacing:-.01em;line-height:1.1}
+  .mod-head .hq{font-size:13px;color:var(--muted);margin-top:4px;font-style:italic}
+  .tagchip{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:14px;white-space:nowrap;flex:0 0 auto;align-self:center}
+  .tagchip.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .tagchip.c{background:var(--blue-wash);color:var(--blue-deep)}
+  .tagchip.a{background:var(--amber-wash);color:var(--amber-deep)}
+  .verdict{display:flex;gap:11px;align-items:center;padding:10px 13px;border-radius:10px;margin-bottom:15px;font-size:12.5px;line-height:1.45}
+  .verdict.bull{background:var(--teal-wash)} .verdict.mixed{background:var(--amber-wash)} .verdict.bear{background:var(--coral-wash)}
+  .verdict .vchip{font-family:var(--mono);font-weight:700;font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;color:#fff;flex:0 0 auto}
+  .verdict.bull .vchip{background:var(--teal)} .verdict.mixed .vchip{background:var(--amber-deep)} .verdict.bear .vchip{background:var(--coral)}
+  .verdict .vtext{color:var(--ink)} .verdict .vtext b{font-weight:600}
+  p.body{font-size:14px;color:var(--ink);margin-bottom:12px;line-height:1.55}
+  p.body:last-child{margin-bottom:0}
+  .note{font-size:12px;color:var(--muted);background:var(--surface-2);border-left:3px solid var(--line-strong);border-radius:0 8px 8px 0;padding:11px 14px;margin-top:14px;line-height:1.5}
+  .note.t{border-left-color:var(--teal)} .note.a{border-left-color:var(--amber)} .note.c{border-left-color:var(--coral)} .note.b{border-left-color:var(--blue)}
+  .note b{color:var(--ink)}
+  .src{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+  .asm{font-family:var(--mono);font-size:9.5px;font-weight:600;color:var(--amber-deep);text-transform:uppercase;letter-spacing:.04em}
+  .mc-wrap{border:1px dashed var(--line-strong);border-radius:12px;padding:clamp(14px,2.5vw,20px);background:var(--surface-2)}
+  .mc-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal-deep);font-weight:600;margin-bottom:4px}
+  .mc-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:15px 22px}
+  @media(max-width:560px){.controls{grid-template-columns:1fr}}
+  .ctrl label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .ctrl .lab{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ctrl .lab span{color:var(--faint);font-weight:400;font-size:11px}
+  .ctrl .cval{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--blue-deep)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-strong);outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer;box-shadow:0 1px 4px rgba(46,111,158,.35)}
+  input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--surface);border:2.5px solid var(--blue);cursor:pointer}
+  .tri{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:2px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:18px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmpcard{border:1px solid var(--line);border-radius:11px;padding:14px 15px;background:var(--surface)}
+  .cmpcard.hot{border:1.5px solid var(--coral)}
+  .cmpcard .ct{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+  .cmpcard .ct .dd{width:8px;height:8px;border-radius:2px}
+  .cmprow{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .cmprow:first-of-type{border-top:none}
+  .cmprow .ck{color:var(--muted)} .cmprow .cv{font-family:var(--mono);font-weight:600}
+  .cv.neg{color:var(--coral-deep)} .cv.pos{color:var(--teal-deep)} .cv.warn{color:var(--amber-deep)}
+  .hist-wrap{margin-top:18px}
+  .hist-leg{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:8px}
+  .hist-leg .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  #hist{width:100%;height:auto;display:block}
+  .reading{margin-top:16px;font-size:13.5px;line-height:1.55}
+  .reading b{color:var(--blue-deep)} .reading .down{color:var(--coral);font-weight:600}
+  #tornado{width:100%;height:auto;display:block;margin-top:4px}
+  .reactab .rr{display:grid;grid-template-columns:118px 1fr 86px;gap:11px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:560px){.reactab .rr{grid-template-columns:80px 1fr 64px}}
+  .reactab .re{font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--ink)}
+  .reactab .rd{font-size:12px;color:var(--muted);line-height:1.4}
+  .reactab .rp{font-family:var(--mono);font-weight:700;font-size:14px;text-align:right;color:var(--coral-deep)}
+  .scen{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 14px}
+  @media(max-width:560px){.scen{grid-template-columns:1fr}}
+  .scard{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:var(--surface-2)}
+  .scard .sn{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .scard.bear .sn{color:var(--coral-deep)} .scard.base .sn{color:var(--amber-deep)} .scard.bull .sn{color:var(--teal-deep)}
+  .scard .sd{font-size:11.5px;color:var(--muted);line-height:1.4;margin-bottom:9px;min-height:58px}
+  .scard .sfv{font-family:var(--mono);font-size:19px;font-weight:600}
+  .scard .sfvl{font-family:var(--mono);font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em;margin-top:1px}
+  .evid{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 2px}
+  .ev{font-size:12px;font-weight:500;padding:8px 13px;border-radius:9px;border:1.5px solid var(--line-strong);background:var(--surface);cursor:pointer;transition:all .12s;user-select:none;display:flex;align-items:center;gap:8px}
+  .ev:hover{border-color:var(--faint)}
+  .ev.on{border-color:var(--teal);background:var(--teal-wash);color:var(--teal-deep)}
+  .ev.on.bearish{border-color:var(--coral);background:var(--coral-wash);color:var(--coral-deep)}
+  .ev .ar{font-family:var(--mono);font-size:10px;font-weight:600;opacity:.7}
+  .wbar{height:9px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:16px;display:flex}
+  .wbar .wp{height:100%}
+  .wbar .wp.bear{background:var(--coral)} .wbar .wp.base{background:var(--amber)} .wbar .wp.bull{background:var(--teal)}
+  .wlab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:5px}
+  .blend{margin-top:16px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-top:14px;border-top:1px dashed var(--line-strong)}
+  .blend .bn{font-family:var(--disp);font-weight:700;font-size:34px;letter-spacing:-.02em;color:var(--amber-deep)}
+  .blend .bl{font-size:12.5px;color:var(--muted)}
+  .scores{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  @media(max-width:760px){.scores{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:480px){.scores{grid-template-columns:1fr}}
+  .sc{border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--surface-2)}
+  .sc .scl{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+  .sc .scl .tg{font-size:8.5px;padding:2px 6px;border-radius:8px}
+  .tg.c{background:var(--blue-wash);color:var(--blue-deep)} .tg.s{background:var(--teal-wash);color:var(--teal-deep)}
+  .sc .scv{font-family:var(--disp);font-weight:700;font-size:30px;letter-spacing:-.02em;line-height:1}
+  .sc .scv .un{font-size:15px;color:var(--faint);font-weight:500}
+  .sc .scband{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:9px}
+  .scband.good{background:var(--teal-wash);color:var(--teal-deep)} .scband.mid{background:var(--amber-wash);color:var(--amber-deep)}
+  .sc .scd{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.45}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .br{display:grid;grid-template-columns:185px 1fr 66px;align-items:center;gap:11px}
+  @media(max-width:560px){.br{grid-template-columns:120px 1fr 52px}}
+  .br .brl{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.25}
+  .br .brl small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
+  .br .brt{position:relative;height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+  .br .brf{position:absolute;top:0;bottom:0;left:0;border-radius:5px}
+  .br .brv{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right}
+  table{border-collapse:collapse;width:100%;font-size:12.5px}
+  th,td{padding:8px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  td.num{text-align:right;font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .scoretab td .vchip{font-family:var(--mono);font-weight:700;font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:6px;color:#fff;white-space:nowrap}
+  .scoretab .vchip.bull{background:var(--teal)} .scoretab .vchip.mixed{background:var(--amber-deep)} .scoretab .vchip.bear{background:var(--coral)}
+  .tally{margin:18px 0 6px}
+  .tally .tbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--line)}
+  .tally .tbar .tp{height:100%}
+  .tally .tbar .tp.bull{background:var(--teal)} .tally .tbar .tp.mixed{background:var(--amber)} .tally .tbar .tp.bear{background:var(--coral)}
+  .tally .tlab{display:flex;gap:16px;margin-top:9px;font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .tally .tlab .tb{color:var(--teal-deep)} .tally .tlab .tm{color:var(--amber-deep)} .tally .tlab .tr{color:var(--coral-deep)}
+  .overall{margin-top:16px;border:1.5px solid var(--amber);background:var(--amber-wash);border-radius:12px;padding:16px 18px}
+  .overall .ov-chip{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.08em;color:#fff;background:var(--amber-deep);padding:5px 12px;border-radius:8px;display:inline-block;margin-bottom:11px}
+  .overall .ov-text{font-size:13.5px;line-height:1.55;color:var(--ink)} .overall .ov-text b{color:var(--amber-deep)}
+  .rec{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+  .ri{display:flex;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:10px}
+  .ri .rk{font-family:var(--disp);font-weight:600;font-size:12px;color:var(--blue-deep);width:116px;flex:0 0 auto}
+  @media(max-width:560px){.ri .rk{width:86px}}
+  .ri .rd{flex:1;font-size:12.5px;color:var(--muted);line-height:1.45}
+  .ri .rd b{color:var(--ink)}
+  .kc{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .kci{display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45}
+  .kci .kx{flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px}
+  .kci b{color:var(--ink)} .kci .kv{font-family:var(--mono);color:var(--coral-deep);font-weight:600}
+  footer{margin-top:22px;padding:18px 4px 8px;border-top:1px solid var(--line)}
+  .notes{font-size:12px;color:var(--muted);line-height:1.55}
+  .notes h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:14px 0 8px;font-weight:600}
+  .notes h4:first-child{margin-top:0}
+  .cut{background:var(--coral-wash);border-radius:8px;padding:11px 14px;margin-top:6px}
+  .cut b{color:var(--coral-deep)}
+  .disc{margin-top:13px;font-size:11.5px;color:var(--faint);font-style:italic}
+
+  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){.qgrid{grid-template-columns:1fr}}
+  .qcard{border:1px solid var(--line);border-radius:12px;padding:14px 15px 15px;background:var(--surface-2)}
+  .qtt{font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink);letter-spacing:-.01em}
+  .qsub{font-size:11px;color:var(--muted);margin:2px 0 8px;line-height:1.35}
+  .qcard svg{display:block}
+  .qread{font-size:11.5px;line-height:1.5;color:var(--muted);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .qread b{color:var(--ink)}
+</style>
+<style>
+  /* Additions for Modules I (asymmetry) and J (base rates) */
+  .kg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+  @media(max-width:780px){.kg{grid-template-columns:repeat(2,1fr)}}
+  .kg .kgi{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+  .kg .kgi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kg .kgi .v{font-family:var(--mono);font-weight:600;font-size:16px;margin-top:3px;line-height:1.15;color:var(--ink)}
+  .kg .kgi .v small{font-size:11px;font-weight:400;color:var(--muted);margin-left:4px}
+  .kg .kgi.pos .v{color:var(--teal-deep)} .kg .kgi.neg .v{color:var(--coral-deep)}
+  .rev{border:1px dashed var(--line-strong);border-radius:12px;padding:14px 16px;background:var(--surface-2);margin-top:14px}
+  .rev .rt{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue-deep);font-weight:600;margin-bottom:6px}
+  .rev .rv{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;margin-top:6px}
+  .rev .rv .n{font-family:var(--disp);font-size:22px;font-weight:600;color:var(--blue-deep)}
+  .rev .rv .n.pos{color:var(--teal-deep)} .rev .rv .n.neg{color:var(--coral-deep)}
+  .rev .rv .l{font-size:13px;color:var(--ink)} .rev .rv .l b{color:var(--ink)}
+  .rev .rv .m{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .kelly{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+  @media(max-width:680px){.kelly{grid-template-columns:1fr 1fr}}
+  .kbox{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 15px}
+  .kbox.hot{border:1.5px solid var(--coral)}
+  .kbox.good{border:1.5px solid var(--teal)}
+  .kbox .t{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .kbox .n{font-family:var(--disp);font-size:22px;font-weight:600;margin-top:3px;line-height:1.05}
+  .kbox .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+  .kbox .n.pos{color:var(--teal-deep)} .kbox .n.neg{color:var(--coral-deep)}
+  .brtab{width:100%;border-collapse:collapse;margin-top:10px;font-size:12.5px}
+  .brtab th{text-align:left;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);padding:6px 8px;border-bottom:1px solid var(--line-strong)}
+  .brtab td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  .brtab td.num{font-family:var(--mono);text-align:right;font-weight:500}
+  .brtab td.cur{background:var(--teal-wash)}
+  .brtab td.now{font-family:var(--mono);color:var(--teal-deep);font-weight:600}
+  .cbar{position:relative;height:16px;background:var(--surface-2);border-radius:8px;overflow:hidden;margin-top:6px;border:1px solid var(--line)}
+  .cbar .fl{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--coral) 0%,var(--amber) 50%,var(--teal) 100%);opacity:.28}
+  .cbar .mk{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+  .cbar .lb{position:absolute;top:100%;font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:2px;transform:translateX(-50%);white-space:nowrap}
+  .fac{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+  @media(max-width:780px){.fac{grid-template-columns:repeat(2,1fr)}}
+  .fac .fi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:12px}
+  .fac .fi.hot{background:var(--teal-wash);border-color:var(--teal)}
+  .fac .fi .fk{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+  .fac .fi .fv{font-family:var(--disp);font-size:20px;font-weight:600;margin-top:4px}
+  .fac .fi .fd{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.35}
+  .barsrow{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;font-size:12px;padding:4px 0;align-items:center}
+  .barsrow .bl{color:var(--muted);font-family:var(--mono);font-size:10.5px}
+  .barsrow .bb{position:relative;height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .barsrow .bb .bi{position:absolute;top:0;bottom:0;background:var(--blue);opacity:.65}
+  .barsrow .bv{font-family:var(--mono);text-align:right;font-weight:600}
+</style>
+<style>
+  .report-meta{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .toc{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:18px 0}
+  .toc h3{font-family:var(--disp);font-size:15px;margin-bottom:10px}
+  .toc ol{margin:0 0 0 18px;font-size:13.5px;line-height:1.7;color:var(--ink)}
+  .toc a{color:var(--blue-deep);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  .phasegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+  @media(max-width:900px){.phasegrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.phasegrid{grid-template-columns:1fr}}
+  .phase{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2)}
+  .phase .pn{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+  .phase .pt{font-family:var(--disp);font-weight:600;font-size:15px;margin-bottom:8px;line-height:1.2}
+  .phase.p1 .pt{color:var(--teal-deep)}
+  .phase.p2 .pt{color:var(--blue-deep)}
+  .phase.p3 .pt{color:var(--amber-deep)}
+  .phase.p4 .pt{color:var(--coral-deep)}
+  .phase .pb{font-size:12px;color:var(--muted);line-height:1.45}
+  .phase .pw{margin-top:10px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink)}
+  .stack{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
+  .sl{display:grid;grid-template-columns:140px 1fr 110px;gap:10px;align-items:center;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  @media(max-width:640px){.sl{grid-template-columns:1fr}}
+  .sl .sn{font-family:var(--disp);font-weight:600;font-size:13.5px}
+  .sl .sd{font-size:12px;color:var(--muted);line-height:1.4}
+  .sl .se{font-family:var(--mono);font-size:11px;font-weight:600;text-align:right}
+  .sl .se.hot{color:var(--teal-deep)}
+  .sl .se.warm{color:var(--amber-deep)}
+  .sl .se.cool{color:var(--coral-deep)}
+  .callout{border-left:3px solid var(--blue);background:var(--blue-wash);border-radius:0 10px 10px 0;padding:14px 16px;margin:14px 0;font-size:13.5px;line-height:1.55}
+  .callout.teal{border-left-color:var(--teal);background:var(--teal-wash)}
+  .callout.amber{border-left-color:var(--amber);background:var(--amber-wash)}
+  .callout.coral{border-left-color:var(--coral);background:var(--coral-wash)}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  @media(max-width:720px){.twocol{grid-template-columns:1fr}}
+  .box{border:1px solid var(--line);border-radius:12px;padding:14px 15px;background:var(--surface-2)}
+  .box h4{font-family:var(--disp);font-size:14px;margin-bottom:8px}
+  .box ul{margin:0 0 0 16px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .box ul b{color:var(--ink)}
+  table.rt{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+  table.rt th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);text-align:left;padding:8px;border-bottom:1px solid var(--line-strong)}
+  table.rt td{padding:8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  table.rt td.num{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+  .timeline{position:relative;margin:16px 0;padding-left:18px;border-left:2px solid var(--line-strong)}
+  .tl-item{position:relative;margin:0 0 16px}
+  .tl-item::before{content:"";position:absolute;left:-23px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid var(--surface)}
+  .tl-item.now::before{background:var(--coral)}
+  .tl-item.fut::before{background:var(--amber)}
+  .tl-y{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--teal-deep)}
+  .tl-item.now .tl-y{color:var(--coral-deep)}
+  .tl-item.fut .tl-y{color:var(--amber-deep)}
+  .tl-t{font-family:var(--disp);font-weight:600;font-size:14px;margin:2px 0 4px}
+  .tl-b{font-size:12.5px;color:var(--muted);line-height:1.45}
+  h2.sec{font-family:var(--disp);font-weight:600;font-size:clamp(18px,3vw,22px);margin:28px 0 12px;letter-spacing:-.01em;scroll-margin-top:20px}
+  h3.subsec{font-family:var(--disp);font-weight:600;font-size:16px;margin:18px 0 8px;color:var(--blue-deep)}
+  p.lead{font-size:15px;line-height:1.6;margin-bottom:12px}
+  p.body{font-size:14px;line-height:1.6;margin-bottom:12px;color:var(--ink)}
+  .footer-note{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.55}
+
+  .co-head{font-family:var(--disp);font-weight:600;font-size:15px;margin:18px 0 8px;color:var(--ink)}
+  .co-head small{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--faint);margin-left:8px}
+  .tagrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+  .tag{font-family:var(--mono);font-size:10px;padding:4px 9px;border-radius:8px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+  .tag.p1{border-color:var(--teal);color:var(--teal-deep);background:var(--teal-wash)}
+  .tag.p2{border-color:var(--blue);color:var(--blue-deep);background:var(--blue-wash)}
+  .tag.p3{border-color:var(--amber);color:var(--amber-deep);background:var(--amber-wash)}
+  .tag.p4{border-color:var(--coral);color:var(--coral-deep);background:var(--coral-wash)}
+  .checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+  @media(max-width:720px){.checkgrid{grid-template-columns:1fr}}
+  .checkgrid .box ol{margin:0 0 0 18px;font-size:12.5px;color:var(--muted);line-height:1.5}
+  .checkgrid .box ol b{color:var(--ink)}
+  pre.flow{font-family:var(--mono);font-size:11px;line-height:1.55;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto;color:var(--ink);margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Thematic research · first principles · not a single-name pipeline · built 2026-07-20</div>
+  <h1>The AI supercycle
+    <span class="sub">How long it can still lift equity prices, how much is left on the table, whether pauses will look like the internet bubble — and which sectors capture profit in which phases. Every structural claim is derived from the physics and economics of the stack, not from a narrative slogan.</span>
+  </h1>
+
+  <div class="keystat">
+    <div class="ks"><div class="kl">Horizon</div><div class="kv">~10<small>y physical</small></div></div>
+    <div class="ks"><div class="kl">Price-driver</div><div class="kv">3–5<small>y acute</small></div></div>
+    <div class="ks"><div class="kl">Hyperscaler capex</div><div class="kv">~$600<small>bn+ /yr</small></div></div>
+    <div class="ks"><div class="kl">Cycle stage</div><div class="kv">Late P1<small> / early P2</small></div></div>
+    <div class="ks"><div class="kl">Bubble risk</div><div class="kv">Partial<small> priced</small></div></div>
+  </div>
+
+  <div class="report-meta">
+    Scope: equity markets, infrastructure economics, sector profit migration. Not investment advice.<br>
+    Companion names in this toolkit: Micron (memory), Amazon (AWS/capex), SpaceX (orbital compute), TE Connectivity (power/connectivity), Investor (European industrial AI look-through).
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#s1">First principles — what the “supercycle” actually is</a></li>
+      <li><a href="#s2">The physical stack and binding constraints</a></li>
+      <li><a href="#s3">Four profit phases and which sectors win when</a></li>
+      <li><a href="#s4">Company map by phase — many examples</a></li>
+      <li><a href="#s5">How much is still left on the table</a></li>
+      <li><a href="#s6">How long will AI still drive prices up?</a></li>
+      <li><a href="#s7">Pauses, drawdowns, and the internet-bubble parallel</a></li>
+      <li><a href="#s8">Scenarios, kill-criteria, and positioning logic</a></li>
+      <li><a href="#s9">Bottom line</a></li>
+    </ol>
+  </div>
+
+  <!-- ===================== 1 ===================== -->
+  <h2 class="sec" id="s1">1 · First principles — what the supercycle actually is</h2>
+
+  <p class="lead">A supercycle is not “AI is cool.” It is a multi-year period in which <b>incremental economic value from a general-purpose technology exceeds the cost of deploying it at scale</b>, so capital, talent, and equity risk premia reorganise around that gap. Three nested claims are often conflated; only the first is nearly certain.</p>
+
+  <div class="twocol">
+    <div class="box">
+      <h4>Claim A — Capability (true)</h4>
+      <ul>
+        <li><b>Foundation models</b> are a new production function for prediction, generation, and software labour.</li>
+        <li>Training and inference require <b>orders of magnitude more FLOPs and memory bandwidth</b> than classical enterprise IT.</li>
+        <li>That creates a <b>real, multi-year physical buildout</b>: chips → packaging → servers → power → networks → software.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Claim B — Profit (contested)</h4>
+      <ul>
+        <li>Someone must convert FLOPs into <b>cash returns above WACC</b>.</li>
+        <li>Today most <b>accounting profit</b> sits in the toolmakers (accelerators, HBM, networking, power).</li>
+        <li>Application-layer profit is large in theory, thin in reported numbers for most pure-play AI software.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box" style="margin-top:10px">
+    <h4>Claim C — Equity prices (most fragile)</h4>
+    <ul>
+      <li>Markets price <b>the present value of expected free cash flows</b>, not FLOPs.</li>
+      <li>Prices can rise while economics are still “capex first, ROI later” — until the market demands proof.</li>
+      <li>The supercycle for <i>prices</i> ends (or pauses) when either (1) incremental spend stops growing, (2) margins mean-revert on supply, or (3) discount rates / risk appetite reprice duration.</li>
+    </ul>
+  </div>
+
+  <div class="callout teal">
+    <b>Working definition used in this report.</b> The AI supercycle is the period during which global AI-related capital expenditure and the market capitalisation of AI-exposed equities are both dominated by <b>infrastructure scaling</b> rather than by mature application cash flows. By that definition we are still inside the supercycle — but the <i>easiest</i> price gains from “discover the theme” are behind us. What remains is more selective, more cyclical, and more dependent on ROI proof.
+  </div>
+
+  <h3 class="subsec">Why this is not “just another tech cycle”</h3>
+  <p class="body">Three first-principles differences from a normal SaaS or smartphone cycle:</p>
+  <ol style="margin:0 0 14px 18px;font-size:14px;line-height:1.6">
+    <li><b>Energy and atoms bind before software does.</b> You can ship code overnight; you cannot site a multi-GW data centre overnight. Power interconnect queues, transformers, water, and advanced packaging are rate-limiters with 2–5 year lead times.</li>
+    <li><b>Unit economics are inverted early.</b> Classic software: low marginal cost, high gross margin from day one. Frontier AI: enormous fixed cost of training clusters, still-evolving inference cost curves, and revenue that often lags capability.</li>
+    <li><b>The customer set is oligopolistic.</b> A handful of hyperscalers and frontier labs set the demand curve for GPUs, HBM, and networking. Their capex guidance <i>is</i> the cycle’s near-term GDP of AI infrastructure.</li>
+  </ol>
+
+  <!-- ===================== 2 ===================== -->
+  <h2 class="sec" id="s2">2 · The physical stack and binding constraints</h2>
+
+  <p class="body">Profit migrates to whoever owns the <b>scarce layer</b>. Map scarcity bottom-up:</p>
+
+  <div class="stack">
+    <div class="sl">
+      <div class="sn">Power &amp; cooling</div>
+      <div class="sd">Generation, transmission, substations, liquid cooling, backup. Multi-year interconnect queues in the US and Europe.</div>
+      <div class="se warm">Binding 2026–30</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Advanced packaging / HBM</div>
+      <div class="sd">CoWoS-class packaging, HBM stacks, substrate capacity. Memory bandwidth is often the real bottleneck, not raw TFLOPs.</div>
+      <div class="se hot">Still scarce</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Accelerators (GPU/ASIC)</div>
+      <div class="sd">NVIDIA CUDA ecosystem lead; custom silicon (TPU, Trainium, Maia, MTIA) rising as a share of total FLOPs.</div>
+      <div class="se hot">Profit peak layer now</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Networking</div>
+      <div class="sd">InfiniBand / Ethernet fabrics, optics, switching. Cluster scale makes network a first-class cost and margin pool.</div>
+      <div class="se hot">Co-peak with GPUs</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Servers / systems / OEMs</div>
+      <div class="sd">Rack integration, liquid-ready designs. Lower structural margins; volume leverage with inventory risk.</div>
+      <div class="se cool">Competitive</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Cloud / platforms</div>
+      <div class="sd">AWS, Azure, GCP, Oracle. Monetise via tokens, reserved capacity, and enterprise contracts. Capex-heavy FCF trough years.</div>
+      <div class="se warm">Investing phase</div>
+    </div>
+    <div class="sl">
+      <div class="sn">Models &amp; apps</div>
+      <div class="sd">Frontier labs, vertical SaaS, copilots. Economic prize if distribution + data moats form; many will never clear cost of capital.</div>
+      <div class="se cool">Long-duration option</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b>Implication.</b> As long as packaging, HBM, and power remain scarce, <b>economic rents stay upstream</b>. When those bottlenecks clear, unit prices fall, volumes may still rise, and equity multiples on pure infrastructure names compress even if AI “adoption” keeps growing. That is the classic commodity-cycle trap inside a technology supercycle.
+  </div>
+
+  <h3 class="subsec">Order-of-magnitude spend (contextual, not a model)</h3>
+  <p class="body">Public hyperscaler AI-related capital budgets have scaled into the <b>hundreds of billions of dollars per year</b> collectively (Microsoft, Alphabet, Amazon, Meta, plus Oracle and others). Single-name plans on the order of <b>~$100–200bn annual capex</b> for the largest platforms have been disclosed or guided in 2025–26 commentary. That is the demand pulse for GPUs, HBM, networking gear, generators, and interconnect hardware.</p>
+  <p class="body">For equity prices, the relevant derivative is not the level of spend — it is the <b>second derivative</b>: acceleration, stable high plateau, or deceleration. Markets re-rate on acceleration; they de-rate on deceleration even if the absolute level remains historically enormous.</p>
+
+  <!-- ===================== 3 ===================== -->
+  <h2 class="sec" id="s3">3 · Four profit phases — who earns when</h2>
+
+  <p class="lead">Think of the AI economy as a staged industrial buildout. Sectors do not “all win for ten years.” They take turns at the top of the P&amp;L waterfall.</p>
+
+  <div class="phasegrid">
+    <div class="phase p1">
+      <div class="pn">Phase 1 · 2023–2027ish</div>
+      <div class="pt">Picks &amp; shovels</div>
+      <div class="pb">Accelerators, HBM/memory, advanced foundry/packaging, cluster networking, power equipment. Scarcity + hyperscaler opex-as-capex drives exceptional margins and multiple expansion.</div>
+      <div class="pw">Winners: NVDA ecosystem, MU/HBM chain, TSMC packaging, ANET/optics, VRT/ETN/power</div>
+    </div>
+    <div class="phase p2">
+      <div class="pn">Phase 2 · 2026–2030</div>
+      <div class="pt">Platforms &amp; power</div>
+      <div class="pb">Cloud platforms convert capacity into utilisation and contract revenue. Utilities, independent power, and grid OEMs monetise multi-year load growth. Custom ASICs dilute pure-GPU share of FLOPs.</div>
+      <div class="pw">Winners: MSFT/AMZN/GOOGL cloud, ORCL capacity, CEG-type power, select industrials</div>
+    </div>
+    <div class="phase p3">
+      <div class="pn">Phase 3 · 2028–2035</div>
+      <div class="pt">Application cash flows</div>
+      <div class="pb">Vertical software, agents inside workflows, advertising/search re-architecture, industrial automation, healthcare imaging, defence autonomy. Profit concentrates where distribution + proprietary data exist.</div>
+      <div class="pw">Winners: incumbents with data/distribution; few pure-play model cos</div>
+    </div>
+    <div class="phase p4">
+      <div class="pn">Phase 4 · 2030s</div>
+      <div class="pt">Commoditised intelligence</div>
+      <div class="pb">Inference cost collapses; models become a utility input. Economic surplus shifts to labour displacement capture, product redesign, and capital-light orchestration layers — or is competed away to consumers.</div>
+      <div class="pw">Winners: unclear; many Phase-1 multiples already dead</div>
+    </div>
+  </div>
+
+  <h3 class="subsec">Detailed sector map by phase</h3>
+  <div class="tbl-scroll">
+  <table class="rt">
+    <thead>
+      <tr><th>Sector</th><th>Phase 1 profit</th><th>Phase 2 profit</th><th>Phase 3+ profit</th><th>Main risk</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>GPU / accelerator design</b></td>
+        <td class="num">Max</td>
+        <td class="num">High but share ↓</td>
+        <td class="num">Mature oligopoly</td>
+        <td>Custom silicon, customer concentration, export controls</td>
+      </tr>
+      <tr>
+        <td><b>HBM / memory</b></td>
+        <td class="num">Very high</td>
+        <td class="num">High, cyclical</td>
+        <td class="num">Through-cycle mid</td>
+        <td>Classic memory overbuild after shortage</td>
+      </tr>
+      <tr>
+        <td><b>Foundry / packaging</b></td>
+        <td class="num">High</td>
+        <td class="num">High</td>
+        <td class="num">Structural</td>
+        <td>Geopolitics, capex intensity</td>
+      </tr>
+      <tr>
+        <td><b>Networking / optics</b></td>
+        <td class="num">High</td>
+        <td class="num">High</td>
+        <td class="num">Steady</td>
+        <td>Ethernet vs IB share shifts; inventory air-pockets</td>
+      </tr>
+      <tr>
+        <td><b>Power / cooling / grid</b></td>
+        <td class="num">Rising</td>
+        <td class="num">Max</td>
+        <td class="num">Long tail</td>
+        <td>Policy, execution, multi-year lag then sudden overbuild</td>
+      </tr>
+      <tr>
+        <td><b>Hyperscale cloud</b></td>
+        <td class="num">FCF compressed</td>
+        <td class="num">Margin recovery</td>
+        <td class="num">Cash cow if utilised</td>
+        <td>Capex overshoot; utilisation; ROI narrative break</td>
+      </tr>
+      <tr>
+        <td><b>Enterprise software / SaaS</b></td>
+        <td class="num">Narrative &gt; P&amp;L</td>
+        <td class="num">Feature wars</td>
+        <td class="num">Real if embedded</td>
+        <td>AI as cost centre; seat compression; open-source</td>
+      </tr>
+      <tr>
+        <td><b>Internet platforms (ads/search)</b></td>
+        <td class="num">Mixed</td>
+        <td class="num">High if AI lifts ROI</td>
+        <td class="num">Structural</td>
+        <td>Disintermediation of query/ad funnel</td>
+      </tr>
+      <tr>
+        <td><b>Industrial automation / EMS / connectors</b></td>
+        <td class="num">Early content</td>
+        <td class="num">Rising</td>
+        <td class="num">Compounder</td>
+        <td>Cycle within the cycle; not pure AI beta</td>
+      </tr>
+      <tr>
+        <td><b>Frontier model labs</b></td>
+        <td class="num">Neg. cash / equity</td>
+        <td class="num">Select winners</td>
+        <td class="num">Binary</td>
+        <td>Training cost arms race; open weights; regulation</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout amber">
+    <b>Where we are now (mid-2026 read).</b> Late Phase 1 / early Phase 2. Accelerator and memory profits are still extraordinary; power and cloud narratives are re-rating; application profits are mostly still “promised in the multiple.” The market is starting to ask Phase-2 questions (utilisation, power, ASIC mix) while still paying Phase-1 scarcity multiples for many names.
+  </div>
+
+  <!-- ===================== 4 · COMPANY MAP ===================== -->
+  <h2 class="sec" id="s4">4 · Company map by phase — many examples</h2>
+
+  <p class="lead">Dense equity map of who sits where in the profit waterfall. Names are <b>illustrative, not recommendations</b>. Most real companies <b>straddle phases</b> — Microsoft is Phase 2 (Azure) <i>and</i> Phase 3 (Office/GitHub); NVIDIA is classic Phase 1 but can remain relevant into Phase 4 if inference silicon stays scarce. Labels mark where each name’s <b>AI economics</b> sit today, not a permanent identity.</p>
+
+  <div class="tagrow">
+    <span class="tag p1">P1 Picks &amp; shovels</span>
+    <span class="tag p2">P2 Platforms &amp; power</span>
+    <span class="tag p3">P3 Application cash</span>
+    <span class="tag p4">P4 Commoditised intelligence</span>
+  </div>
+
+  <div class="callout">
+    <b>How to read this map.</b> Phase 1 = revenue rises with GPU/HBM/rack shipments. Phase 2 = multi-year capacity reservations, utilisation, power PPAs, cloud RPO. Phase 3 = AI as NRR / paid SKU / workflow attach. Phase 4 = outcome pricing; AI is invisible cost; surplus to owners of demand.
+  </div>
+
+  <!-- Phase 1 -->
+  <h3 class="subsec">4.1 Phase 1 · 2023–2027ish — Picks &amp; shovels</h3>
+  <p class="body"><b>Economics:</b> scarcity rent on atoms + silicon that hyperscalers must buy before they earn ROI. Scarcity + hyperscaler opex-as-capex drives exceptional margins and multiple expansion.</p>
+
+  <div class="co-head">Accelerators / GPU–ASIC design <small>scarcity rent peak</small></div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Why Phase 1</th></tr></thead>
+    <tbody>
+      <tr><td><b>NVIDIA</b></td><td class="num">NVDA</td><td>CUDA + data-centre GPUs; still the scarcity-rent peak of the stack</td></tr>
+      <tr><td><b>Broadcom</b></td><td class="num">AVGO</td><td>Custom XPUs/ASICs for hyperscalers; networking silicon</td></tr>
+      <tr><td><b>AMD</b></td><td class="num">AMD</td><td>MI-class accelerators; share gainer, still a tools story</td></tr>
+      <tr><td><b>Intel</b></td><td class="num">INTC</td><td>Gaudi / foundry / AI PC silicon — tools + recovery</td></tr>
+      <tr><td><b>Arm</b></td><td class="num">ARM</td><td>Architecture royalty on AI edge/server CPUs</td></tr>
+      <tr><td><b>Marvell</b></td><td class="num">MRVL</td><td>Custom silicon, DPUs, electro-optics for AI clusters</td></tr>
+      <tr><td><b>Cambricon</b></td><td class="num">688256.SS</td><td>China accelerator pure-play</td></tr>
+      <tr><td><b>SambaNova / Cerebras / Groq</b></td><td class="num">Private</td><td>Alternative architectures (training/inference niches)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">HBM / memory / storage for AI</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><b>Micron</b></td><td class="num">MU</td><td>HBM + high-bandwidth DRAM (in this toolkit)</td></tr>
+      <tr><td><b>SK Hynix</b></td><td class="num">000660.KS</td><td>HBM leader historically</td></tr>
+      <tr><td><b>Samsung Electronics</b></td><td class="num">005930.KS</td><td>HBM + foundry/packaging scale</td></tr>
+      <tr><td><b>Kioxia</b></td><td class="num">285A.T</td><td>NAND for AI storage tiers</td></tr>
+      <tr><td><b>Western Digital</b></td><td class="num">WDC</td><td>Data-centre storage</td></tr>
+      <tr><td><b>Seagate</b></td><td class="num">STX</td><td>Nearline HDD for training corpora / cold AI data</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Foundry / packaging / equipment</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><b>TSMC</b></td><td class="num">TSM</td><td>Leading-edge + CoWoS-class packaging bottleneck</td></tr>
+      <tr><td><b>ASML</b></td><td class="num">ASML</td><td>EUV — scarce lithography</td></tr>
+      <tr><td><b>Applied Materials</b></td><td class="num">AMAT</td><td>Deposition/etch for advanced nodes &amp; HBM</td></tr>
+      <tr><td><b>Lam Research</b></td><td class="num">LRCX</td><td>Etch for 3D NAND / HBM stacks</td></tr>
+      <tr><td><b>KLA</b></td><td class="num">KLAC</td><td>Process control (yield = scarce capacity)</td></tr>
+      <tr><td><b>Tokyo Electron</b></td><td class="num">8035.T</td><td>Coater/developer, etch</td></tr>
+      <tr><td><b>BE Semiconductor (Besi)</b></td><td class="num">BESI.AS</td><td>Hybrid bonding / advanced packaging tools</td></tr>
+      <tr><td><b>ASE / Amkor</b></td><td class="num">ASX / AMKR</td><td>OSAT advanced packaging</td></tr>
+      <tr><td><b>Disco / Advantest</b></td><td class="num">6146.T / 6857.T</td><td>Dicing and test for HBM/AI chips</td></tr>
+      <tr><td><b>GlobalFoundries / UMC / SMIC</b></td><td class="num">GFS / 2303.TW / 0981.HK</td><td>Specialty/mature + regional capacity</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Cluster networking / optics / systems</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><b>Arista</b></td><td class="num">ANET</td><td>AI Ethernet fabrics</td></tr>
+      <tr><td><b>NVIDIA (networking)</b></td><td class="num">NVDA</td><td>InfiniBand / Spectrum / Spectrum-X</td></tr>
+      <tr><td><b>Cisco</b></td><td class="num">CSCO</td><td>Ethernet + AI campus/DC portfolio</td></tr>
+      <tr><td><b>Coherent / Lumentum</b></td><td class="num">COHR / LITE</td><td>Optical components, lasers</td></tr>
+      <tr><td><b>Fabrinet</b></td><td class="num">FN</td><td>Optical manufacturing partner</td></tr>
+      <tr><td><b>Astera Labs</b></td><td class="num">ALAB</td><td>PCIe/CXL/Ethernet connectivity ICs</td></tr>
+      <tr><td><b>Credo / Macom</b></td><td class="num">CRDO / MTSI</td><td>High-speed SerDes / RF / optics</td></tr>
+      <tr><td><b>Super Micro</b></td><td class="num">SMCI</td><td>GPU server systems (volume; inventory risk)</td></tr>
+      <tr><td><b>Dell / HPE</b></td><td class="num">DELL / HPE</td><td>AI servers / private-cloud racks</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Power equipment, cooling, mechanical picks</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><b>Vertiv</b></td><td class="num">VRT</td><td>Thermal management, modular DC power</td></tr>
+      <tr><td><b>Eaton</b></td><td class="num">ETN</td><td>Electrical equipment, UPS, data-centre power</td></tr>
+      <tr><td><b>Schneider Electric</b></td><td class="num">SU.PA</td><td>DC power/cooling/software</td></tr>
+      <tr><td><b>nVent</b></td><td class="num">NVT</td><td>Enclosures, liquid-cooling adjacency</td></tr>
+      <tr><td><b>Modine</b></td><td class="num">MOD</td><td>Liquid cooling / thermal</td></tr>
+      <tr><td><b>Quanta / Wiwynn / Foxconn</b></td><td class="num">2382.TW / 6669.TW / 2354.TW</td><td>Server ODMs</td></tr>
+      <tr><td><b>TE Connectivity / Amphenol</b></td><td class="num">TEL / APH</td><td>High-speed &amp; power connectors in racks (TEL in toolkit)</td></tr>
+      <tr><td><b>Comfort Systems / EMCOR</b></td><td class="num">FIX / EME</td><td>Data-centre mechanical/electrical contractors</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note t"><b>Phase 1 tell.</b> Revenue rises with <b>GPU/HBM/rack shipments</b>, not with end-customer AI <i>subscription</i> retention. Inventory air-pockets are the structural risk even when the multi-year thesis is intact.</div>
+
+  <!-- Phase 2 -->
+  <h3 class="subsec">4.2 Phase 2 · 2026–2030 — Platforms &amp; power</h3>
+  <p class="body"><b>Economics:</b> convert installed capacity into <b>utilisation + multi-year contracts</b>; sell electrons and tokens, not just chips. Custom ASICs dilute pure-GPU share of FLOPs over time.</p>
+
+  <div class="co-head">Hyperscale / cloud platforms</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Phase 2 angle</th></tr></thead>
+    <tbody>
+      <tr><td><b>Microsoft</b></td><td class="num">MSFT</td><td>Azure + OpenAI capacity; enterprise commit contracts</td></tr>
+      <tr><td><b>Amazon</b></td><td class="num">AMZN</td><td>AWS Trainium/Inferentia + GPU; capex wave → later FCF (toolkit)</td></tr>
+      <tr><td><b>Alphabet</b></td><td class="num">GOOGL</td><td>GCP + TPU custom silicon + Gemini distribution</td></tr>
+      <tr><td><b>Oracle</b></td><td class="num">ORCL</td><td>Capacity deals (frontier-lab hosting), multi-cloud</td></tr>
+      <tr><td><b>IBM</b></td><td class="num">IBM</td><td>Hybrid cloud + enterprise AI governance</td></tr>
+      <tr><td><b>CoreWeave / neoclouds</b></td><td class="num">CRWV / regional</td><td>Merchant GPU cloud — pure Phase 2 capacity</td></tr>
+      <tr><td><b>Cloudflare</b></td><td class="num">NET</td><td>Edge inference / AI gateway (lighter Phase 2)</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Platforms that also train at scale (infra = P2, product = P3)</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><b>Meta</b></td><td class="num">META</td><td>Capex for training/inference is P2; ads ROI is P3</td></tr>
+      <tr><td><b>ByteDance</b></td><td class="num">Private</td><td>Same dual nature at massive scale</td></tr>
+      <tr><td><b>Apple</b></td><td class="num">AAPL</td><td>On-device + Private Cloud Compute — hybrid 2/3</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Custom silicon <i>buyers</i> — Phase 2 force that dilutes pure GPU</div>
+  <p class="body">Google (TPU), Amazon (Trainium/Inferentia), Microsoft (Maia), Meta (MTIA): in-house ASICs are how Phase 2 platforms reduce Phase 1 ASP power over the cycle.</p>
+
+  <div class="co-head">Power generation &amp; grid (classic Phase 2)</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td><b>Constellation Energy</b></td><td class="num">CEG</td><td>Nuclear + data-centre load narrative</td></tr>
+      <tr><td><b>Vistra</b></td><td class="num">VST</td><td>IPP; Texas/ERCOT + uprates</td></tr>
+      <tr><td><b>Talen</b></td><td class="num">TLN</td><td>Data-centre co-located power</td></tr>
+      <tr><td><b>NRG</b></td><td class="num">NRG</td><td>Generation + retail; load-growth optionality</td></tr>
+      <tr><td><b>NextEra</b></td><td class="num">NEE</td><td>Renewables + transmission adjacency</td></tr>
+      <tr><td><b>GE Vernova</b></td><td class="num">GEV</td><td>Turbines, grid equipment</td></tr>
+      <tr><td><b>Siemens Energy</b></td><td class="num">ENR.DE</td><td>Turbines, transformers, grid</td></tr>
+      <tr><td><b>Hitachi Energy</b></td><td class="num">via 6501.T</td><td>HVDC, transformers</td></tr>
+      <tr><td><b>Quanta Services</b></td><td class="num">PWR</td><td>Grid infrastructure construction</td></tr>
+      <tr><td><b>Eaton / Schneider / Vertiv</b></td><td class="num">ETN / SU.PA / VRT</td><td>Still sell P1 gear; backlog is multi-year P2 load</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Select industrials (Phase 2–adjacent content)</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Angle</th></tr></thead>
+    <tbody>
+      <tr><td><b>ABB / Atlas Copco / Schneider</b></td><td class="num">ABBN.SW / ATCO-A.ST / SU.PA</td><td>Electrification, automation (Investor look-through in toolkit)</td></tr>
+      <tr><td><b>Trane / Carrier / JCI</b></td><td class="num">TT / CARR / JCI</td><td>Cooling at building/campus scale</td></tr>
+      <tr><td><b>Caterpillar / Cummins</b></td><td class="num">CAT / CMI</td><td>Backup generation, gas power for DCs</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note t"><b>Phase 2 tell.</b> Multi-year <b>capacity reservations</b>, rising <b>utilisation</b>, <b>power PPAs</b>, cloud <b>remaining performance obligations</b> — not just GPU unit sales.</div>
+
+  <!-- Phase 3 -->
+  <h3 class="subsec">4.3 Phase 3 · 2028–2035 — Application cash flows (candidates)</h3>
+  <p class="body"><b>Economics:</b> AI inside workflows with <b>distribution + proprietary data</b>. Profit is subscription, take-rate, ad ROI, mission contract — not FLOPs. Speculative: which public names are most likely to convert Phase-1/2 spend into Phase-3 cash.</p>
+
+  <div class="co-head">Strong Phase 3 candidates — public equities <small>educated guesses</small></div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Ticker</th><th>Speculative Phase 3 thesis</th><th>What must go right</th></tr></thead>
+    <tbody>
+      <tr><td><b>Microsoft</b></td><td class="num">MSFT</td><td>Copilot in Office/GitHub/Security becomes default seat economics</td><td>NRR + pricing without seat collapse</td></tr>
+      <tr><td><b>Alphabet</b></td><td class="num">GOOGL</td><td>Search/YouTube/Cloud re-architected; ads ROI up</td><td>Defend query franchise vs answer engines</td></tr>
+      <tr><td><b>Amazon</b></td><td class="num">AMZN</td><td>Ads + retail + agents on AWS</td><td>Ads + AWS AI attach, not just capex</td></tr>
+      <tr><td><b>Meta</b></td><td class="num">META</td><td>Ad ranking + content gen lifts ROAS</td><td>AI spend → ad efficiency, not vanity</td></tr>
+      <tr><td><b>Salesforce</b></td><td class="num">CRM</td><td>Einstein/Agentforce on CRM system of record</td><td>Agents → expansion revenue, not free feature</td></tr>
+      <tr><td><b>ServiceNow</b></td><td class="num">NOW</td><td>IT/ops agents on workflow system of record</td><td>AI ARR disclosed and durable</td></tr>
+      <tr><td><b>Adobe</b></td><td class="num">ADBE</td><td>Firefly in Creative/Experience cloud</td><td>Copyright + seat defense vs open tools</td></tr>
+      <tr><td><b>Palantir</b></td><td class="num">PLTR</td><td>AIP as enterprise/gov decision OS</td><td>Commercial scale beyond gov multiple</td></tr>
+      <tr><td><b>CrowdStrike / Palo Alto / Zscaler</b></td><td class="num">CRWD / PANW / ZS</td><td>AI-era security is forced spend</td><td>Growth without margin war</td></tr>
+      <tr><td><b>Intuit</b></td><td class="num">INTU</td><td>Tax/accounting agents on financial graph</td><td>Trust + accuracy in regulated workflows</td></tr>
+      <tr><td><b>SAP / Workday / Oracle Apps</b></td><td class="num">SAP / WDAY / ORCL</td><td>ERP agents on transaction data</td><td>Incumbent distribution wins</td></tr>
+      <tr><td><b>Autodesk / Dassault</b></td><td class="num">ADSK / DSY.PA</td><td>Design/engineering copilots</td><td>Domain data moat</td></tr>
+      <tr><td><b>Siemens / Rockwell / PTC</b></td><td class="num">SIE.DE / ROK / PTC</td><td>Industrial software + digital twin + AI</td><td>Factory AI monetisation</td></tr>
+      <tr><td><b>GE HealthCare / Siemens Healthineers / Philips</b></td><td class="num">GEHC / SHL.DE / PHG</td><td>Imaging/diagnostics AI</td><td>Clinical validation + reimbursement</td></tr>
+      <tr><td><b>Intuitive Surgical</b></td><td class="num">ISRG</td><td>Surgical robotics + AI guidance</td><td>Procedure growth + software attach</td></tr>
+      <tr><td><b>Tesla / Waymo / Mobileye</b></td><td class="num">TSLA / — / MBLY</td><td>Autonomy as productised AI</td><td>Safety + regulation + unit economics</td></tr>
+      <tr><td><b>Lockheed / RTX / Anduril / Palantir</b></td><td class="num">LMT / RTX / priv / PLTR</td><td>Defence autonomy &amp; C2</td><td>Budgets + export rules</td></tr>
+      <tr><td><b>Shopify / Adyen / Block</b></td><td class="num">SHOP / ADYEN.AS / XYZ</td><td>Merchant agents + fraud + conversion</td><td>Take-rate expansion</td></tr>
+      <tr><td><b>Spotify / Netflix</b></td><td class="num">SPOT / NFLX</td><td>Recs/gen as product quality</td><td>Engagement → pricing power</td></tr>
+      <tr><td><b>Thomson Reuters / RELX / S&amp;P Global</b></td><td class="num">TRI / RELX / SPGI</td><td>Legal/research/data + AI wrappers</td><td>Proprietary corpus defends</td></tr>
+      <tr><td><b>Veeva / Toast (vertical SaaS)</b></td><td class="num">VEEV / TOST</td><td>Vertical workflows</td><td>Data network effects</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Model labs &amp; pure-plays — few will “win” as equities</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Company</th><th>Status</th><th>Reality check</th></tr></thead>
+    <tbody>
+      <tr><td><b>OpenAI</b></td><td class="num">Private</td><td>Revenue can be huge; equity outcome depends on compute cost + distribution (MSFT)</td></tr>
+      <tr><td><b>Anthropic</b></td><td class="num">Private</td><td>Same; enterprise Claude vs open models</td></tr>
+      <tr><td><b>xAI / Mistral / Cohere</b></td><td class="num">Private</td><td>Likely partners or niches, not ten public winners</td></tr>
+      <tr><td><b>Cursor / Scale / AI SaaS IPO wave</b></td><td class="num">Mixed</td><td>Feature risk unless system-of-record emerges</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Nordics / Europe Phase 3-ish (toolkit-adjacent)</div>
+  <p class="body"><b>Spotify</b> (consumer AI product); <b>SAP, Dassault, Siemens</b> (industrial software); <b>Investor AB holdings</b> (ABB, Atlas, Epiroc, Nasdaq) as automation/market-infra compounders; <b>Nokia / Ericsson</b> (AI-RAN, later P2–P3 telecom).</p>
+
+  <div class="note a"><b>Phase 3 tell.</b> AI shows up as <b>net revenue retention, attach rate, or a measurable productivity SKU</b> — not “we use GPUs.”</div>
+
+  <!-- Phase 4 -->
+  <h3 class="subsec">4.4 Phase 4 · 2030s — Commoditised intelligence (speculation)</h3>
+  <p class="body"><b>Economics:</b> inference is cheap; models are a <b>utility input</b>. Surplus goes to whoever owns the customer, the workflow, the physical product, or the labour-substitution P&amp;L. Winners may <b>not brand as AI</b>.</p>
+
+  <div class="co-head">Educated guesses — Phase 4 winner types</div>
+  <div class="tbl-scroll"><table class="rt">
+    <thead><tr><th>Type</th><th>Example names (guesses)</th><th>Why they could win Phase 4</th></tr></thead>
+    <tbody>
+      <tr><td><b>Consumer platforms with distribution</b></td><td>Apple, Google, Meta, Amazon, ByteDance</td><td>Bundle free/cheap intelligence into OS, ads, commerce</td></tr>
+      <tr><td><b>Enterprise systems of record</b></td><td>Microsoft, Salesforce, ServiceNow, SAP, Oracle</td><td>Intelligence is a feature of the SoR; switching costs survive commodity models</td></tr>
+      <tr><td><b>Labour / services arbitrage</b></td><td>Accenture <i>or</i> its disruptors; vertical services cos</td><td>Capture wage arbitrage when AI replaces billable hours — may be <i>new</i> cos</td></tr>
+      <tr><td><b>Outcome / product redesign</b></td><td>Tesla (autonomy), Intuitive (surgery), John Deere, Siemens factories</td><td>Sell miles, yields, uptime — not tokens</td></tr>
+      <tr><td><b>Banks / insurers / rails</b></td><td>Visa, Mastercard, large banks/insurers</td><td>Fraud, underwriting, ops cost collapse → margin if not competed away</td></tr>
+      <tr><td><b>Retail &amp; logistics</b></td><td>Amazon, Walmart, scaled logistics</td><td>Cost-to-serve falls; scale winners keep surplus</td></tr>
+      <tr><td><b>Defence primes + software</b></td><td>LMT, RTX, PLTR, Anduril</td><td>Autonomy budgets are political, not pure free-market commodity</td></tr>
+      <tr><td><b>Orchestration / agent OS</b></td><td>MSFT/GOOGL or a new “agent SAP”</td><td>Routing, memory, identity, compliance stay valuable when models swap</td></tr>
+      <tr><td><b>Open-weight ecosystems</b></td><td>Meta (Llama strategy), clouds</td><td>Profit from ecosystem, not model weights</td></tr>
+      <tr><td><b>Energy &amp; compute utilities</b></td><td>CEG-type, mature neoclouds</td><td>If intelligence is a utility, capacity owners earn utility-like returns</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="co-head">Likely Phase 4 losers (even if AI “wins” the world)</div>
+  <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.55;color:var(--muted)">
+    <li>Pure GPU stories still priced for permanent scarcity after supply floods</li>
+    <li>Thin wrappers on GPT/Claude with no data or distribution</li>
+    <li>Training-only labs without product or exclusive capacity</li>
+    <li>Consultancies that only sell “AI transformation” hours (AI eats the model)</li>
+    <li>Any company whose only moat was “we fine-tuned an open model”</li>
+  </ul>
+
+  <!-- Checklists -->
+  <h3 class="subsec">4.5 What to look for — Phase 3 checklist</h3>
+  <p class="body">A company fits Phase 3 when <b>most</b> of these are true:</p>
+  <div class="checkgrid">
+    <div class="box">
+      <h4>Must-haves</h4>
+      <ol>
+        <li><b>System of record or distribution</b> — CRM, ERP, EHR, IDE, OS, marketplace, daily habit surface</li>
+        <li><b>Proprietary data that improves with use</b> — workflow logs, transactions, clinical outcomes, fleet telemetry</li>
+        <li><b>Willingness-to-pay proof</b> — paid AI SKU; gross margin after inference cost</li>
+        <li><b>Retention / NRR</b> — AI attach raises NRR; no churn when a cheaper model appears</li>
+        <li><b>Switching costs in the workflow</b> — agents write into tickets, repos, ledgers — not a chat tab</li>
+        <li><b>Unit economics positive at scale</b> — cost per action ≪ price per action</li>
+        <li><b>Defensibility vs foundation models</b> — clear answer to “why won’t MSFT/GOOGL bundle this?”</li>
+        <li><b>Regulatory / trust moat (optional)</b> — healthcare, finance, defence, legal</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h4>Red flags (Phase 3 impostors)</h4>
+      <ul>
+        <li><b>AI revenue not broken out</b>, or “AI-powered” with no pricing power</li>
+        <li><b>Gross margin down</b> structurally because they resell tokens</li>
+        <li><b>Customers are other AI startups</b> (circular demand)</li>
+        <li><b>Multiple assumes Phase 3 cash flows</b> while metrics are still Phase 1 hype</li>
+        <li><b>No path if open-source matches</b> closed models on quality</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsec">4.6 What to look for — Phase 4 checklist</h3>
+  <p class="body">Phase 4 winners often <b>do not brand as AI</b>. Screen for:</p>
+  <div class="checkgrid">
+    <div class="box">
+      <h4>Must-haves</h4>
+      <ol>
+        <li><b>Outcome pricing, not model pricing</b> — miles, claims, ads converted, uptime</li>
+        <li><b>Labour cost large and replaceable</b> — support, coding factories, document ops</li>
+        <li><b>Physical or regulatory lock-in</b> — devices, hospitals, airframes, factory lines</li>
+        <li><b>Balance sheet to buy disrupted assets</b> — bury AI wrappers in the product</li>
+        <li><b>Orchestration / identity / compliance</b> — control agent permissions when models swap</li>
+        <li><b>Consumer surplus via ads or take-rate</b> — if intelligence is free, attention still pays</li>
+        <li><b>Multiples that don’t require scarcity</b> — often look like boring compounders (15–25× E)</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h4>Screening questions</h4>
+      <ul>
+        <li>If inference cost → 0, does <b>pricing power rise or collapse</b>?</li>
+        <li>If open-source matches closed models, <b>what is left</b>?</li>
+        <li>Is the customer buying <b>intelligence</b> or a <b>job done</b>?</li>
+        <li>Who pays when the model is wrong — is liability a <b>moat</b>?</li>
+        <li>Would this company still win if “AI” vanished from every slide deck?</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="subsec">4.7 Migration at a glance</h3>
+  <pre class="flow">Phase 1              Phase 2               Phase 3                Phase 4
+NVDA, MU, TSM   →    MSFT Azure, CEG  →    CRM/NOW/PLTR/ads  →    AAPL/MSFT/AMZN product
+ANET, VRT, ASML      ORCL capacity         ISRG, vertical SaaS     + outcome sellers
+                     custom ASICs          defence autonomy        + orchestration layers
+
+scarcity rents ──► utilisation rents ──► workflow rents ──► surplus to owners of demand</pre>
+
+  <div class="callout teal">
+    <b>Practical takeaway.</b> Still-hot cycle beta → Phase 1 scarcity (size for inventory risk). Next 3–5 years → Phase 2 power + cloud FCF recovery. 10-year compounding → Phase 3 systems of record with paid AI attach. End-state → Phase 4 distribution + outcome businesses; few pure “AI” tickers. <b>Phase 3/4 edge is not “find an AI company”</b> — it is find companies where AI raises the value of an asset they already own (data, distribution, installed base, labour cost base) and that value shows up in <b>price, retention, or margin</b>.
+  </div>
+
+  <!-- ===================== 5 ===================== -->
+  <h2 class="sec" id="s5">5 · How much is still left on the table</h2>
+
+  <p class="lead">Separate three “tables”: physical capacity still to build, earnings still to be reported, and equity upside still available after what is already priced.</p>
+
+  <h3 class="subsec">5.1 Physical table — large</h3>
+  <p class="body">On first principles, global useful AI compute is still a small fraction of the steady-state required if models become a default layer in software, customer service, coding, science, and robotics. Power alone caps how fast the world can add GPU-equivalent capacity. Multi-year backlogs in transformers, turbines, and grid interconnect imply that <b>the buildout of atoms continues into the early 2030s</b> even if model architecture improves efficiency 2–5×.</p>
+  <p class="body">Efficiency gains do not end the cycle; they change the shape. Better models per FLOP can <i>increase</i> demand (Jevons) if price elasticity of inference is high — the historical pattern for compute. They can also <i>crash</i> near-term GPU ASPs if customers pause while waiting for the next architecture. Both can be true in sequence.</p>
+
+  <h3 class="subsec">5.2 Earnings table — medium, skewed upstream</h3>
+  <p class="body">Near-term reported profit growth remains concentrated in semiconductors and select infrastructure. Hyperscalers are spending at a rate that deliberately suppresses free cash flow (see Amazon’s AI-capex wave in this toolkit’s Amazon pipeline). That means:</p>
+  <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.55">
+    <li><b>Upstream earnings:</b> still substantial runway if units grow and pricing holds — until supply catches demand.</li>
+    <li><b>Midstream cloud earnings:</b> delayed; the “table” is utilisation and pricing power 2027–30, not 2026 EPS.</li>
+    <li><b>Downstream app earnings:</b> mostly not yet on the table as cash; they are duration assets.</li>
+  </ul>
+
+  <h3 class="subsec">5.3 Equity table — smaller than the physical table</h3>
+  <p class="body">This is the crucial distinction. Much of the easy re-rating from “AI is real” to “AI is the budget” has already occurred in mega-cap tech and the semiconductor complex. What remains is not zero — but it is <b>path-dependent</b>:</p>
+
+  <div class="twocol">
+    <div class="box">
+      <h4>Still on the table</h4>
+      <ul>
+        <li><b>Power &amp; grid</b> if load forecasts keep rising and regulated returns stay intact.</li>
+        <li><b>Memory/packaging</b> through the next shortage leg — with violent cyclicality.</li>
+        <li><b>Networking/optics</b> as cluster scale and 800G/1.6T ramps continue.</li>
+        <li><b>Cloud FCF recovery</b> if utilisation catches capex (2027–29 window).</li>
+        <li><b>Select application winners</b> with distribution (not model cos by default).</li>
+        <li><b>Industrial content</b> (robotics, factories, connectors, automation) as a slower second wave.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Mostly already claimed</h4>
+      <ul>
+        <li><b>“AI existence”</b> premium in Mag7 multiples — partially, not fully, mean-reverted.</li>
+        <li><b>First-wave narrative beta</b> in many small AI software names (lots of terminal value, little cash).</li>
+        <li><b>One-decision GPU scarcity</b> as a pure story — now contested by custom silicon and efficiency.</li>
+        <li><b>Zero-rate duration free lunch</b> — higher real rates already tax long-duration AI claims.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout coral">
+    <b>Blunt answer to “how much is left?”</b> On physical buildout: <b>years and trillions of cumulative capex</b>. On equity alpha from simply owning “AI”: <b>materially less than 2023–24</b>. The remaining table is in <i>relative</i> performance — Phase-2 power/platforms vs Phase-1 tools, quality compounders vs narrative shells, and cash-flow proof vs slide-deck total addressable market.
+  </div>
+
+  <!-- ===================== 6 ===================== -->
+  <h2 class="sec" id="s6">6 · How long will AI still drive prices up?</h2>
+
+  <p class="lead">Split the question into (a) how long AI drives <b>earnings</b>, (b) how long it drives <b>multiples</b>, and (c) how long it dominates the <b>equity factor</b> that moves indices.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-y">2023–2025 · completed</div>
+      <div class="tl-t">Discovery + multiple expansion</div>
+      <div class="tl-b">ChatGPT moment → hyperscaler capex step-function → semiconductor and Mag7 re-rating. Prices led earnings; narrative was enough.</div>
+    </div>
+    <div class="tl-item now">
+      <div class="tl-y">2026–2027 · now</div>
+      <div class="tl-t">Earnings delivery + scrutiny</div>
+      <div class="tl-b">Capex still rising or plateauing at extreme levels. Market rewards beat-and-raise in tools and proof of utilisation in cloud. First serious “ROI audit” window. Index leadership still AI-heavy but narrower.</div>
+    </div>
+    <div class="tl-item fut">
+      <div class="tl-y">2027–2029 · transition</div>
+      <div class="tl-t">Second derivative decides prices</div>
+      <div class="tl-b">If capex growth slows while utilisation ramps, cloud and software can lead even as GPU growth decelerates. If capex keeps accelerating without ROI, a valuation air-pocket hits duration tech. Power and industrials can keep compounding on backlog.</div>
+    </div>
+    <div class="tl-item fut">
+      <div class="tl-y">2030–2035 · maturity</div>
+      <div class="tl-t">AI as default infrastructure</div>
+      <div class="tl-b">AI stops being a separate “trade” and becomes a feature of almost every quality growth equity. Index-level “AI beta” fades; stock-picking inside winners/losers dominates. Physical spend continues but at lower growth rates.</div>
+    </div>
+  </div>
+
+  <h3 class="subsec">Direct answer</h3>
+  <p class="body"><b>As a broad market driver of upside (higher prices across a wide AI basket):</b> likely <b>another 1–3 years of episodic leadership</b>, not a straight line — with increasing drawdowns and factor rotation. The period of “almost anything AI-related goes up” is already over.</p>
+  <p class="body"><b>As a driver of earnings in specific layers:</b> <b>5–10+ years</b> for power, advanced semiconductors, and cloud infrastructure; longer for industrial and software embedding. Earnings can rise for a decade while multiples compress for five of those years.</p>
+  <p class="body"><b>As a driver of passive index returns:</b> as long as Mag7/hyperscalers dominate cap-weighted indices and their cash flows compound. That can outlast the “AI trade” brand by many years — or fail if regulation, competition, or ROI disappointment hits the oligopoly simultaneously.</p>
+
+  <!-- ===================== 7 ===================== -->
+  <h2 class="sec" id="s7">7 · Pauses, drawdowns, and the internet-bubble parallel</h2>
+
+  <h3 class="subsec">7.1 Will there be pauses? Yes — almost certainly</h3>
+  <p class="body">First principles: any system with multi-year lead times and oligopolistic buyers produces <b>inventory cycles</b>. Expect pauses driven by:</p>
+  <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.55">
+    <li><b>Absorption gaps</b> — clusters ordered, not yet fully utilised; customers digest capacity.</li>
+    <li><b>Architecture transitions</b> — wait for next GPU/ASIC generation; temporary order freeze.</li>
+    <li><b>Power delays</b> — chips ready, megawatts not; spend slips right.</li>
+    <li><b>ROI narrative breaks</b> — one or two high-profile enterprise write-downs or hyperscaler capex cuts.</li>
+    <li><b>Macro / rates</b> — higher discount rates hit long-duration AI claims regardless of FLOPs.</li>
+    <li><b>Policy</b> — export controls, energy permitting, model regulation.</li>
+  </ul>
+  <p class="body">Pauses are not the end of the supercycle. In semiconductors, pauses are how the cycle <i>works</i>. The danger is treating every pause as terminal — or treating every rally as permanent.</p>
+
+  <h3 class="subsec">7.2 Internet bubble: what rhymes, what doesn’t</h3>
+  <div class="tbl-scroll">
+  <table class="rt">
+    <thead>
+      <tr><th>Dimension</th><th>Internet ~1998–2002</th><th>AI ~2023–2026</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><b>Real tech</b></td>
+        <td>Yes — TCP/IP, web, fibre</td>
+        <td>Yes — transformers, accelerators, HBM</td>
+      </tr>
+      <tr>
+        <td><b>Who had cash flow</b></td>
+        <td>Cisco, some telcos; most dot-coms burned cash</td>
+        <td>Hyperscalers and NVIDIA-class suppliers are <b>highly profitable</b></td>
+      </tr>
+      <tr>
+        <td><b>Capex nature</b></td>
+        <td>Fibre overbuild, often poorly utilised for years</td>
+        <td>GPU clusters + power; utilisation is the open question, not the existence of demand</td>
+      </tr>
+      <tr>
+        <td><b>Equity structure</b></td>
+        <td>Thousands of loss-making IPOs</td>
+        <td>Gains concentrated in mega-caps and a few suppliers; fewer pure speculative IPOs (private market absorbed some)</td>
+      </tr>
+      <tr>
+        <td><b>Valuation extreme</b></td>
+        <td>Many names with no path to profit at any scale</td>
+        <td>Some software/narrative names rhyme; core infrastructure often expensive but earnings-supported</td>
+      </tr>
+      <tr>
+        <td><b>End state</b></td>
+        <td>Web won; equity holders of 1999 cohort often wiped</td>
+        <td>AI likely “wins”; equity outcomes will still be brutally skewed</td>
+      </tr>
+      <tr>
+        <td><b>Best analogy</b></td>
+        <td colspan="2">Not “Cisco 2000 for everything.” Closer to: <b>railroads + picks-and-shovels + a few enduring platforms</b>. Fibre overbuild ≈ risk of GPU/power overbuild; Amazon 2001–2015 ≈ possible path for cloud/app winners that survive a winter.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <b>The correct bubble framing.</b> AI is not “all bubble” or “no bubble.” It is a <b>barbell</b>: (1) a real industrial buildout with cash-flowing oligopolies, and (2) a speculative halo of duration claims, circular financing risks, and TAM slide decks. The internet pattern that will repeat is <b>survivorship</b>: the technology transforms the economy; most equity stories from the peak do not compound from that peak. The pattern that may <i>not</i> fully repeat is a multi-year total wipeout of the infrastructure complex — because today’s buyers are the cash machines of the modern economy, not pure venture-funded portals.
+  </div>
+
+  <h3 class="subsec">7.3 What a “pause that rhymes with 2000” would look like</h3>
+  <p class="body">A 2000-style event in AI would not require AI to “fail.” It would require:</p>
+  <ol style="margin:0 0 12px 18px;font-size:14px;line-height:1.55">
+    <li>Capex growth to <b>decelerate sharply</b> (even from a high base).</li>
+    <li>Evidence that <b>inference demand</b> does not fill training-driven capacity.</li>
+    <li>A simultaneous <b>multiple compression</b> in long-duration tech (rates or risk-off).</li>
+    <li>Inventory corrections in semis that turn 40–70% gross margins into a price war for a few quarters.</li>
+  </ol>
+  <p class="body">That package can cut AI-basket equities 30–60% without falsifying the 10-year adoption thesis — just as fibre cuts did not falsify the internet.</p>
+
+  <!-- ===================== 8 ===================== -->
+  <h2 class="sec" id="s8">8 · Scenarios, kill-criteria, positioning logic</h2>
+
+  <div class="twocol">
+    <div class="box">
+      <h4>Bull path (next 5y)</h4>
+      <ul>
+        <li>Inference demand scales with agents/copilots in production.</li>
+        <li>Hyperscaler ROI metrics (cloud growth, ad ROI, internal productivity) stay convincing.</li>
+        <li>Power buildout proceeds; no multi-year hard stop.</li>
+        <li>Phase-1 tools stay scarce enough to defend margins into 2027.</li>
+        <li>Equity outcome: indices grind up with violent rotations; power + quality semis + cloud lead.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h4>Base path (next 5y)</h4>
+      <ul>
+        <li>Capex plateaus at high levels after 2026–27.</li>
+        <li>One or two inventory air-pockets in semis (−30–50% peak-to-trough in hot names).</li>
+        <li>Application revenue grows but disappoints relative to 2024–25 narratives.</li>
+        <li>Equity outcome: AI still matters for earnings; multiples compress; stock-picking &gt; basket.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="box" style="margin-top:10px">
+    <h4>Bear path (next 5y)</h4>
+    <ul>
+      <li>ROI narrative fails at scale (enterprise projects cancelled; model commoditisation races to free).</li>
+      <li>Coordinated hyperscaler capex cuts of 20%+ YoY.</li>
+      <li>Geopolitical shock to advanced packaging / Taiwan supply.</li>
+      <li>Equity outcome: 2000-like destruction in high-duration AI names; quality platforms with real FCF survive and later re-dominate (Amazon-after-dotcom pattern).</li>
+    </ul>
+  </div>
+
+  <h3 class="subsec">Kill-criteria for the “supercycle still drives prices” thesis</h3>
+  <div class="kc" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+    <div class="kci" style="display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45">
+      <div class="kx" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px"></div>
+      <div><b>Second derivative flips hard.</b> Combined hyperscaler capex guides down mid-teens+% YoY for two consecutive print seasons without a clear utilisation boom.</div>
+    </div>
+    <div class="kci" style="display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45">
+      <div class="kx" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px"></div>
+      <div><b>Toolmaker margins collapse.</b> Leader accelerator gross margins structurally re-rate from scarcity oligopoly toward competitive silicon (not just one soft quarter).</div>
+    </div>
+    <div class="kci" style="display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45">
+      <div class="kx" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px"></div>
+      <div><b>Cloud AI growth decouples from spend.</b> Capex stays high while cloud AI-related growth decelerates for 4+ quarters — ROI failure mode.</div>
+    </div>
+    <div class="kci" style="display:flex;gap:11px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.45">
+      <div class="kx" style="flex:0 0 auto;width:20px;height:20px;border-radius:5px;border:2px solid var(--line-strong);margin-top:1px"></div>
+      <div><b>Power hard-stop.</b> Major markets impose multi-year connection freezes that cannot be bypassed with on-site generation at scale.</div>
+    </div>
+  </div>
+
+  <h3 class="subsec">Positioning logic (framework, not a portfolio)</h3>
+  <p class="body">For a 5–10 year capital allocator thinking in phases:</p>
+  <ul style="margin:0 0 12px 18px;font-size:14px;line-height:1.55">
+    <li><b>Phase 1 residual:</b> own scarcity only where balance sheets and roadmaps defend oligopoly rents; size for inventory drawdowns.</li>
+    <li><b>Phase 2 core:</b> power/grid, cloud platforms with FCF recovery optionality, networking as cluster scale continues.</li>
+    <li><b>Phase 3 options:</b> small sleeves in application winners with distribution; avoid paying Phase-3 terminal value for Phase-1 revenue.</li>
+    <li><b>Through-cycle compounders:</b> industrials with AI content (automation, connectivity, cooling) — lower beta, longer duration of demand.</li>
+    <li><b>Hedge the narrative:</b> cash-flow quality and valuation discipline beat thematic purity after the discovery phase ends.</li>
+  </ul>
+
+  <!-- ===================== 9 ===================== -->
+  <h2 class="sec" id="s9">9 · Bottom line</h2>
+
+  <div class="hero" style="margin-top:8px">
+    <div class="htag">◆ Synthesis</div>
+    <h3 style="font-family:var(--disp);font-weight:600;font-size:clamp(17px,3vw,21px);letter-spacing:-.01em;line-height:1.25;margin-bottom:12px">
+      The AI supercycle is <b>real as a physical and earnings phenomenon for most of a decade</b>. As a <b>broad equity price rocket</b>, it is already mid-to-late innings: still capable of lifting markets, no longer capable of lifting everything.
+    </h3>
+    <div class="synth">
+      <b>How long will it drive prices up?</b> Expect <b>episodic leadership for ~1–3 more years</b> in index terms, with larger drawdowns and narrower leadership; <b>earnings contribution for 5–10+ years</b> in power, advanced semis, and cloud; and permanent embedding thereafter where AI is just “how software works.”<br><br>
+      <b>How much is left on the table?</b> <b>Large</b> in cumulative infrastructure build and eventual application surplus; <b>moderate and selective</b> in equity alpha after 2023–25 re-rating. The remaining edge is phase rotation and quality, not “buy AI.”<br><br>
+      <b>Will there be pauses like the internet bubble?</b> <b>Yes to pauses</b> (inventory, ROI scares, rates). <b>Partial rhyme with 2000</b> for speculative duration assets and any overbuilt layer. <b>Imperfect rhyme</b> for cash-rich hyperscalers and oligopolistic toolmakers — unless ROI fails at scale or supply floods simultaneously.<br><br>
+      <b>Who makes the money, when?</b> <b>Phase 1 (now):</b> accelerators, HBM, packaging, networking. <b>Phase 2 (emerging):</b> power, cloud utilisation, systems. <b>Phase 3 (later):</b> application cash flows with distribution. <b>Phase 4:</b> intelligence as a utility input — surplus to incumbents and consumers, not to every AI ticker from the peak.
+    </div>
+  </div>
+
+  <div class="callout teal" style="margin-top:16px">
+    <b>One-sentence investment stance.</b> Treat AI as a <b>decade-long industrial transformation</b> and a <b>2–4 year residual equity supercycle with air-pockets</b> — own the scarce layers and the eventual cash-flow platforms, demand proof as you move down the stack, and never confuse “AI will change the world” with “this price is still cheap.”
+  </div>
+
+  <div class="footer-note">
+    <b>Sources &amp; method.</b> First-principles stack analysis; public hyperscaler and semiconductor cycle structure; historical internet 1998–2002 comparison on cash-flow vs narrative grounds. Point estimates for collective capex and sector leadership are order-of-magnitude and time-sensitive — re-check primary filings before capital allocation. Company map §4; companion pipelines (Micron, Amazon, TE Connectivity, SpaceX, Investor) operationalise pieces of this map at the single-name level.<br><br>
+    <b>Not investment advice.</b> This is a research instrument for structuring judgment under uncertainty. Built 2026-07-20 for the stock-analysis toolkit (<code>stocks/ai-supercycle-report.html</code>).
+  </div>
+
+</div>
+</body>
+</html>

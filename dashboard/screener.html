@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Universe Screener — Nordics + S&amp;P 500 Fundamentals + AI-Fit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --plane:#f9f9f7; --surface:#fcfcfb;
+  --line:#e1e0d9; --line-strong:#c3c2b7;
+  --ink:#0b0b0b; --muted:#52514e; --faint:#898781;
+  --good-text:#006300; --border:rgba(11,11,11,.10);
+  --cat-1:#2a78d6; --cat-2:#008300; --cat-3:#e87ba4; --cat-4:#eda100;
+  --seq-fill:#2a78d6;
+  --st-good:#0ca30c; --st-warn:#fab219; --st-crit:#d03b3b;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --disp:'Space Grotesk','Helvetica Neue',system-ui,sans-serif;
+  --body:'Inter','Helvetica Neue',system-ui,sans-serif;
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --plane:#0d0d0d; --surface:#1a1a19;
+    --line:#2c2c2a; --line-strong:#383835;
+    --ink:#ffffff; --muted:#c3c2b7; --faint:#898781;
+    --good-text:#0ca30c; --border:rgba(255,255,255,.10);
+    --cat-1:#3987e5; --cat-2:#008300; --cat-3:#d55181; --cat-4:#c98500;
+    --st-good:#0ca30c; --st-warn:#fab219; --st-crit:#e66767;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--plane);color:var(--ink);font-family:var(--body);line-height:1.5;font-size:15px;padding:clamp(12px,2.5vw,32px)}
+.wrap{max-width:1440px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cat-1);display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.eyebrow::before{content:"";width:26px;height:1.5px;background:var(--cat-1);display:inline-block}
+.eyebrow a{color:inherit}
+h1{font-family:var(--disp);font-weight:600;letter-spacing:-.02em;font-size:clamp(25px,4.5vw,34px);line-height:1.05}
+h1 .sub{display:block;color:var(--muted);font-weight:500;font-size:clamp(13.5px,2vw,15.5px);margin-top:8px;max-width:840px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:18px 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.kpi .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint)}
+.kpi .v{font-family:var(--disp);font-weight:700;font-size:21px;margin-top:2px;color:var(--ink)}
+.kpi .v small{font-family:var(--body);font-weight:500;font-size:11.5px;color:var(--muted);margin-left:3px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:clamp(14px,2.5vw,22px);margin-bottom:16px}
+
+.refreshbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.rb-left{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.rb-dot{width:8px;height:8px;border-radius:50%;background:var(--st-good);flex:none}
+.rb-dot.busy{background:var(--st-warn);animation:pulse 1.1s ease-in-out infinite}
+.rb-dot.err{background:var(--st-crit)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.rb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rb-clear{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;font-family:var(--mono)}
+.btn{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--line-strong);
+     background:var(--plane);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.btn:hover{border-color:var(--cat-1)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-primary{background:var(--cat-1);border-color:var(--cat-1);color:#fff}
+.btn-primary:hover{filter:brightness(1.08)}
+.rb-note{margin-top:10px;font-size:12.5px;color:var(--muted);background:var(--plane);border-left:3px solid var(--st-warn);border-radius:0 8px 8px 0;padding:9px 12px;display:none}
+.rb-note.show{display:block}
+.rb-note.err{border-left-color:var(--st-crit)}
+.rb-progress{margin-top:10px;display:none;align-items:center;gap:10px}
+.rb-progress.show{display:flex}
+.rb-bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.rb-bar-fill{height:100%;width:0%;background:var(--cat-1);transition:width .3s ease}
+.rb-progress-text{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:4px}
+.toolbar label{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tfield{display:flex;flex-direction:column;gap:3px}
+.toolbar input[type=search],.toolbar select,.toolbar input[type=number]{
+  font-family:var(--body);font-size:13px;padding:7px 10px;border:1px solid var(--line-strong);
+  border-radius:9px;background:var(--plane);color:var(--ink)
+}
+.toolbar input[type=search]{min-width:190px}
+.toolbar input[type=number]{width:110px}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:9px;overflow:hidden}
+.seg button{font-family:var(--mono);font-size:11.5px;padding:7px 11px;border:none;background:var(--plane);color:var(--muted);cursor:pointer;border-right:1px solid var(--line-strong)}
+.seg button:last-child{border-right:none}
+.seg button.active{background:var(--cat-1);color:#fff}
+.chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.reset-link{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none}
+.reset-link:hover{color:var(--ink)}
+.hint{font-size:12px;color:var(--faint);margin-left:auto}
+
+.charthead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.chart-title{font-family:var(--disp);font-weight:600;font-size:17px}
+.chart-sub{font-family:var(--body);font-weight:500;font-size:12.5px;color:var(--muted);margin-left:6px}
+.chart-body{width:100%}
+.chart-body svg{width:100%;height:auto;display:block}
+.axislabel{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+.quadlabel{font-family:var(--mono);font-size:10.5px;fill:var(--faint)}
+.gridline{stroke:var(--line);stroke-width:1}
+.gridline.mid{stroke:var(--line-strong)}
+.tick{font-family:var(--mono);font-size:9.5px;fill:var(--faint)}
+.dot .mark{pointer-events:none}
+.dot .hit{pointer-events:all;cursor:pointer}
+.chart-foot{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;margin-top:10px}
+.legend{display:flex;flex-wrap:wrap;gap:12px}
+.legend .li{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.legend .sw{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
+.sizelegend{display:flex;align-items:center;gap:8px}
+.sl-label{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+.sl-vals{font-size:12px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);background:var(--plane);border-left:3px solid var(--cat-1);border-radius:0 8px 8px 0;padding:10px 13px;margin-top:14px;line-height:1.55}
+
+#tooltip{position:fixed;pointer-events:none;background:var(--surface);border:1px solid var(--line-strong);border-radius:10px;
+  padding:9px 12px;font-size:12.5px;box-shadow:0 6px 24px var(--border);display:none;z-index:50;max-width:260px}
+#tooltip .tt-name{font-weight:700;color:var(--ink);margin-bottom:4px;font-family:var(--disp)}
+#tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;color:var(--muted);font-size:11.5px}
+#tooltip .tt-row b{color:var(--ink);font-family:var(--mono);font-weight:600}
+
+.groupchips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
+.gchip{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:7px;border:1px solid var(--line-strong);background:var(--plane);color:var(--muted);cursor:pointer}
+.gchip.active{background:var(--cat-1);border-color:var(--cat-1);color:#fff}
+.rowcount{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;
+   color:var(--faint);padding:8px 8px;border-bottom:1px solid var(--line-strong);background:var(--plane);cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--ink)}
+th .arrow{opacity:.3;margin-left:2px}
+th.sorted .arrow{opacity:1;color:var(--cat-1)}
+.ffcell{padding:4px 6px;border-bottom:1px solid var(--line-strong);background:var(--plane);vertical-align:middle}
+.ffcell.active{background:color-mix(in srgb, var(--cat-1) 10%, var(--plane))}
+.ffrange{display:flex;gap:3px;white-space:nowrap}
+.ff-min,.ff-max{width:38px;font-size:10px;font-family:var(--mono);padding:3px 4px;border:1px solid var(--line-strong);border-radius:5px;background:var(--surface);color:var(--ink)}
+.ff-text{width:100%;min-width:84px;font-size:10.5px;font-family:var(--body);padding:3px 6px;border:1px solid var(--line-strong);border-radius:5px;background:var(--surface);color:var(--ink)}
+.ff-min::-webkit-outer-spin-button,.ff-min::-webkit-inner-spin-button,
+.ff-max::-webkit-outer-spin-button,.ff-max::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ff-min,.ff-max{-moz-appearance:textfield}
+.ff-min:focus,.ff-max:focus,.ff-text:focus{outline:none;border-color:var(--cat-1)}
+.hidden{display:none}
+td{padding:8px 8px;border-bottom:1px dashed var(--line);vertical-align:middle}
+td.num{text-align:right;font-family:var(--mono);font-weight:500;white-space:nowrap}
+tr.detailrow.hidden{display:none}
+tr.flash td{animation:flash 1.6s ease}
+@keyframes flash{0%{background:color-mix(in srgb, var(--cat-1) 18%, transparent)}100%{background:transparent}}
+
+.namecell{min-width:230px}
+.namewrap{display:inline-block;vertical-align:top}
+.caret{background:none;border:none;color:var(--faint);cursor:pointer;font-size:12px;width:16px;padding:0;vertical-align:top}
+.caret:hover{color:var(--ink)}
+.nametop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+a.rlink{color:var(--cat-1);font-weight:600;text-decoration:none;font-size:13px}
+a.rlink:hover{text-decoration:underline}
+.tkr{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:2px}
+.secline{font-size:11px;color:var(--muted);margin-top:1px}
+.tier{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--muted)}
+.tier-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex:none}
+.tier-dot.good{background:var(--st-good)} .tier-dot.warn{background:var(--st-warn)} .tier-dot.crit{background:var(--st-crit)}
+.dash{color:var(--faint)}
+
+.scorebar-wrap{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.scorebar{position:relative;width:52px;height:9px;background:var(--line);border-radius:3px;overflow:hidden;flex:none}
+.sb-fill{position:absolute;left:0;top:0;bottom:0;background:var(--seq-fill);border-radius:3px}
+.sb-val{font-family:var(--mono);font-size:11px;color:var(--ink);min-width:20px;text-align:right}
+
+.aicell{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+
+.detail{padding:12px 6px 16px;max-width:900px}
+.detail .desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 20px;margin-bottom:12px}
+.pillarrow{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
+.pillarrow span{width:90px;flex:none}
+.airationale{font-size:12.5px;color:var(--muted);margin-bottom:8px;line-height:1.55}
+.airationale b{color:var(--ink)}
+.meta2{font-size:12px;color:var(--faint)}
+.meta2 a{color:var(--cat-1)}
+
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+footer{margin-top:6px;font-size:12px;color:var(--faint);line-height:1.6}
+footer code{font-family:var(--mono);font-size:11px;background:var(--plane);padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Stock-analysis toolkit · Universe screener · <a href="index.html">← per-name pipeline dashboard</a></div>
+  <h1>Universe Screener — Nordics + S&amp;P 500
+    <span class="sub">Every Nasdaq Helsinki + Stockholm equity (incl. First North) plus the current S&amp;P 500, fetched live from Yahoo Finance and ranked on a fundamentals composite × a structural AI-leverage heuristic. A shortlist generator for further research — not a recommendation.</span>
+  </h1>
+
+  <div class="panel">
+    <div class="refreshbar">
+      <div class="rb-left">
+        <span class="rb-dot" id="rbDot"></span>
+        <span id="rbStatusText">Loading…</span>
+      </div>
+      <div class="rb-right">
+        <label class="rb-clear"><input type="checkbox" id="chkClear"> full refetch</label>
+        <button class="btn" id="btnReload" title="Re-read dashboard/screener_data.json from disk">↻ Reload from disk</button>
+        <button class="btn btn-primary" id="btnRefresh">⟳ Refresh live data</button>
+      </div>
+    </div>
+    <div class="rb-note" id="rbNote"></div>
+    <div class="rb-progress" id="rbProgress">
+      <div class="rb-bar"><div class="rb-bar-fill" id="rbBarFill"></div></div>
+      <span class="rb-progress-text" id="rbProgressText"></span>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <div class="tfield"><label for="q">Search</label><input type="search" id="q" placeholder="Name, ticker, industry…" autocomplete="off"></div>
+      <div class="tfield"><label>Exchange</label>
+        <div class="seg" id="exchSeg">
+          <button data-v="ALL" class="active">All</button>
+          <button data-v="HEL">Helsinki</button>
+          <button data-v="STO">Stockholm</button>
+          <button data-v="US">USA</button>
+        </div>
+      </div>
+      <div class="tfield"><label for="sectorSel">Sector <span style="text-transform:none">(⌘/ctrl-click for multiple)</span></label>
+        <select id="sectorSel" multiple size="1"></select>
+      </div>
+      <div class="tfield"><label>&nbsp;</label><span class="chk"><input type="checkbox" id="chkAll"> show duplicate classes &amp; thin-data names</span></div>
+      <button class="reset-link" id="btnReset">Reset filters</button>
+      <span class="hint">Every visible table column has its own min/max (or "contains") filter in the header row below it — show a column via the chips below the chart, then filter or sort it there.</span>
+    </div>
+  </div>
+
+  <div class="panel chartpanel">
+    <div class="charthead">
+      <div><span class="chart-title">Fundamentals × AI-leverage</span><span class="chart-sub" id="chartSub"></span></div>
+      <div class="seg" id="colorSeg">
+        <button data-v="exch" class="active">Color: Exchange</button>
+        <button data-v="sector">Color: Sector group</button>
+      </div>
+    </div>
+    <div class="chart-body"><svg id="scatter" viewBox="0 0 920 520" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="chart-foot">
+      <div class="legend" id="legend"></div>
+      <div class="sizelegend">
+        <span class="sl-label">Bubble = mkt cap</span>
+        <svg width="110" height="26" viewBox="0 0 110 26"><circle cx="14" cy="18" r="4" fill="none" stroke="var(--line-strong)"/><circle cx="42" cy="14" r="8" fill="none" stroke="var(--line-strong)"/><circle cx="80" cy="8" r="14" fill="none" stroke="var(--line-strong)"/></svg>
+        <span class="sl-vals">€100M · €1B · €10B+</span>
+      </div>
+    </div>
+    <p class="note">Both scores are 0–100. <b>Fundamentals</b> is a percentile composite (quality, growth, balance sheet, valuation) against the current filtered set. <b>AI-leverage</b> is a structural heuristic — industry fit + labor intensity + margin leverage — not fetched data; see the row detail (▸) for the exact rationale per name. Top-right = strong fundamentals with high structural AI leverage; use this as a starting shortlist, then read the row detail and the linked Yahoo Finance page before doing further work.</p>
+  </div>
+
+  <div class="panel">
+    <div class="groupchips" id="groupChips"></div>
+    <div class="toolbar" style="margin-bottom:10px">
+      <span class="hint" id="rowCount" style="margin-left:0"></span>
+      <button class="reset-link hidden" id="btnClearColFilters"></button>
+      <button class="btn" id="btnExport" style="margin-left:auto">⭳ Export shown as CSV</button>
+    </div>
+    <div class="tbl-scroll">
+      <table id="stab">
+        <thead>
+          <tr id="theadRow"></tr>
+          <tr id="filterHeadRow"></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <b>Methodology.</b> Universe = every symbol Yahoo Finance lists with exchange code HEL (Nasdaq Helsinki) or STO (Nasdaq Stockholm), including First North growth-market names, plus the current S&amp;P 500 constituent list (sourced from Wikipedia's maintained constituents table, since Yahoo's screener has no index-membership filter — fundamentals for every US name still come from the same Yahoo quoteSummary API as everything else, so the sector/industry taxonomy is consistent across the whole universe). Fundamentals fetched via Yahoo's quoteSummary API (price, assetProfile, summaryDetail, defaultKeyStatistics, financialData); all monetary figures converted to EUR at the latest spot FX. Cache: 24h per symbol (<code>cache/screener/</code>), stale-on-failure fallback; the S&amp;P 500 constituent list itself is cached a week, since index membership rarely changes. <b>Fundamentals score</b> weights: Quality 35% (ROE, op/gross margin, ROA) · Growth 20% (revenue, EPS growth) · Balance sheet 15% (net debt/EBITDA, debt/equity, current ratio) · Valuation 30% (earnings yield, FCF yield, EV/EBITDA) — each a percentile rank within the full fetched universe (Nordics + S&amp;P 500 together, computed once at fetch time — a Nordic name's score reflects its rank against the combined pool, not Nordic peers only). <b>AI-leverage score</b> = 0.75 × industry base-rate + 0.15 × labor-intensity percentile (lower revenue/employee → more automation upside) + 0.10 × gross-margin percentile (higher margin → efficiency gains drop straight to profit) — an explicit, inspectable heuristic, not a model prediction. <b>Overall</b> = 0.65 × Fundamentals + 0.35 × AI-leverage. Share classes / dual listings of the same company (e.g. GOOGL/GOOG) are flagged as duplicates (most-traded line kept primary) and hidden by default.<br><br>
+    Refresh from a terminal: <code>python utils/universe_screener.py</code> (add <code>--clear-cache</code> to force a full refetch, <code>--skip-sp500</code> for Nordics only) · serve with live refresh: <code>python utils/screener_server.py</code> · flat CSV twin: <code>data/screener_latest.csv</code>.<br><br>
+    For analysis and education only — not investment advice, not a recommendation, not a price target. Scores quantify a set of explicit assumptions; they do not make those assumptions correct. Verify primary-source figures before acting.
+  </footer>
+</div>
+
+<div id="tooltip"></div>
+<script src="screener_data.js"></script>
+<script>
+"use strict";
+var DATA = (window.SCREENER_DATA && window.SCREENER_DATA.rows) ? window.SCREENER_DATA : {meta:{},rows:[]};
+
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+function truncate(s,n){ s=String(s||""); return s.length>n ? s.slice(0,n-1)+"…" : s; }
+function debounce(fn,ms){ var t; return function(){ var a=arguments,ctx=this; clearTimeout(t); t=setTimeout(function(){fn.apply(ctx,a);},ms); }; }
+function yahooUrl(sym){ return "https://finance.yahoo.com/quote/"+encodeURIComponent(sym); }
+function ensureUrl(u){ if(!u) return "#"; return /^https?:\/\//i.test(u) ? u : "https://"+u; }
+
+function fmtMoneyM(v){ if(v==null||isNaN(v)) return "—"; var sign=v<0?"-":""; var av=Math.abs(v);
+  return sign+"€"+(av>=1000 ? (av/1000).toFixed(1)+"bn" : Math.round(av).toLocaleString("en-US")+"M"); }
+function fmtMoneyMSigned(v){ if(v==null||isNaN(v)) return "—"; return (v>0?"+":"")+fmtMoneyM(v); }
+function fmtPct(v){ return (v==null||isNaN(v)) ? "—" : (v*100).toFixed(1)+"%"; }
+function fmtPctSigned(v){ return (v==null||isNaN(v)) ? "—" : (v>=0?"+":"")+(v*100).toFixed(1)+"%"; }
+function fmtMult(v){ return (v==null||isNaN(v)) ? "—" : v.toFixed(1); }
+function fmtX(v){ return (v==null||isNaN(v)) ? "—" : v.toFixed(2)+"×"; }
+function fmtXSigned(v){ return (v==null||isNaN(v)) ? "—" : (v>=0?"+":"")+v.toFixed(2)+"×"; }
+function fmtInt(v){ return (v==null||isNaN(v)) ? "—" : Math.round(v).toLocaleString("en-US"); }
+function fmtNum2(v){ return (v==null||isNaN(v)) ? "—" : v.toFixed(2); }
+function fmtKEur(v){ return (v==null||isNaN(v)) ? "—" : "€"+Math.round(v).toLocaleString("en-US")+"k"; }
+function fmtText(v){ return v ? esc(v) : "—"; }
+
+function scoreBar(v){
+  if(v==null||isNaN(v)) return '<span class="dash">—</span>';
+  var pct = Math.max(0,Math.min(100,v));
+  return '<div class="scorebar-wrap"><div class="scorebar"><div class="sb-fill" style="width:'+pct+'%"></div></div>'+
+         '<span class="sb-val">'+pct.toFixed(0)+'</span></div>';
+}
+function tierChip(v){
+  if(v==null||isNaN(v)) return '<span class="tier"><i class="tier-dot" style="background:var(--faint)"></i>—</span>';
+  var cls, label;
+  if(v>=65){ cls="good"; label="Strong"; } else if(v>=40){ cls="warn"; label="Mixed"; } else { cls="crit"; label="Weak"; }
+  return '<span class="tier"><i class="tier-dot '+cls+'"></i>'+label+'</span>';
+}
+function sectorGroup(sector){
+  if(!sector) return "other";
+  if(sector==="Technology"||sector==="Communication Services") return "tc";
+  if(sector==="Financial Services"||sector==="Real Estate") return "fr";
+  if(sector==="Industrials"||sector==="Basic Materials"||sector==="Energy"||sector==="Utilities") return "ime";
+  if(sector==="Healthcare"||sector==="Consumer Cyclical"||sector==="Consumer Defensive") return "hc";
+  return "other";
+}
+</script>
+<script src="screener_app.js"></script>
+</body>
+</html>
